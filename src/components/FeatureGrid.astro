@@ -8,12 +8,15 @@ import { tools } from '../data/tools';
     const attrs = tool.href ? { href: tool.href, target: '_blank', rel: 'noopener' } : {};
     return (
       <Tag class:list={['card', { soon: !tool.href }]} {...attrs}>
-        <ToolIcon name={tool.icon} />
+        <span class="top">
+          <ToolIcon name={tool.icon} />
+          {!tool.href && <span class="badge">Segera hadir</span>}
+        </span>
         <span class="text">
           <h3>{tool.title}</h3>
           <p>{tool.description}</p>
         </span>
-        {tool.href ? <span class="sr-only">(tab baru)</span> : <span class="badge">Segera hadir</span>}
+        {tool.href && <span class="sr-only">(tab baru)</span>}
       </Tag>
     );
   })}
@@ -33,8 +36,8 @@ import { tools } from '../data/tools';
   .card {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 28px;
+    gap: 12px;
+    padding: 20px 22px 22px;
     background: var(--white);
     text-decoration: none;
     color: inherit;
@@ -42,17 +45,17 @@ import { tools } from '../data/tools';
   }
   a.card:hover { background: #fbfaf7; color: inherit; }
   a.card:hover h3 { color: var(--deep); }
-  .text { display: flex; flex-direction: column; gap: 6px; }
+  .text { display: flex; flex-direction: column; gap: 4px; }
   h3 {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 19px;
+    font-size: 18px;
     color: var(--ink);
   }
-  p { font-size: 14px; line-height: 1.55; color: var(--body); }
+  p { font-size: 14px; line-height: 1.5; color: var(--body); }
+  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .badge {
-    margin-top: auto;
-    align-self: flex-start;
+    white-space: nowrap;
     font-size: 12px;
     font-weight: 600;
     color: var(--muted);
