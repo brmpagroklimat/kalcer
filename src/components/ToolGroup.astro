@@ -1,0 +1,37 @@
+---
+import ToolRow from './ToolRow.astro';
+import type { Tool } from '../data/tools';
+interface Props { title: string; summary: string; tools: Tool[] }
+const { title, summary, tools } = Astro.props;
+---
+<section class="group">
+  <div class="head">
+    <h3>{title}</h3>
+    <p>{summary}</p>
+  </div>
+  <ul>
+    {tools.map((tool) => <ToolRow tool={tool} />)}
+  </ul>
+</section>
+
+<style>
+  .group {
+    display: grid;
+    gap: 1rem 3rem;
+    padding-block: 2.5rem;
+    border-top: 2px solid var(--ink);
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: 800;
+    line-height: 1;
+  }
+  .head p { margin-top: 0.75rem; color: var(--muted); max-width: 30ch; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  ul :global(li + li) { border-top: 1px solid var(--leaf-deep); }
+  @media (min-width: 60rem) {
+    .group { grid-template-columns: 18rem 1fr; }
+    .head { position: sticky; top: 2rem; align-self: start; }
+  }
+</style>

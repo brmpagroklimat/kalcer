@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import ToolGroup from '../components/ToolGroup.astro';
+import AskBand from '../components/AskBand.astro';
+import ChatFab from '../components/ChatFab.astro';
+import Footer from '../components/Footer.astro';
+import { byGroup } from '../data/tools';
+---
+<Base>
+  <Hero />
+  <main id="alat" class="wrap">
+    <div class="intro">
+      <h2>Pilih alat</h2>
+      <p>Setiap alat terbuka di tab baru.</p>
+    </div>
+    <ToolGroup
+      title="Prediksi risiko"
+      summary="Lihat seberapa besar ancaman kekeringan, banjir, dan hama di lahanmu."
+      tools={byGroup('prediksi')}
+    />
+    <ToolGroup
+      title="Hitung kebutuhan"
+      summary="Hitung air dan pupuk yang dibutuhkan tanaman sebelum turun ke lahan."
+      tools={byGroup('kalkulator')}
+    />
+    <AskBand />
+  </main>
+  <Footer />
+  <ChatFab />
+</Base>
+
+<style>
+  main { scroll-margin-top: 1rem; }
+  .intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    padding-block: clamp(3rem, 7vw, 5rem) 1.5rem;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1;
+  }
+  .intro p { color: var(--muted); }
+</style>

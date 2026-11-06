@@ -1,0 +1,31 @@
+---
+import Icon from './Icon.astro';
+import { chatTool } from '../data/tools';
+---
+{chatTool.href && (
+  <a class="fab" href={chatTool.href} target="_blank" rel="noopener" aria-label={`${chatTool.title} (tab baru)`}>
+    <Icon name="chat" size={28} />
+  </a>
+)}
+
+<style>
+  .fab {
+    position: fixed;
+    right: clamp(1rem, 3vw, 2rem);
+    bottom: clamp(1rem, 3vw, 2rem);
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 50%;
+    background: var(--harvest);
+    color: var(--ink);
+    box-shadow: 0 6px 18px rgb(22 53 44 / 0.28);
+    transition: transform 150ms;
+  }
+  .fab:hover { transform: scale(1.06); }
+  @media (prefers-reduced-motion: reduce) {
+    .fab { transition: none; }
+  }
+</style>

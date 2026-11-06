@@ -1,0 +1,68 @@
+@import '@fontsource-variable/big-shoulders-display';
+@import '@fontsource-variable/plus-jakarta-sans';
+
+:root {
+  --ink: #16352c;        /* hijau padi tua: teks & blok gelap */
+  --paddy: #2f6b3f;      /* hijau sawah */
+  --leaf: #eef2e1;       /* daun muda: latar */
+  --leaf-deep: #dfe7cb;  /* garis & permukaan */
+  --rain: #2c6e9b;       /* biru hujan */
+  --harvest: #e2b33c;    /* emas panen: kering / aksen */
+  --muted: #4d6359;
+  --white: #fbfcf7;
+
+  --font-display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
+  --font-body: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+
+  /* skala tipe (rasio ~1.25) */
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.3125rem;
+  --step-2: 1.75rem;
+  --step-3: clamp(2.25rem, 4vw, 3rem);
+  --step-hero: clamp(3.5rem, 11vw, 9.5rem);
+
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --max: 76rem;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  background: var(--leaf);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.1; }
+p { margin: 0; }
+a { color: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--rain);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

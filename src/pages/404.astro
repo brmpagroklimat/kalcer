@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Halaman tidak ditemukan | KALCER">
+  <main class="wrap">
+    <h1>Halaman tidak ditemukan</h1>
+    <p>Alamat ini tidak ada di KALCER. Periksa kembali tautannya, atau kembali ke daftar alat.</p>
+    <a href="/">Ke halaman utama</a>
+  </main>
+</Base>
+
+<style>
+  main { min-height: 100vh; display: grid; align-content: center; gap: 1.25rem; justify-items: start; }
+  h1 { font-family: var(--font-display); font-size: clamp(3rem, 8vw, 6rem); font-weight: 800; line-height: 0.95; max-width: 12ch; }
+  p { color: var(--muted); max-width: 46ch; }
+  a { background: var(--harvest); color: var(--ink); font-weight: 700; text-decoration: none; padding: 0.85rem 1.6rem; border-radius: 999px; }
+</style>
