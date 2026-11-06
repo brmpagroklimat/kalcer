@@ -12,7 +12,7 @@ Semua alat ada di [`src/data/tools.ts`](src/data/tools.ts). Isi `href` dengan UR
 href: 'https://kekeringan.agroklimat.id',
 ```
 
-`href: null` artinya alat belum tersedia: kartu tampil dengan label "Segera hadir" dan tidak bisa diklik. Tombol chat mengambang muncul otomatis setelah `tanya-kalcer` punya `href`.
+`href: null` artinya alat belum tersedia: kartu tampil dengan label "Segera hadir" dan tidak bisa diklik. Tombol "Mulai chat" di blok Tanya KALCER aktif setelah `tanya-kalcer` punya `href`.
 
 ## Pengembangan lokal
 

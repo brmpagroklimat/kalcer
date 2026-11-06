@@ -1,15 +1,30 @@
----
-const year = new Date().getFullYear();
----
-<footer>
+<footer id="tentang">
   <div class="wrap">
-    <p><strong>KALCER</strong>, Klinik Agroklimat Cerdas</p>
-    <p>&copy; {year} <a href="https://agroklimat.id">agroklimat.id</a></p>
+    <div class="brand">
+      <strong>KALCER</strong>
+      <span>Klinik Agroklimat Cerdas</span>
+    </div>
+    <p>Dikembangkan oleh BRMP Agroklimat</p>
   </div>
 </footer>
 
 <style>
-  footer { border-top: 1px solid var(--leaf-deep); padding-block: 2rem; color: var(--muted); font-size: var(--step--1); }
-  .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 2rem; }
-  strong { color: var(--ink); }
+  footer { border-top: 1px solid var(--line); }
+  .wrap {
+    padding-block: 36px 48px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+  }
+  span, p { font-size: 14px; color: var(--muted); }
 </style>

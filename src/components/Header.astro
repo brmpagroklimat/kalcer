@@ -1,0 +1,47 @@
+---
+import Logo from './Logo.astro';
+---
+<header class="wrap">
+  <a class="brand" href="/">
+    <Logo />
+    <span>KALCER</span>
+  </a>
+  <nav aria-label="Navigasi utama">
+    <a href="#fitur">Fitur</a>
+    <a href="#tanya">Tanya KALCER</a>
+    <a href="#tentang">Tentang</a>
+  </nav>
+</header>
+
+<style>
+  header {
+    padding-top: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+  }
+  nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 32px; }
+  nav a {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--nav);
+    text-decoration: none;
+    padding-block: 12px;
+  }
+  nav a:hover { color: var(--deep); }
+</style>

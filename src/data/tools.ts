@@ -10,25 +10,22 @@ export interface Tool {
   description: string;
   icon: IconName;
   href: string | null;
-  group: 'prediksi' | 'kalkulator' | 'tanya';
 }
 
 export const tools: Tool[] = [
   {
     id: 'prediksi-kekeringan',
     title: 'Prediksi Kekeringan',
-    description: 'Perkirakan tingkat risiko kekeringan dari curah hujan dan jumlah hari tanpa hujan.',
+    description: 'Perkirakan tingkat risiko kekeringan dari curah hujan dan hari tanpa hujan.',
     icon: 'drought',
     href: null,
-    group: 'prediksi',
   },
   {
     id: 'prediksi-banjir',
     title: 'Prediksi Banjir',
-    description: 'Nilai potensi banjir dari hujan 3 hari terakhir, kejenuhan tanah, dan kondisi sungai.',
+    description: 'Nilai potensi banjir dari hujan 3 hari, kejenuhan tanah, dan kondisi sungai.',
     icon: 'flood',
     href: null,
-    group: 'prediksi',
   },
   {
     id: 'prediksi-opt',
@@ -36,7 +33,6 @@ export const tools: Tool[] = [
     description: 'Estimasi risiko serangan organisme pengganggu tumbuhan menurut komoditas dan cuaca.',
     icon: 'pest',
     href: null,
-    group: 'prediksi',
   },
   {
     id: 'kalkulator-air',
@@ -44,7 +40,6 @@ export const tools: Tool[] = [
     description: 'Hitung kebutuhan air tanaman per fase tumbuh untuk menjadwalkan pengairan.',
     icon: 'water',
     href: null,
-    group: 'kalkulator',
   },
   {
     id: 'kalkulator-pupuk',
@@ -52,17 +47,14 @@ export const tools: Tool[] = [
     description: 'Hitung kebutuhan Urea, SP-36, dan KCl berdasarkan komoditas, luas lahan, dan target hasil.',
     icon: 'fertilizer',
     href: null,
-    group: 'kalkulator',
   },
   {
     id: 'tanya-kalcer',
     title: 'Tanya KALCER',
-    description: 'Tanyakan soal waktu tanam, air, atau pupuk dan dapatkan jawaban langsung lewat chat.',
+    description: 'Tanya jawab langsung lewat chat.',
     icon: 'chat',
     href: null,
-    group: 'tanya',
   },
 ];
 
-export const byGroup = (group: Tool['group']) => tools.filter((t) => t.group === group);
 export const chatTool = tools.find((t) => t.id === 'tanya-kalcer')!;

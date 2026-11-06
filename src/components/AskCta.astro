@@ -1,0 +1,84 @@
+---
+import { chatTool } from '../data/tools';
+---
+<section id="tanya" class="wrap">
+  <div class="band">
+    <div class="text">
+      <h2>Ragu kapan mulai tanam? Tanya KALCER.</h2>
+      <p>Ajukan pertanyaan seputar iklim, air, dan pemupukan lewat chat.</p>
+      <div class="action">
+        {chatTool.href ? (
+          <a class="btn" href={chatTool.href} target="_blank" rel="noopener">Mulai chat<span class="sr-only"> (tab baru)</span></a>
+        ) : (
+          <span class="btn soon">Segera hadir</span>
+        )}
+      </div>
+    </div>
+    <div class="geo" aria-hidden="true">
+      <span style="background:var(--sky);border-radius:100% 0 0 0"></span>
+      <span style="background:var(--sun);border-radius:50%"></span>
+      <span style="background:var(--coral);border-radius:0 100% 0 0"></span>
+      <span style="background:var(--leaf);border-radius:0 100% 0 100%"></span>
+      <span style="background:var(--sand);border-radius:100% 100% 0 0"></span>
+      <span style="background:var(--sky);border-radius:0 0 0 100%"></span>
+    </div>
+  </div>
+</section>
+
+<style>
+  section { padding-bottom: 96px; scroll-margin-top: 24px; }
+  .band {
+    background: var(--deep);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .text {
+    flex: 1 1 420px;
+    min-width: 0;
+    padding: clamp(32px, 5vw, 56px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.15;
+    color: var(--white);
+  }
+  p { font-size: 17px; line-height: 1.6; color: #d3e3e8; max-width: 460px; }
+  .action { padding-top: 8px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 28px;
+    border-radius: 6px;
+    background: var(--sun);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  a.btn:hover { background: #f8d176; color: var(--ink); }
+  .btn.soon { background: rgb(255 255 255 / 0.14); color: #d3e3e8; }
+  .geo {
+    flex: 0 1 360px;
+    min-width: 240px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: end;
+  }
+  .geo span { display: block; aspect-ratio: 1; }
+  @media (max-width: 640px) {
+    section { padding-bottom: 64px; }
+    .geo { flex-basis: 100%; }
+  }
+</style>

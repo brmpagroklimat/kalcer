@@ -1,29 +1,30 @@
-@import '@fontsource-variable/big-shoulders-display';
-@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource/outfit/latin-500.css';
+@import '@fontsource/outfit/latin-600.css';
+@import '@fontsource/outfit/latin-700.css';
+@import '@fontsource/dm-sans/latin-400.css';
+@import '@fontsource/dm-sans/latin-500.css';
+@import '@fontsource/dm-sans/latin-600.css';
 
 :root {
-  --ink: #16352c;        /* hijau padi tua: teks & blok gelap */
-  --paddy: #2f6b3f;      /* hijau sawah */
-  --leaf: #eef2e1;       /* daun muda: latar */
-  --leaf-deep: #dfe7cb;  /* garis & permukaan */
-  --rain: #2c6e9b;       /* biru hujan */
-  --harvest: #e2b33c;    /* emas panen: kering / aksen */
-  --muted: #4d6359;
-  --white: #fbfcf7;
+  --paper: #f4f1ec;      /* latar krem */
+  --line: #e3ded4;       /* garis & pemisah */
+  --ink: #1f2d33;        /* teks utama */
+  --body: #4f5f66;       /* teks isi */
+  --muted: #5b6a71;
+  --nav: #3e4f57;
+  --deep: #1d4d63;       /* biru tua */
+  --sky: #8cd2dc;        /* biru muda */
+  --leaf: #2e5a43;       /* hijau daun */
+  --sun: #f5c451;        /* kuning matahari */
+  --coral: #f2785c;      /* koral */
+  --sand: #e6d8bc;       /* pasir */
+  --white: #ffffff;
 
-  --font-display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
-  --font-body: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
 
-  /* skala tipe (rasio ~1.25) */
-  --step--1: 0.875rem;
-  --step-0: 1.0625rem;
-  --step-1: 1.3125rem;
-  --step-2: 1.75rem;
-  --step-3: clamp(2.25rem, 4vw, 3rem);
-  --step-hero: clamp(3.5rem, 11vw, 9.5rem);
-
-  --gutter: clamp(1rem, 4vw, 3rem);
-  --max: 76rem;
+  --gutter: clamp(20px, 5vw, 64px);
+  --max: 1280px;
 }
 
 *,
@@ -37,20 +38,19 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: var(--leaf);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: var(--step-0);
-  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.1; }
+h1, h2, h3 { margin: 0; }
 p { margin: 0; }
-a { color: inherit; }
+a { color: var(--deep); }
+a:hover { color: #123545; }
 
 :focus-visible {
-  outline: 3px solid var(--rain);
+  outline: 3px solid var(--deep);
   outline-offset: 3px;
   border-radius: 4px;
 }
