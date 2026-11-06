@@ -10,7 +10,16 @@ import { tools } from '../data/tools';
       <Tag class:list={['card', { soon: !tool.href }]} {...attrs}>
         <span class="top">
           <ToolIcon name={tool.icon} />
-          {!tool.href && <span class="badge">Segera hadir</span>}
+          {tool.href ? (
+            <span class="open" aria-hidden="true">
+              Buka
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 11 11 5M6 5h5v5" />
+              </svg>
+            </span>
+          ) : (
+            <span class="badge">Segera hadir</span>
+          )}
         </span>
         <span class="text">
           <h3>{tool.title}</h3>
@@ -41,10 +50,46 @@ import { tools } from '../data/tools';
     background: var(--white);
     text-decoration: none;
     color: inherit;
-    transition: background-color 150ms;
+    position: relative;
+    transition: background-color 200ms;
   }
-  a.card:hover { background: #fbfaf7; color: inherit; }
-  a.card:hover h3 { color: var(--deep); }
+  /* garis aksen yang tumbuh dari kiri di bawah kartu */
+  a.card::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--deep);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  a.card:hover, a.card:focus-visible { background: #f7fbfc; color: inherit; }
+  a.card:hover::after, a.card:focus-visible::after { transform: scaleX(1); }
+  h3 { transition: color 200ms; }
+  a.card:hover h3, a.card:focus-visible h3 { color: var(--deep); }
+  a.card:focus-visible { outline-offset: -3px; }
+  .open {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--deep);
+    opacity: 0;
+    transform: translate(-6px, 4px);
+    transition: opacity 200ms, transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  a.card:hover .open, a.card:focus-visible .open { opacity: 1; transform: none; }
+  @media (hover: none) {
+    .open { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    a.card::after, .open, h3 { transition: none; }
+  }
   .text { display: flex; flex-direction: column; gap: 4px; }
   h3 {
     font-family: var(--font-display);

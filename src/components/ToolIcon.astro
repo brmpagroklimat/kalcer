@@ -1,5 +1,6 @@
 ---
 // Ikon geometris dari bentuk-bentuk dasar, mengikuti desain.
+// Bentuknya bergerak saat kartu ber-link di-hover/fokus (lihat gaya di bawah).
 import type { IconName } from '../data/tools';
 interface Props { name: IconName }
 const { name } = Astro.props;
@@ -7,44 +8,66 @@ const { name } = Astro.props;
 <span class:list={['ti', name]} aria-hidden="true">
   {name === 'drought' && (
     <>
-      <span class="a" style="left:0;bottom:0;width:44px;height:22px;background:var(--sand);border-radius:0 0 4px 4px"></span>
-      <span class="a" style="left:8px;top:0;width:28px;height:28px;background:var(--sun);border-radius:50%"></span>
+      <span class="a ground" style="left:0;bottom:0;width:44px;height:22px;background:var(--sand);border-radius:0 0 4px 4px"></span>
+      <span class="a sun" style="left:8px;top:0;width:28px;height:28px;background:var(--sun);border-radius:50%"></span>
     </>
   )}
   {name === 'flood' && (
     <>
-      <span style="width:44px;height:14px;background:var(--sky);border-radius:22px 22px 0 0"></span>
-      <span style="width:44px;height:14px;background:var(--deep);border-radius:22px 22px 0 0"></span>
+      <span class="wave1" style="width:44px;height:14px;background:var(--sky);border-radius:22px 22px 0 0"></span>
+      <span class="wave2" style="width:44px;height:14px;background:var(--deep);border-radius:22px 22px 0 0"></span>
     </>
   )}
   {name === 'pest' && (
     <>
-      <span class="a" style="left:0;top:4px;width:38px;height:38px;background:var(--leaf);border-radius:0 100% 0 100%"></span>
-      <span class="a" style="right:0;top:0;width:16px;height:16px;background:var(--coral);border-radius:50%"></span>
+      <span class="a leaf" style="left:0;top:4px;width:38px;height:38px;background:var(--leaf);border-radius:0 100% 0 100%"></span>
+      <span class="a bug" style="right:0;top:0;width:16px;height:16px;background:var(--coral);border-radius:50%"></span>
     </>
   )}
   {name === 'water' && (
-    <span style="width:30px;height:30px;background:var(--sky);border-radius:0 50% 50% 50%;transform:rotate(45deg)"></span>
+    <span class="drop" style="width:30px;height:30px;background:var(--sky);border-radius:0 50% 50% 50%"></span>
   )}
   {name === 'fertilizer' && (
     <>
-      <span class="a" style="left:0;bottom:0;width:44px;height:22px;background:var(--sand);border-radius:22px 22px 0 0"></span>
-      <span class="a" style="left:11px;top:0;width:22px;height:22px;background:var(--leaf);border-radius:100% 0 100% 0"></span>
+      <span class="a mound" style="left:0;bottom:0;width:44px;height:22px;background:var(--sand);border-radius:22px 22px 0 0"></span>
+      <span class="a sprout" style="left:11px;top:0;width:22px;height:22px;background:var(--leaf);border-radius:100% 0 100% 0"></span>
     </>
   )}
   {name === 'chat' && (
     <>
-      <span style="width:24px;height:24px;background:var(--deep);border-radius:100% 100% 100% 0"></span>
-      <span style="width:17px;height:17px;background:var(--coral);border-radius:100% 100% 0 100%;margin-bottom:20px"></span>
+      <span class="b1" style="width:24px;height:24px;background:var(--deep);border-radius:100% 100% 100% 0"></span>
+      <span class="b2" style="width:17px;height:17px;background:var(--coral);border-radius:100% 100% 0 100%;margin-bottom:20px"></span>
     </>
   )}
 </span>
 
 <style>
   .ti { width: 44px; height: 44px; position: relative; display: flex; flex: none; }
-  .ti span { display: block; }
+  .ti span {
+    display: block;
+    transition: transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
   .ti .a { position: absolute; }
   .flood { flex-direction: column; justify-content: flex-end; gap: 3px; }
   .water { align-items: center; justify-content: center; }
   .chat { gap: 3px; align-items: flex-end; }
+
+  .drop { transform: rotate(45deg); }
+  .sun, .sprout { transform-origin: 50% 100%; }
+  .leaf { transform-origin: 0 100%; }
+
+  /* Gerak saat kartu ber-link di-hover atau difokus keyboard */
+  :global(a:hover, a:focus-visible) .sun { transform: translateY(-5px) scale(1.08); }
+  :global(a:hover, a:focus-visible) .wave1 { transform: translate(-4px, -3px); }
+  :global(a:hover, a:focus-visible) .wave2 { transform: translateX(4px); }
+  :global(a:hover, a:focus-visible) .leaf { transform: rotate(-8deg); }
+  :global(a:hover, a:focus-visible) .bug { transform: translate(3px, -3px); }
+  :global(a:hover, a:focus-visible) .drop { transform: translateY(4px) rotate(45deg) scale(1.1); }
+  :global(a:hover, a:focus-visible) .sprout { transform: translateY(-4px) rotate(12deg) scale(1.12); }
+  :global(a:hover, a:focus-visible) .b1 { transform: translateY(-3px); }
+  :global(a:hover, a:focus-visible) .b2 { transform: translate(2px, -5px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ti span { transition: none; }
+  }
 </style>

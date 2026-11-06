@@ -18,7 +18,7 @@ export const tools: Tool[] = [
     title: 'Prediksi Kekeringan',
     description: 'Perkirakan tingkat risiko kekeringan dari curah hujan dan hari tanpa hujan.',
     icon: 'drought',
-    href: null,
+    href: 'https://kekeringan.agroklimat.id',
   },
   {
     id: 'prediksi-banjir',
@@ -39,14 +39,14 @@ export const tools: Tool[] = [
     title: 'Kalkulator Kebutuhan Air',
     description: 'Hitung kebutuhan air tanaman per fase tumbuh untuk menjadwalkan pengairan.',
     icon: 'water',
-    href: null,
+    href: 'https://air.agroklimat.id',
   },
   {
     id: 'kalkulator-pupuk',
     title: 'Kalkulator Pupuk',
     description: 'Hitung kebutuhan Urea, SP-36, dan KCl berdasarkan komoditas, luas lahan, dan target hasil.',
     icon: 'fertilizer',
-    href: null,
+    href: 'https://pemupukan.agroklimat.id',
   },
   {
     id: 'tanya-kalcer',
