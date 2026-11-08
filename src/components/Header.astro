@@ -1,9 +1,8 @@
 ---
-import Logo from './Logo.astro';
 ---
 <header class="wrap">
   <a class="brand" href="/">
-    <Logo />
+    <img src="/logo.png" alt="" width="38" height="44" />
     <span>KALCER</span>
   </a>
   <nav aria-label="Navigasi utama">
@@ -33,6 +32,9 @@ import Logo from './Logo.astro';
     letter-spacing: 0.12em;
     color: var(--ink);
   }
+  /* logo tanpa efek hover */
+  .brand:hover { color: var(--ink); }
+  .brand img { display: block; width: 38px; height: 44px; }
   nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 32px; }
   nav a {
     font-size: 12px;

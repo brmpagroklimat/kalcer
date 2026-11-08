@@ -57,15 +57,15 @@ const { name } = Astro.props;
   .leaf { transform-origin: 0 100%; }
 
   /* Gerak saat kartu ber-link di-hover atau difokus keyboard */
-  :global(a:hover, a:focus-visible) .sun { transform: translateY(-5px) scale(1.08); }
-  :global(a:hover, a:focus-visible) .wave1 { transform: translate(-4px, -3px); }
-  :global(a:hover, a:focus-visible) .wave2 { transform: translateX(4px); }
-  :global(a:hover, a:focus-visible) .leaf { transform: rotate(-8deg); }
-  :global(a:hover, a:focus-visible) .bug { transform: translate(3px, -3px); }
-  :global(a:hover, a:focus-visible) .drop { transform: translateY(4px) rotate(45deg) scale(1.1); }
-  :global(a:hover, a:focus-visible) .sprout { transform: translateY(-4px) rotate(12deg) scale(1.12); }
-  :global(a:hover, a:focus-visible) .b1 { transform: translateY(-3px); }
-  :global(a:hover, a:focus-visible) .b2 { transform: translate(2px, -5px); }
+  :global(a:hover) .sun, :global(a:focus-visible) .sun { transform: translateY(-5px) scale(1.08); }
+  :global(a:hover) .wave1, :global(a:focus-visible) .wave1 { transform: translate(-4px, -3px); }
+  :global(a:hover) .wave2, :global(a:focus-visible) .wave2 { transform: translateX(4px); }
+  :global(a:hover) .leaf, :global(a:focus-visible) .leaf { transform: rotate(-8deg); }
+  :global(a:hover) .bug, :global(a:focus-visible) .bug { transform: translate(3px, -3px); }
+  :global(a:hover) .drop, :global(a:focus-visible) .drop { transform: translateY(4px) rotate(45deg) scale(1.1); }
+  :global(a:hover) .sprout, :global(a:focus-visible) .sprout { transform: translateY(-4px) rotate(12deg) scale(1.12); }
+  :global(a:hover) .b1, :global(a:focus-visible) .b1 { transform: translateY(-3px); }
+  :global(a:hover) .b2, :global(a:focus-visible) .b2 { transform: translate(2px, -5px); }
 
   @media (prefers-reduced-motion: reduce) {
     .ti span { transition: none; }
