@@ -1,0 +1,189 @@
+-- Skema KALCER Event (MySQL / MariaDB). Idempoten: aman dijalankan ulang.
+CREATE TABLE IF NOT EXISTS pengaturan (
+  k VARCHAR(60) NOT NULL PRIMARY KEY,
+  v TEXT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS admin (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nama VARCHAR(150) NOT NULL,
+  username VARCHAR(60) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_gagal (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ip VARCHAR(45) NOT NULL,
+  at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY ip_at (ip, at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS instansi (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nama VARCHAR(200) NOT NULL,
+  kabkota VARCHAR(120) NOT NULL,
+  koordinator VARCHAR(150) NOT NULL,
+  hp VARCHAR(30) NOT NULL,
+  email VARCHAR(190) NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  bank VARCHAR(80) NULL,
+  no_rek VARCHAR(40) NULL,
+  atas_nama VARCHAR(150) NULL,
+  reimburse_status ENUM('draft','diajukan','diverifikasi','dibayar') NOT NULL DEFAULT 'draft',
+  diajukan_at DATETIME NULL,
+  dibayar_at DATETIME NULL,
+  catatan_panitia TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY nama (nama)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS peserta (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  instansi_id INT UNSIGNED NOT NULL,
+  tanggal DATE NOT NULL,
+  nama VARCHAR(150) NOT NULL,
+  nip VARCHAR(30) NULL,
+  jabatan VARCHAR(150) NULL,
+  hp VARCHAR(30) NULL,
+  jk ENUM('L','P') NOT NULL,
+  menginap TINYINT(1) NOT NULL DEFAULT 0,
+  aktif TINYINT(1) NOT NULL DEFAULT 1,
+  diganti_oleh INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY inst_tgl (instansi_id, tanggal, aktif),
+  CONSTRAINT fk_peserta_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS riwayat (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  instansi_id INT UNSIGNED NOT NULL,
+  aksi VARCHAR(30) NOT NULL,
+  keterangan TEXT NOT NULL,
+  oleh VARCHAR(160) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY inst (instansi_id),
+  CONSTRAINT fk_riwayat_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS evidence (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  instansi_id INT UNSIGNED NOT NULL,
+  tanggal DATE NOT NULL,
+  tahap VARCHAR(20) NOT NULL,
+  file VARCHAR(255) NOT NULL,
+  mime VARCHAR(60) NOT NULL,
+  size INT UNSIGNED NOT NULL,
+  taken_at DATETIME NULL,
+  lat DECIMAL(9,6) NULL,
+  lon DECIMAL(9,6) NULL,
+  exif_ok TINYINT(1) NOT NULL DEFAULT 0,
+  uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY inst_tgl (instansi_id, tanggal),
+  CONSTRAINT fk_evidence_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS biaya (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  instansi_id INT UNSIGNED NOT NULL,
+  tanggal DATE NOT NULL,
+  jenis VARCHAR(20) NOT NULL,
+  keterangan VARCHAR(255) NULL,
+  nominal BIGINT UNSIGNED NOT NULL,
+  file VARCHAR(255) NOT NULL,
+  mime VARCHAR(60) NOT NULL,
+  size INT UNSIGNED NOT NULL,
+  status ENUM('menunggu','disetujui','ditolak') NOT NULL DEFAULT 'menunggu',
+  nominal_disetujui BIGINT UNSIGNED NULL,
+  catatan VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY inst (instansi_id),
+  CONSTRAINT fk_biaya_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v2: microsite (materi unduhan + galeri foto kegiatan), dikelola panitia, publik.
+CREATE TABLE IF NOT EXISTS materi (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  judul VARCHAR(200) NOT NULL,
+  deskripsi TEXT NULL,
+  file VARCHAR(255) NOT NULL,
+  nama_file VARCHAR(200) NOT NULL,
+  ext VARCHAR(10) NOT NULL,
+  size BIGINT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS galeri (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  album VARCHAR(120) NOT NULL,
+  file VARCHAR(255) NOT NULL,
+  thumb VARCHAR(255) NOT NULL,
+  caption VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY album (album)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v3: jadwal acara, pembagian kamar, tamu menginap (panitia/pejabat yang tidak registrasi).
+CREATE TABLE IF NOT EXISTS jadwal (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  jam_mulai TIME NOT NULL,
+  jam_selesai TIME NULL,
+  acara VARCHAR(200) NOT NULL,
+  keterangan VARCHAR(255) NULL,
+  KEY tgl (tanggal, jam_mulai)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS kamar (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  nomor VARCHAR(30) NULL,
+  kapasitas TINYINT UNSIGNED NOT NULL DEFAULT 2,
+  catatan VARCHAR(120) NULL,
+  KEY tgl (tanggal)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS tamu (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  nama VARCHAR(150) NOT NULL,
+  jk ENUM('L','P') NOT NULL,
+  keterangan VARCHAR(150) NULL,
+  hp VARCHAR(30) NULL,
+  kamar_id INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY tgl (tanggal)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v6: pembayaran reimburse (bisa dicicil), dengan bukti transfer dari panitia.
+CREATE TABLE IF NOT EXISTS pembayaran (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  instansi_id INT UNSIGNED NOT NULL,
+  tanggal DATE NOT NULL,
+  nominal BIGINT UNSIGNED NOT NULL,
+  file VARCHAR(255) NOT NULL,
+  mime VARCHAR(60) NOT NULL,
+  catatan VARCHAR(255) NULL,
+  oleh VARCHAR(160) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY inst (instansi_id),
+  CONSTRAINT fk_pembayaran_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v7: shuttle hotel -> lokasi acara (kendaraan per hari; penumpang = yang menginap).
+CREATE TABLE IF NOT EXISTS kendaraan (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  nama VARCHAR(80) NOT NULL,
+  plat VARCHAR(20) NULL,
+  kapasitas TINYINT UNSIGNED NOT NULL DEFAULT 10,
+  jam TIME NULL,
+  titik_jemput VARCHAR(150) NULL,
+  supir_nama VARCHAR(100) NULL,
+  supir_hp VARCHAR(20) NULL,
+  pic_nama VARCHAR(100) NULL,
+  pic_hp VARCHAR(20) NULL,
+  publik TINYINT(1) NOT NULL DEFAULT 0,
+  KEY tgl (tanggal)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
