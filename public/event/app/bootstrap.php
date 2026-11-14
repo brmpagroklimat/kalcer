@@ -146,6 +146,11 @@ const SETTING_DEFAULTS = [
     'wa_panitia' => '',
     'kapasitas_kamar' => '2',
     'kamar_dipublikasikan' => '0',
+    'jadwal_link' => '',
+    'jadwal_file' => '',
+    'jadwal_ext' => '',
+    'jadwal_nama' => '',
+    'jadwal_diubah' => '',
 ];
 
 function setting(string $k): string

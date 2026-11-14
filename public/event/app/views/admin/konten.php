@@ -1,32 +1,18 @@
-<?php /** @var array $materi @var array $albums @var array $jadwal */ ?>
+<?php /** @var array $materi @var array $albums @var array $jadwal (link/file) */ ?>
 <h1>Jadwal, materi & galeri</h1>
 <p class="lead">Konten ini tampil publik di menu <a href="<?= h(url('/materi')) ?>">Materi</a> dan <a href="<?= h(url('/galeri')) ?>">Galeri</a>.</p>
 
 <section class="panel" id="jadwal">
   <h2>Jadwal acara</h2>
-  <?php foreach ($jadwal as $d => $list): ?>
-    <h3 style="margin-top:14px"><?= h(tgl($d, true)) ?></h3>
-    <ol class="agenda">
-      <?php foreach ($list as $j): ?>
-        <li><span class="agenda-time"><?= h(jam($j['jam_mulai'])) ?><?= $j['jam_selesai'] ? '–' . h(jam($j['jam_selesai'])) : '' ?></span>
-          <span><b><?= h($j['acara']) ?></b><?= $j['keterangan'] ? ' <span class="small muted">' . h($j['keterangan']) . '</span>' : '' ?>
-            <form method="post" action="<?= h(url('/admin/jadwal/' . $j['id'] . '/hapus')) ?>" data-confirm="Hapus acara ini dari jadwal?" style="display:inline"><?= csrf_field() ?> <button class="linkbtn danger-link small">Hapus</button></form></span></li>
-      <?php endforeach; ?>
-    </ol>
-  <?php endforeach; ?>
-  <?php if (!$jadwal): ?><p class="muted">Belum ada jadwal.</p><?php endif; ?>
-  <h3 style="margin-top:20px">Tambah acara</h3>
-  <form method="post" action="<?= h(url('/admin/jadwal')) ?>"><?= csrf_field() ?>
-    <div class="fields three">
-      <label class="field"><span>Tanggal</span><select name="tanggal" required><?php foreach (event_dates() as $d): ?><option value="<?= h($d) ?>"><?= h(tgl($d, true)) ?></option><?php endforeach; ?></select></label>
-      <label class="field"><span>Jam mulai</span><input type="time" name="jam_mulai" required></label>
-      <label class="field"><span>Jam selesai <small>(opsional)</small></span><input type="time" name="jam_selesai"></label>
+  <p class="small muted">Isi link (mis. Google Docs yang sudah dibagikan "Siapa saja yang memiliki link"), unggah file PDF/gambar jadwal, atau keduanya. Tampil di menu <a href="<?= h(url('/jadwal')) ?>">Jadwal</a>.</p>
+  <form method="post" enctype="multipart/form-data" action="<?= h(url('/admin/jadwal')) ?>"><?= csrf_field() ?>
+    <div class="fields two">
+      <label class="field"><span>Link jadwal <small>(opsional)</small></span><input type="url" name="jadwal_link" value="<?= h($jadwal['link']) ?>" placeholder="https://docs.google.com/document/d/…"></label>
+      <label class="field"><span>File jadwal <small>(PDF/JPG/PNG, maks. 2 MB)</small></span><input type="file" name="jadwal_file" accept=".pdf,.jpg,.jpeg,.png" data-max="<?= MAX_KONTEN ?>">
+        <?php if ($jadwal['file']): ?><small>Sekarang: <a href="<?= h(url('/media/jadwal')) ?>" target="_blank" rel="noopener"><?= h($jadwal['nama']) ?></a>. Pilih file baru untuk mengganti.</small><?php endif; ?></label>
     </div>
-    <div class="fields two" style="margin-top:14px">
-      <label class="field"><span>Acara</span><input type="text" name="acara" maxlength="200" required placeholder="Registrasi ulang peserta"></label>
-      <label class="field"><span>Keterangan <small>(opsional)</small></span><input type="text" name="keterangan" maxlength="255" placeholder="Lobi utama"></label>
-    </div>
-    <div class="actions"><button class="btn small deep">Tambah ke jadwal</button></div>
+    <?php if ($jadwal['file']): ?><label class="check small" style="margin-top:10px"><input type="checkbox" name="hapus_file" value="1"> Hapus file jadwal</label><?php endif; ?>
+    <div class="actions"><button class="btn small deep">Simpan jadwal</button></div>
   </form>
 </section>
 

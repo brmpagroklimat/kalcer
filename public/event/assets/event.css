@@ -258,21 +258,16 @@ details.panel[open] > summary { margin-bottom: 14px; }
 .field > span small, .field-label small, legend small { font-weight: 400; }
 /* pembagian kamar */
 .inline-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.inline-form select, .inline-form input { min-height: 36px; padding: 6px 10px; width: auto; }
-.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-.room { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--paper); }
-.room.warn { border-color: #e3b3a7; background: var(--err-bg); }
-.room-head { display: grid; grid-template-columns: 1fr 64px; gap: 6px; }
-.room-head input { min-height: 36px; padding: 6px 10px; }
-.room-head input[name=nomor] { font-weight: 700; }
-.room-head input[name=catatan] { grid-column: 1 / -1; }
-.room-head .btn { grid-column: 1 / -1; justify-self: start; }
-.room-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 10px 0 4px; }
-.room .people > li { padding: 8px 0; }
-.room .inline-form { margin-top: 6px; flex-wrap: nowrap; }
-.room .inline-form select { flex: 1 1 auto; min-width: 0; font-size: 14px; }
-.room .inline-form .btn { flex: none; }
-.room-head .btn { min-height: 32px; }
+.kamar-table input { min-height: 36px; padding: 6px 10px; }
+.kamar-table .kamar-input { width: 9rem; font-weight: 700; }
+.kamar-table .num-input { width: 5rem; }
+.kamar-table td { vertical-align: middle; }
+tr.row-warn td { background: var(--warn-bg); }
+tr.row-err td { background: var(--err-bg); }
+tr.row-new td { background: #faf8f4; }
+.tamu-form { display: grid; gap: 8px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .tamu-form { grid-template-columns: 2fr 1fr 2fr 1.4fr auto; align-items: center; } }
+.tamu-form input, .tamu-form select { min-height: 40px; padding: 8px 10px; }
 .kamar-info { margin-top: 6px; font-size: 14px; background: #e2f2f5; color: var(--deep); border-radius: 8px; padding: 6px 10px; display: inline-block; }
 /* jadwal */
 .agenda { list-style: none; margin: 0; padding: 0; }
@@ -280,3 +275,11 @@ details.panel[open] > summary { margin-bottom: 14px; }
 .agenda li:first-child { border-top: 0; }
 .agenda-time { font-weight: 700; color: var(--deep); font-variant-numeric: tabular-nums; }
 @media (max-width: 480px) { .agenda li { grid-template-columns: 1fr; } }
+/* judul beranda: kata pertama miring + tunas */
+.hero .title em { font-style: italic; font-weight: 400; color: var(--leaf); }
+.tunas { width: .78em; height: .78em; margin-left: .18em; vertical-align: -.02em; overflow: visible; }
+.tunas-sway { transform-origin: 24px 44px; animation: sway 4s ease-in-out infinite; }
+@keyframes sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@media (prefers-reduced-motion: reduce) { .tunas-sway { animation: none; } }
+.jadwal-view { display: block; width: 100%; margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; }
+.jadwal-view.pdf { height: min(80vh, 900px); }

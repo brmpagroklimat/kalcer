@@ -146,7 +146,10 @@ function send_file(string $rel, string $mime, string $downloadName, bool $inline
     header('Content-Length: ' . filesize($p));
     header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . preg_replace('/[^A-Za-z0-9._-]/', '_', $downloadName) . '"');
     header('Cache-Control: private, max-age=86400');
-    header("Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; object-src 'self'");
+    // CSP ketat untuk semua file kecuali PDF (penampil PDF bawaan browser bisa kosong bila diberi CSP).
+    if ($mime !== 'application/pdf') {
+        header("Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'unsafe-inline'");
+    }
     readfile($p);
     exit;
 }

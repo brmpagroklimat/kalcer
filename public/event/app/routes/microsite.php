@@ -13,28 +13,41 @@ function publik_beranda(): void
         'dates' => event_dates(),
         'open' => daftar_open(),
         'nMateri' => (int) row('SELECT COUNT(*) n FROM materi')['n'],
-        'jadwal' => jadwal_by_date(),
+        'jadwal' => jadwal_ada(),
         'nFoto' => (int) row('SELECT COUNT(*) n FROM galeri')['n'],
     ], ['nav' => 'beranda']);
 }
 
-function jadwal_by_date(): array
+/** Jadwal acara = link (mis. Google Docs) dan/atau satu file (PDF/gambar) dari panitia. */
+function jadwal_info(): array
 {
-    $out = [];
-    foreach (rows('SELECT * FROM jadwal ORDER BY tanggal, jam_mulai, id') as $j) {
-        $out[$j['tanggal']][] = $j;
-    }
-    return $out;
+    return [
+        'link' => setting('jadwal_link'),
+        'file' => setting('jadwal_file'),
+        'ext' => setting('jadwal_ext'),
+        'nama' => setting('jadwal_nama'),
+        'diubah' => setting('jadwal_diubah'),
+    ];
 }
 
-function jam(?string $t): string
+function jadwal_ada(): bool
 {
-    return $t ? str_replace(':', '.', substr($t, 0, 5)) : '';
+    $j = jadwal_info();
+    return $j['link'] !== '' || $j['file'] !== '';
 }
 
 function publik_jadwal(): void
 {
-    render('publik/jadwal', 'Jadwal acara', ['jadwal' => jadwal_by_date()], ['nav' => 'jadwal']);
+    render('publik/jadwal', 'Jadwal acara', ['j' => jadwal_info()], ['nav' => 'jadwal']);
+}
+
+function media_jadwal(): void
+{
+    $j = jadwal_info();
+    if ($j['file'] === '') {
+        not_found();
+    }
+    send_file($j['file'], MATERI_EXT[$j['ext']], $j['nama'], true);
 }
 
 function publik_materi(): void
@@ -109,30 +122,40 @@ function admin_konten(): void
     require_admin();
     render('admin/konten', 'Jadwal, materi & galeri', [
         'materi' => rows('SELECT * FROM materi ORDER BY id DESC'),
-        'jadwal' => jadwal_by_date(),
+        'jadwal' => jadwal_info(),
         'albums' => galeri_albums(),
     ], ['admin' => true, 'scripts' => ['upload.js']]);
 }
 
-function admin_jadwal_tambah(): void
+function admin_jadwal_simpan(): void
 {
     require_admin();
-    $tanggal = post('tanggal');
-    $mulai = post('jam_mulai');
-    if (!in_array($tanggal, event_dates(), true) || !preg_match('/^\d{2}:\d{2}$/', $mulai) || post('acara') === '') {
-        throw new UserError('Isi tanggal, jam mulai, dan nama acara.');
+    $link = post('jadwal_link');
+    if ($link !== '' && !preg_match('#^https://#i', $link)) {
+        throw new UserError('Link jadwal harus diawali https:// (mis. link Google Docs yang sudah dibagikan).');
     }
-    $selesai = preg_match('/^\d{2}:\d{2}$/', post('jam_selesai')) ? post('jam_selesai') : null;
-    q('INSERT INTO jadwal (tanggal, jam_mulai, jam_selesai, acara, keterangan) VALUES (?, ?, ?, ?, ?)', [$tanggal, $mulai, $selesai, post('acara'), post('keterangan') ?: null]);
-    flash('ok', 'Acara "' . post('acara') . '" ditambahkan ke jadwal.');
-    redirect('/admin/konten#jadwal');
-}
-
-function admin_jadwal_hapus(string $id): void
-{
-    require_admin();
-    q('DELETE FROM jadwal WHERE id = ?', [(int) $id]);
-    flash('ok', 'Acara dihapus dari jadwal.');
+    set_setting('jadwal_link', $link);
+    if (!empty($_FILES['jadwal_file']['name'])) {
+        $saved = store_materi($_FILES['jadwal_file']);
+        if (!in_array($saved['ext'], ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+            delete_upload($saved['file']);
+            throw new UserError('File jadwal harus PDF, JPG, atau PNG.');
+        }
+        if (setting('jadwal_file') !== '') {
+            delete_upload(setting('jadwal_file'));
+        }
+        set_setting('jadwal_file', $saved['file']);
+        set_setting('jadwal_ext', $saved['ext']);
+        set_setting('jadwal_nama', $saved['nama_file']);
+    }
+    if (post('hapus_file') === '1' && setting('jadwal_file') !== '') {
+        delete_upload(setting('jadwal_file'));
+        foreach (['jadwal_file', 'jadwal_ext', 'jadwal_nama'] as $k) {
+            set_setting($k, '');
+        }
+    }
+    set_setting('jadwal_diubah', date('Y-m-d H:i:s'));
+    flash('ok', 'Jadwal acara disimpan.');
     redirect('/admin/konten#jadwal');
 }
 
