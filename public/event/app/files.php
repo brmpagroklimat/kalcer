@@ -152,3 +152,91 @@ function slug(string $s): string
     $s = strtolower(trim(preg_replace('/[^A-Za-z0-9]+/', '-', $s), '-'));
     return $s === '' ? 'file' : substr($s, 0, 50);
 }
+
+// ---------- microsite: materi & galeri (publik) ----------
+
+/** Ekstensi materi yang diterima => MIME yang dikirim saat diunduh. */
+const MATERI_EXT = [
+    'pdf' => 'application/pdf',
+    'ppt' => 'application/vnd.ms-powerpoint',
+    'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'doc' => 'application/msword',
+    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xls' => 'application/vnd.ms-excel',
+    'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'zip' => 'application/zip',
+    'jpg' => 'image/jpeg',
+    'jpeg' => 'image/jpeg',
+    'png' => 'image/png',
+    'mp4' => 'video/mp4',
+];
+
+/** MIME hasil deteksi isi file yang dianggap cocok untuk tiap jenis ekstensi. */
+function materi_mime_ok(string $ext, string $detected): bool
+{
+    $office = ['application/zip', 'application/octet-stream', 'application/x-zip-compressed'];
+    $ole = ['application/x-ole-storage', 'application/CDFV2', 'application/vnd.ms-office', 'application/octet-stream'];
+    switch ($ext) {
+        case 'pdf': return $detected === 'application/pdf';
+        case 'pptx': case 'docx': case 'xlsx':
+            return $detected === MATERI_EXT[$ext] || in_array($detected, $office, true);
+        case 'ppt': case 'doc': case 'xls':
+            return $detected === MATERI_EXT[$ext] || in_array($detected, $ole, true);
+        case 'zip': return in_array($detected, ['application/zip', 'application/x-zip-compressed'], true);
+        case 'jpg': case 'jpeg': return $detected === 'image/jpeg';
+        case 'png': return $detected === 'image/png';
+        case 'mp4': return in_array($detected, ['video/mp4', 'application/mp4'], true);
+    }
+    return false;
+}
+
+/** @return array{file:string,nama_file:string,ext:string,size:int} */
+function store_materi(array $f): array
+{
+    if (($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        throw new UserError('Pilih file materi.');
+    }
+    if (in_array($f['error'], [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+        throw new UserError('File melebihi batas upload server (' . ukuran(server_upload_limit()) . ').');
+    }
+    if ($f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) {
+        throw new UserError('Upload gagal. Coba lagi.');
+    }
+    $nama = basename((string) $f['name']);
+    $ext = strtolower(pathinfo($nama, PATHINFO_EXTENSION));
+    if (!isset(MATERI_EXT[$ext])) {
+        throw new UserError('Jenis file tidak didukung. Gunakan PDF, PowerPoint, Word, Excel, ZIP, JPG/PNG, atau MP4.');
+    }
+    $detected = (new finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']) ?: '';
+    if (!materi_mime_ok($ext, $detected)) {
+        throw new UserError("Isi file tidak sesuai dengan ekstensi .$ext.");
+    }
+    $rel = 'materi/' . date('Ymd-His') . '-' . bin2hex(random_bytes(6)) . '.' . $ext;
+    $dir = upload_root() . '/materi';
+    if (!is_dir($dir) && !mkdir($dir, 0750, true)) {
+        throw new RuntimeException('Folder upload tidak bisa dibuat.');
+    }
+    if (!move_uploaded_file($f['tmp_name'], upload_root() . '/' . $rel)) {
+        throw new RuntimeException('Gagal menyimpan file.');
+    }
+    $nama = preg_replace('/[^\pL\pN ._()-]+/u', '_', $nama);
+    return ['file' => $rel, 'nama_file' => mb_substr($nama, 0, 200), 'ext' => $ext, 'size' => (int) $f['size']];
+}
+
+/** Buat thumbnail JPEG (sisi terpanjang $max px) dari file gambar yang sudah disimpan. */
+function make_thumb(string $rel, int $max = 640): string
+{
+    $src = @imagecreatefromjpeg(file_path($rel));
+    if (!$src) {
+        throw new RuntimeException('Thumbnail gagal dibuat.');
+    }
+    $w = imagesx($src);
+    $h = imagesy($src);
+    $s = min(1, $max / max($w, $h));
+    $t = imagescale($src, (int) round($w * $s), (int) round($h * $s), IMG_BICUBIC);
+    $thumbRel = preg_replace('/\.jpg$/', '-thumb.jpg', $rel);
+    imagejpeg($t, file_path($thumbRel), 78);
+    imagedestroy($src);
+    imagedestroy($t);
+    return $thumbRel;
+}

@@ -170,6 +170,36 @@
     });
   });
 
+  // ---- galeri panitia: banyak foto, dikompres, dikirim satu per satu ----
+  document.querySelectorAll('form.js-gallery').forEach(function (form) {
+    form.dataset.fileField = 'foto';
+    form.addEventListener('submit', function (e) {
+      var input = form.querySelector('input[type=file]');
+      var files = input ? Array.prototype.slice.call(input.files) : [];
+      if (!files.length || !form.checkValidity()) return;
+      e.preventDefault();
+      var st = statusUi(form);
+      st.lock(true);
+      var done = 0;
+      files.reduce(function (p, file, i) {
+        return p.then(function () {
+          st.set('Mengunggah foto ' + (i + 1) + ' dari ' + files.length + '…');
+          st.bar.style.width = '0';
+          return render(file, null)
+            .then(function (b) { return [b, 'foto.jpg']; }, function () { return [file, file.name]; })
+            .then(function (b) { return send(form, baseFields(form), b[0], b[1], st); })
+            .then(function () { done++; });
+        });
+      }, Promise.resolve())
+        .then(function () { st.set(done + ' foto terunggah. Memuat ulang…'); location.reload(); })
+        .catch(function (err) {
+          st.set(err.message + (done ? ' (' + done + ' foto sudah terunggah)' : ''), true);
+          st.lock(false);
+          if (done) setTimeout(function () { location.reload(); }, 2500);
+        });
+    });
+  });
+
   // ---- struk biaya ----
   document.querySelectorAll('form.js-receipt').forEach(function (form) {
     form.dataset.fileField = 'struk';

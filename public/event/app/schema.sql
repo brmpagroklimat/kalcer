@@ -101,3 +101,25 @@ CREATE TABLE IF NOT EXISTS biaya (
   KEY inst (instansi_id),
   CONSTRAINT fk_biaya_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v2: microsite (materi unduhan + galeri foto kegiatan), dikelola panitia, publik.
+CREATE TABLE IF NOT EXISTS materi (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  judul VARCHAR(200) NOT NULL,
+  deskripsi TEXT NULL,
+  file VARCHAR(255) NOT NULL,
+  nama_file VARCHAR(200) NOT NULL,
+  ext VARCHAR(10) NOT NULL,
+  size BIGINT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS galeri (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  album VARCHAR(120) NOT NULL,
+  file VARCHAR(255) NOT NULL,
+  thumb VARCHAR(255) NOT NULL,
+  caption VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY album (album)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

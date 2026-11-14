@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '1';
+const SCHEMA_VERSION = '2';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -118,6 +118,7 @@ function migrate(): void
 
 const SETTING_DEFAULTS = [
     'nama_kegiatan' => 'Kegiatan KALCER',
+    'deskripsi' => '',
     'lokasi' => '',
     'tanggal_acara' => '2026-12-02,2026-12-03',
     'daftar_dibuka' => '1',
@@ -248,6 +249,37 @@ function post(string $k, string $default = ''): string
 {
     $v = $_POST[$k] ?? $default;
     return is_string($v) ? trim($v) : $default;
+}
+
+/** Ukuran file yang mudah dibaca, mis. "2,4 MB". */
+function ukuran($bytes): string
+{
+    $b = (float) $bytes;
+    foreach (['B', 'KB', 'MB', 'GB'] as $i => $u) {
+        if ($b < 1024 || $u === 'GB') {
+            return ($i === 0 ? (string) (int) $b : number_format($b, 1, ',', '.')) . ' ' . $u;
+        }
+        $b /= 1024;
+    }
+    return '';
+}
+
+/** Batas upload efektif server (upload_max_filesize vs post_max_size), dalam byte. */
+function server_upload_limit(): int
+{
+    $toBytes = static function (string $v): int {
+        $v = trim($v);
+        $n = (int) $v;
+        switch (strtolower(substr($v, -1))) {
+            case 'g': return $n * 1024 ** 3;
+            case 'm': return $n * 1024 ** 2;
+            case 'k': return $n * 1024;
+        }
+        return $n;
+    };
+    $a = $toBytes((string) ini_get('upload_max_filesize'));
+    $b = $toBytes((string) ini_get('post_max_size'));
+    return min($a ?: PHP_INT_MAX, $b ?: PHP_INT_MAX);
 }
 
 function rupiah($n): string

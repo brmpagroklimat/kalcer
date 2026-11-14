@@ -2,8 +2,9 @@
 /** @var string $title @var string $body */
 $inst = $inst ?? null;
 $isAdmin = current_admin() !== null;
+$admin = !empty($admin);
 $flashes = take_flash();
-$v = '2';
+$v = '3';
 ?>
 <!doctype html>
 <html lang="id">
@@ -19,19 +20,32 @@ $v = '2';
 <body>
 <header class="top">
   <div class="wrap top-inner">
-    <a class="brand" href="<?= h(url($isAdmin && empty($inst) ? '/admin' : '/')) ?>">
-      <img src="/logo.png" alt="" width="31" height="36">
-      <span>KALCER <small>Event</small></span>
+    <a class="brand" href="<?= h(url(!empty($admin) ? '/admin' : '/')) ?>">
+      <img src="/logo-kalcer.png" alt="KALCER" width="170" height="32">
+      <span class="brand-sub">Event</span>
     </a>
-    <?php if (!empty($admin) || ($isAdmin && empty($inst))): ?>
+    <?php if (!empty($admin)): ?>
       <nav class="topnav" aria-label="Menu panitia">
         <a href="<?= h(url('/admin')) ?>">Dashboard</a>
         <a href="<?= h(url('/admin/instansi')) ?>">Instansi</a>
+        <a href="<?= h(url('/admin/konten')) ?>">Materi & galeri</a>
         <a href="<?= h(url('/admin/pengaturan')) ?>">Pengaturan</a>
+        <a href="<?= h(url('/')) ?>">Lihat situs</a>
         <form method="post" action="<?= h(url('/admin/keluar')) ?>"><?= csrf_field() ?><button class="linkbtn">Keluar</button></form>
       </nav>
-    <?php elseif ($inst): ?>
-      <form method="post" action="<?= h(url('/keluar')) ?>" class="topnav"><?= csrf_field() ?><button class="linkbtn"><?= $isAdmin ? 'Kembali ke panitia' : 'Keluar' ?></button></form>
+    <?php else: $navItems = ['beranda' => ['/', 'Beranda'], 'daftar' => ['/daftar', 'Pendaftaran'], 'materi' => ['/materi', 'Materi'], 'galeri' => ['/galeri', 'Galeri']]; ?>
+      <nav class="topnav" aria-label="Menu utama">
+        <?php foreach ($navItems as $key => [$href, $label]): ?>
+          <a href="<?= h(url($href)) ?>" <?= ($nav ?? '') === $key ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>
+        <?php endforeach; ?>
+        <?php if ($inst): ?>
+          <form method="post" action="<?= h(url('/keluar')) ?>"><?= csrf_field() ?><button class="linkbtn"><?= $isAdmin ? 'Kembali ke panitia' : 'Keluar' ?></button></form>
+        <?php elseif (current_instansi()): ?>
+          <a class="pill" href="<?= h(url('/saya')) ?>">Halaman instansi</a>
+        <?php elseif ($isAdmin): ?>
+          <a class="pill" href="<?= h(url('/admin')) ?>">Panel panitia</a>
+        <?php endif; ?>
+      </nav>
     <?php endif; ?>
   </div>
 </header>
@@ -58,6 +72,7 @@ $v = '2';
 </main>
 
 <footer class="foot">
+  <div class="palette" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="wrap">KALCER, Klinik Agroklimat Cerdas. Dikembangkan oleh BRMP Agroklimat.</div>
 </footer>
 <?php foreach ($scripts ?? [] as $s): ?>

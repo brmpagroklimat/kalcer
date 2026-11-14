@@ -26,7 +26,7 @@ function publik_home(array $old = [], array $errors = []): void
         'open' => setting('daftar_dibuka') === '1' && before('batas_daftar'),
         'kuota' => (int) setting('kuota_per_instansi'),
         'stamp' => form_stamp(),
-    ]);
+    ], ['nav' => 'daftar']);
 }
 
 /** Validasi satu baris peserta. Mengembalikan data bersih atau melempar UserError. */

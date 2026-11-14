@@ -18,6 +18,7 @@ docker run -d --name kalcer-event-web --network kalcer-event -p 127.0.0.1:8090:8
   -v "$PWD/event-config.php:/var/www/site/event-config.php:ro" \
   -v kalcer-event-uploads:/var/www/site/event-uploads \
   -v "$REPO/public/logo.png:/var/www/site/public_html/logo.png:ro" \
+  -v "$REPO/public/logo-kalcer.png:/var/www/site/public_html/logo-kalcer.png:ro" \
   -v "$REPO/public/favicon.ico:/var/www/site/public_html/favicon.ico:ro" \
   -v "$REPO/public/favicon-64.png:/var/www/site/public_html/favicon-64.png:ro" \
   kalcer-event-web >/dev/null

@@ -8,6 +8,7 @@ $dt = static fn (string $k) => setting($k) !== '' ? date('Y-m-d\TH:i', strtotime
     <label class="field"><span>Nama kegiatan</span><input type="text" name="nama_kegiatan" value="<?= h(setting('nama_kegiatan')) ?>" required></label>
     <label class="field"><span>Lokasi kegiatan</span><input type="text" name="lokasi" value="<?= h(setting('lokasi')) ?>"></label>
     <label class="field"><span>Tanggal acara</span><input type="text" name="tanggal_acara" value="<?= h(setting('tanggal_acara')) ?>"><small>Format YYYY-MM-DD, dipisah koma. Hati-hati mengubahnya setelah ada pendaftar.</small></label>
+    <label class="field" style="grid-column:1/-1"><span>Deskripsi kegiatan <small>(tampil di beranda)</small></span><textarea name="deskripsi" placeholder="Ringkasan kegiatan untuk calon peserta"><?= h(setting('deskripsi')) ?></textarea></label>
     <label class="field"><span>Kontak panitia</span><input type="text" name="kontak_panitia" value="<?= h(setting('kontak_panitia')) ?>" placeholder="Nama, 08xx (WA)"></label>
   </div>
   <h2 style="margin-top:22px">Pendaftaran & batas waktu</h2>

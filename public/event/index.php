@@ -9,6 +9,7 @@ require __DIR__ . '/app/mail.php';
 require __DIR__ . '/app/routes/publik.php';
 require __DIR__ . '/app/routes/instansi.php';
 require __DIR__ . '/app/routes/admin.php';
+require __DIR__ . '/app/routes/microsite.php';
 
 config();
 
@@ -55,8 +56,14 @@ if (!schema_ready() && !str_starts_with($path, '/admin/setup')) {
 }
 
 $routes = [
-    ['GET', '/', 'publik_home'],
+    ['GET', '/', 'publik_beranda'],
+    ['GET', '/daftar', 'publik_home'],
     ['POST', '/daftar', 'publik_daftar'],
+    ['GET', '/materi', 'publik_materi'],
+    ['GET', '/galeri', 'publik_galeri'],
+    ['GET', '/galeri/unduh', 'galeri_zip'],
+    ['GET', '/media/m/(\d+)', 'media_materi'],
+    ['GET', '/media/g/(\d+)(/thumb)?', 'media_galeri'],
     ['GET', '/terdaftar', 'publik_terdaftar'],
     ['GET', '/i/([A-Za-z0-9_-]{20,})', 'publik_masuk_token'],
     ['POST', '/keluar', 'publik_keluar'],
@@ -91,6 +98,11 @@ $routes = [
     ['POST', '/admin/instansi/(\d+)/hapus', 'admin_instansi_hapus'],
     ['GET', '/admin/instansi/(\d+)/evidence\.zip', 'admin_evidence_zip'],
     ['POST', '/admin/biaya/(\d+)', 'admin_biaya'],
+    ['GET', '/admin/konten', 'admin_konten'],
+    ['POST', '/admin/materi', 'admin_materi_tambah'],
+    ['POST', '/admin/materi/(\d+)/hapus', 'admin_materi_hapus'],
+    ['POST', '/admin/galeri', 'admin_galeri_tambah'],
+    ['POST', '/admin/galeri/(\d+)/hapus', 'admin_galeri_hapus'],
     ['GET', '/admin/pengaturan', 'admin_pengaturan'],
     ['POST', '/admin/pengaturan', 'admin_pengaturan'],
     ['POST', '/admin/akun', 'admin_akun'],

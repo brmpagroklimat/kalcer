@@ -372,6 +372,7 @@ function admin_ekspor(string $jenis): void
 
 const SETTING_FIELDS = [
     'nama_kegiatan' => 'Nama kegiatan',
+    'deskripsi' => 'Deskripsi kegiatan',
     'lokasi' => 'Lokasi kegiatan',
     'tanggal_acara' => 'Tanggal acara',
     'daftar_dibuka' => 'Pendaftaran dibuka',

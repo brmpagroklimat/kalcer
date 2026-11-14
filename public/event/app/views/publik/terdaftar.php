@@ -21,3 +21,5 @@ $wa = 'Link instansi ' . $inst['nama'] . ' untuk ' . setting('nama_kegiatan') . 
     Browser ini tetap masuk ke halaman instansi selama beberapa minggu.
   </p>
 </div>
+
+<?= view('_panduan', ['tanggal' => instansi_tanggal((int) $inst['id'])]) ?>

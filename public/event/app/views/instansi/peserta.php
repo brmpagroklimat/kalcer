@@ -9,12 +9,10 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
   <p class="note">Perubahan peserta bisa dilakukan sampai <b><?= h(tgl_jam(setting('batas_ganti'))) ?></b>. Gunakan <b>Ganti peserta</b> kalau orangnya berganti; nama lama tetap tercatat di riwayat.</p>
 <?php endif; ?>
 
-<?php if (setting('info_hotel') !== '' || setting('info_shuttle') !== ''): ?>
-  <div class="grid2">
-    <?php if (setting('info_hotel') !== ''): ?><div class="panel"><h2>Hotel</h2><p class="prewrap"><?= h(setting('info_hotel')) ?></p></div><?php endif; ?>
-    <?php if (setting('info_shuttle') !== ''): ?><div class="panel"><h2>Shuttle</h2><p class="prewrap"><?= h(setting('info_shuttle')) ?></p></div><?php endif; ?>
-  </div>
-<?php endif; ?>
+<details class="panel" <?= (setting('info_hotel') !== '' || setting('info_shuttle') !== '') ? 'open' : '' ?>>
+  <summary>Panduan kegiatan, hotel & shuttle</summary>
+  <?= view('_panduan', ['tanggal' => instansi_tanggal((int) $inst['id'])]) ?>
+</details>
 
 <?php foreach ($byDate as $d => $list):
     $aktif = array_values(array_filter($list, static fn ($p) => (int) $p['aktif'] === 1));

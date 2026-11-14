@@ -2,34 +2,9 @@
 /** @var array $old @var array $errors @var array $dates @var bool $open @var int $kuota @var string $stamp */
 $o = static fn (string $k) => (string) ($old[$k] ?? '');
 $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
-$lokasi = setting('lokasi');
 ?>
-<section class="intro">
-  <h1><?= h(setting('nama_kegiatan')) ?></h1>
-  <p class="lead">
-    <?= implode(' dan ', array_map(static fn ($d) => h(tgl($d, true)), $dates)) ?><?= $lokasi !== '' ? ', ' . h($lokasi) : '' ?>.
-    Setiap instansi memilih satu tanggal dan mengirim paling banyak <?= (int) $kuota ?> orang.
-  </p>
-</section>
-
-<div class="grid2" style="margin:8px 0 24px">
-  <div class="panel">
-    <h2>Alur kegiatan</h2>
-    <ol class="steps">
-      <li><b>Daftar</b> instansi dan peserta di halaman ini. Anda akan mendapat <b>link khusus instansi</b>.</li>
-      <li><b>Sebelum acara</b>, lewat link itu Anda bisa mengubah atau mengganti peserta sampai <?= h(tgl_jam(setting('batas_ganti'))) ?>.</li>
-      <li><b>Hari H</b>, unggah foto saat berangkat, tiba, kegiatan, pulang, dan tiba kembali. Waktu foto dibaca otomatis dari kamera.</li>
-      <li><b>Setelah acara</b>, unggah struk BBM, tol, atau tiket kendaraan umum, isi rekening instansi, lalu ajukan reimburse.</li>
-    </ol>
-  </div>
-  <div class="panel">
-    <h2>Menginap & transport</h2>
-    <p>Hotel disediakan panitia untuk malam sebelum acara: peserta <?= h(tgl_pendek($dates[0] ?? '')) ?> menginap malam <?= h(malam_menginap($dates[0] ?? '')) ?><?php if (isset($dates[1])): ?>, peserta <?= h(tgl_pendek($dates[1])) ?> menginap malam <?= h(malam_menginap($dates[1])) ?><?php endif; ?>. Peserta yang menginap diantar shuttle dari hotel ke lokasi.</p>
-    <?php if (setting('info_hotel') !== ''): ?><p class="prewrap"><?= h(setting('info_hotel')) ?></p><?php endif; ?>
-    <p class="small muted">Biaya perjalanan (BBM, tol, kendaraan umum) diganti at cost sesuai struk, ditransfer ke satu rekening per instansi.</p>
-  </div>
-</div>
-
+<h1>Pendaftaran</h1>
+<p class="lead">Setiap instansi memilih satu tanggal dan mendaftarkan paling banyak <?= (int) $kuota ?> peserta. Setelah mendaftar, Anda mendapat link khusus instansi beserta panduan kegiatan.</p>
 <p class="note">Sudah mendaftar? Buka <b>link instansi</b> yang Anda terima setelah mendaftar. Link hilang? Hubungi panitia<?= setting('kontak_panitia') !== '' ? ': ' . h(setting('kontak_panitia')) : '' ?>.</p>
 
 <?php if (!$open): ?>
