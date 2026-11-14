@@ -170,6 +170,28 @@
     });
   });
 
+  // Kompres foto sampai di bawah batas: turunkan kualitas, lalu resolusi.
+  var MAX_KONTEN = 2 * 1024 * 1024;
+  function shrink(file, max) {
+    var tries = [[2000, 0.85], [2000, 0.72], [1600, 0.72], [1280, 0.7]];
+    function attempt(i) {
+      return renderSized(file, tries[i][0], tries[i][1]).then(function (blob) {
+        if (blob.size <= max || i === tries.length - 1) return [blob, 'foto.jpg'];
+        return attempt(i + 1);
+      });
+    }
+    return attempt(0).catch(function () { return [file, file.name]; });
+  }
+  function renderSized(file, side, quality) {
+    return loadImage(file).then(function (img) {
+      var s = Math.min(1, side / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      return new Promise(function (resolve) { c.toBlob(resolve, 'image/jpeg', quality); });
+    });
+  }
+
   // ---- galeri panitia: banyak foto, dikompres, dikirim satu per satu ----
   document.querySelectorAll('form.js-gallery').forEach(function (form) {
     form.dataset.fileField = 'foto';
@@ -185,8 +207,7 @@
         return p.then(function () {
           st.set('Mengunggah foto ' + (i + 1) + ' dari ' + files.length + '…');
           st.bar.style.width = '0';
-          return render(file, null)
-            .then(function (b) { return [b, 'foto.jpg']; }, function () { return [file, file.name]; })
+          return shrink(file, MAX_KONTEN)
             .then(function (b) { return send(form, baseFields(form), b[0], b[1], st); })
             .then(function () { done++; });
         });

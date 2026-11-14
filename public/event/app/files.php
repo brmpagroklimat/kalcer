@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 const MAX_UPLOAD = 15 * 1024 * 1024;
 const MAX_SIDE = 2400;
+/** Batas per file untuk materi & galeri (konten publik). */
+const MAX_KONTEN = 2 * 1024 * 1024;
 
 function upload_root(): string
 {
@@ -201,6 +203,9 @@ function store_materi(array $f): array
     }
     if ($f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) {
         throw new UserError('Upload gagal. Coba lagi.');
+    }
+    if ($f['size'] > MAX_KONTEN) {
+        throw new UserError('File materi maksimal 2 MB (file ini ' . ukuran($f['size']) . '). Kompres dulu, mis. simpan PDF/PowerPoint dengan ukuran lebih kecil.');
     }
     $nama = basename((string) $f['name']);
     $ext = strtolower(pathinfo($nama, PATHINFO_EXTENSION));

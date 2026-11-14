@@ -26,6 +26,15 @@
   toggles.forEach(function (t) { t.addEventListener('change', sync); });
   if (toggles.length) sync();
 
+  // Batas ukuran file di browser (mis. materi maks. 2 MB), sebelum upload dimulai.
+  document.querySelectorAll('input[type=file][data-max]').forEach(function (input) {
+    input.addEventListener('change', function () {
+      var max = +input.dataset.max, big = Array.prototype.filter.call(input.files, function (f) { return f.size > max; });
+      input.setCustomValidity(big.length ? big[0].name + ' berukuran ' + (big[0].size / 1048576).toFixed(1).replace('.', ',') + ' MB. Maksimal ' + Math.round(max / 1048576) + ' MB per file.' : '');
+      if (big.length) input.reportValidity();
+    });
+  });
+
   var errs = document.getElementById('form-errors');
   if (errs) errs.focus();
 })();

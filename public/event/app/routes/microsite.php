@@ -90,7 +90,6 @@ function admin_konten(): void
     render('admin/konten', 'Materi & galeri', [
         'materi' => rows('SELECT * FROM materi ORDER BY id DESC'),
         'albums' => galeri_albums(),
-        'limit' => server_upload_limit(),
     ], ['admin' => true, 'scripts' => ['upload.js']]);
 }
 
@@ -135,6 +134,9 @@ function admin_galeri_tambah(): void
         : [[$files['name'] ?? '', $files['type'] ?? '', $files['tmp_name'] ?? '', $files['error'] ?? UPLOAD_ERR_NO_FILE, $files['size'] ?? 0]];
     $n = 0;
     foreach ($list as [$name, $type, $tmp, $err, $size]) {
+        if ((int) $size > MAX_KONTEN) {
+            throw new UserError('Foto maksimal 2 MB (' . $name . ' ' . ukuran($size) . ').');
+        }
         $saved = store_upload(['name' => $name, 'type' => $type, 'tmp_name' => $tmp, 'error' => $err, 'size' => $size], 0, 'galeri', false);
         $thumb = make_thumb($saved['file']);
         q('INSERT INTO galeri (album, file, thumb, caption) VALUES (?, ?, ?, ?)', [$album, $saved['file'], $thumb, post('caption') ?: null]);

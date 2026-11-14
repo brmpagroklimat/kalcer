@@ -1,4 +1,4 @@
-<?php /** @var array $materi @var array $albums @var int $limit */ ?>
+<?php /** @var array $materi @var array $albums */ ?>
 <h1>Materi & galeri</h1>
 <p class="lead">Konten ini tampil publik di menu <a href="<?= h(url('/materi')) ?>">Materi</a> dan <a href="<?= h(url('/galeri')) ?>">Galeri</a>.</p>
 
@@ -21,8 +21,8 @@
   <form method="post" enctype="multipart/form-data" action="<?= h(url('/admin/materi')) ?>"><?= csrf_field() ?>
     <div class="fields two">
       <label class="field"><span>Judul</span><input type="text" name="judul" maxlength="200" required placeholder="Paparan Kepala BRMP Agroklimat"></label>
-      <label class="field"><span>File</span><input type="file" name="file" required accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.zip,.jpg,.jpeg,.png,.mp4">
-        <small>PDF, PowerPoint, Word, Excel, ZIP, JPG/PNG, atau MP4. Maksimal <?= h(ukuran($limit)) ?> (batas server).</small></label>
+      <label class="field"><span>File</span><input type="file" name="file" required accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.zip,.jpg,.jpeg,.png,.mp4" data-max="<?= MAX_KONTEN ?>">
+        <small>PDF, PowerPoint, Word, Excel, ZIP, JPG/PNG, atau MP4. Maksimal 2 MB per file.</small></label>
       <label class="field" style="grid-column:1/-1"><span>Keterangan <small>(opsional)</small></span><input type="text" name="deskripsi" maxlength="500"></label>
     </div>
     <div class="actions"><button class="btn deep">Unggah materi</button></div>
@@ -37,7 +37,7 @@
         <datalist id="album-list"><?php foreach (array_keys($albums) as $a): ?><option value="<?= h($a) ?>"><?php endforeach; ?></datalist>
         <small>Ketik nama album baru, atau pilih album yang sudah ada.</small></label>
       <label class="field"><span>Foto</span><input type="file" name="foto[]" accept="image/jpeg,image/png,image/webp" multiple required>
-        <small>Boleh pilih banyak sekaligus. Foto dikompres otomatis sebelum diunggah.</small></label>
+        <small>Boleh pilih banyak sekaligus. Foto dikompres otomatis sebelum diunggah, maksimal 2 MB per foto.</small></label>
     </div>
     <div class="actions"><button class="btn deep">Unggah foto</button><span class="upload-status" aria-live="polite"></span></div>
   </form>
