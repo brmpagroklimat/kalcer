@@ -327,3 +327,16 @@ input[readonly] { background: #f3f1ec; color: var(--muted); }
 @media (min-width: 640px) { .kontak-grid { grid-template-columns: 1fr 1fr; } }
 
 .reimburse-actions { margin-top: 18px; padding: 14px 16px; background: var(--paper); border-radius: 10px; }
+
+/* aktivitas terbaru: ringkas, ±5 baris terlihat, sisanya digulir */
+.activity { list-style: none; margin: 0; padding: 0 10px 0 0; max-height: 300px; overflow-y: scroll; font-size: 14px; line-height: 1.35; }
+/* Chrome mengabaikan ::-webkit-scrollbar bila scrollbar-width dipasang, jadi properti standar hanya untuk Firefox. */
+@supports not selector(::-webkit-scrollbar) { .activity { scrollbar-width: thin; scrollbar-color: #c9c2b5 var(--paper); } }
+/* scrollbar selalu terlihat (macOS menyembunyikannya bila tidak digaya) */
+.activity::-webkit-scrollbar { width: 8px; }
+.activity::-webkit-scrollbar-track { background: var(--paper); border-radius: 8px; }
+.activity::-webkit-scrollbar-thumb { background: #c9c2b5; border-radius: 8px; }
+.activity::-webkit-scrollbar-thumb:hover { background: #a99f8f; }
+.activity li { padding: 7px 0; border-top: 1px solid var(--line); }
+.activity li:first-child { border-top: 0; padding-top: 0; }
+.activity .meta { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; }

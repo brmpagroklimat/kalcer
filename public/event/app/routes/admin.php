@@ -142,7 +142,7 @@ function admin_dashboard(): void
         );
     }
     $foto = row('SELECT COUNT(*) n, SUM(exif_ok = 0) tanpa_exif FROM evidence');
-    $terbaru = rows('SELECT r.*, i.nama FROM riwayat r JOIN instansi i ON i.id = r.instansi_id ORDER BY r.id DESC LIMIT 12');
+    $terbaru = rows('SELECT r.*, i.nama FROM riwayat r JOIN instansi i ON i.id = r.instansi_id ORDER BY r.id DESC LIMIT 50');
     render('admin/dashboard', 'Dashboard panitia', compact('perHari', 'reimburse', 'foto', 'terbaru'), ['admin' => true]);
 }
 

@@ -37,10 +37,10 @@
   <section class="panel">
     <h2>Aktivitas terbaru</h2>
     <?php if (!$terbaru): ?><p class="muted">Belum ada instansi yang registrasi.</p><?php endif; ?>
-    <ul class="people small">
+    <ul class="activity" tabindex="0" aria-label="Aktivitas terbaru, gulir untuk melihat lebih banyak">
       <?php foreach ($terbaru as $r): ?>
         <li><a href="<?= h(url('/admin/instansi/' . $r['instansi_id'])) ?>"><?= h($r['nama']) ?></a>: <?= h($r['keterangan']) ?>
-          <div class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></div></li>
+          <span class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></span></li>
       <?php endforeach; ?>
     </ul>
   </section>
