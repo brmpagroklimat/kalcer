@@ -111,7 +111,7 @@ legend { font-family: var(--font-display); font-weight: 700; font-size: 18px; pa
 .fields { display: grid; gap: 14px; }
 @media (min-width: 640px) { .fields.two { grid-template-columns: 1fr 1fr; } .fields.three { grid-template-columns: 2fr 1fr 1fr; } }
 .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.field > span, .field-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+.field > span, .field > label > span, .field-label { font-size: 14px; font-weight: 700; color: var(--ink); }
 .field small, .hint { font-size: 13px; color: var(--muted); }
 input[type=text], input[type=tel], input[type=email], input[type=password], input[type=number], input[type=date], input[type=datetime-local], select, textarea {
   font: inherit; color: var(--ink); background: var(--white); border: 1px solid #cfc8bb; border-radius: 8px; padding: 10px 12px; min-height: 44px; width: 100%;
@@ -266,8 +266,17 @@ tr.row-warn td { background: var(--warn-bg); }
 tr.row-err td { background: var(--err-bg); }
 tr.row-new td { background: #faf8f4; }
 .tamu-form { display: grid; gap: 8px; grid-template-columns: 1fr; }
-@media (min-width: 760px) { .tamu-form { grid-template-columns: 2fr 1fr 2fr 1.4fr auto; align-items: center; } }
-.tamu-form input, .tamu-form select { min-height: 40px; padding: 8px 10px; }
+@media (min-width: 760px) { .tamu-form { grid-template-columns: 2fr 1.2fr 1.2fr 1.4fr auto; align-items: center; } }
+.tamu-form input, .tamu-form select { min-height: 40px; padding: 8px 10px; font-size: 14px; }
+/* alur langkah halaman kamar */
+.steps-flow { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.steps-flow a { display: flex; gap: 12px; height: 100%; padding: 14px; background: var(--white); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: var(--ink); }
+.steps-flow a:hover { border-color: var(--deep); color: var(--ink); }
+.steps-flow .num { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--paper); border: 1px solid var(--line); }
+.steps-flow .done .num { background: var(--leaf); border-color: var(--leaf); color: var(--white); }
+.steps-flow b { display: block; }
+.steps-flow .small { display: block; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.steps-flow .status { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 700; color: var(--deep); }
 .kamar-info { margin-top: 6px; font-size: 14px; background: #e2f2f5; color: var(--deep); border-radius: 8px; padding: 6px 10px; display: inline-block; }
 /* jadwal */
 .agenda { list-style: none; margin: 0; padding: 0; }
@@ -283,3 +292,15 @@ tr.row-new td { background: #faf8f4; }
 @media (prefers-reduced-motion: reduce) { .tunas-sway { animation: none; } }
 .jadwal-view { display: block; width: 100%; margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; }
 .jadwal-view.pdf { height: min(80vh, 900px); }
+
+/* validasi langsung & combobox */
+.field-err { color: var(--err-ink); font-size: 13px; font-weight: 700; }
+.field-err:empty { display: none; }
+input[aria-invalid="true"] { border-color: #c4553c; background: #fff7f5; }
+input[readonly] { background: #f3f1ec; color: var(--muted); }
+.combo { position: relative; }
+.combo-list { position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin: 4px 0 0; padding: 4px; list-style: none; background: var(--white); border: 1px solid #cfc8bb; border-radius: 8px; box-shadow: 0 8px 24px rgb(31 45 51 / .12); max-height: 280px; overflow: auto; }
+.combo-list li { padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 15px; }
+.combo-list li:hover, .combo-list li[aria-selected="true"] { background: #e2f2f5; color: var(--deep); }
+.combo-list .combo-empty { color: var(--muted); cursor: default; }
+.same-pic { margin: -4px 0 12px; }

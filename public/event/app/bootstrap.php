@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '3';
+const SCHEMA_VERSION = '4';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -113,6 +113,7 @@ function migrate(): void
     }
     // Kolom tambahan pada tabel lama (MySQL 8 belum punya ADD COLUMN IF NOT EXISTS).
     ensure_column('peserta', 'kamar_id', 'INT UNSIGNED NULL');
+    ensure_column('peserta', 'bagikan_kontak', 'TINYINT(1) NOT NULL DEFAULT 0');
     set_setting('schema_version', SCHEMA_VERSION);
 }
 
@@ -233,15 +234,17 @@ function take_flash(): array
 // ---------- token instansi ----------
 
 /**
- * Link instansi: "<slug-nama-instansi>-<12 karakter acak>". Slug hanya penanda agar mudah
- * dikenali; yang rahasia (dan yang di-hash di database) adalah 12 karakter acak (~62 bit).
+ * Link instansi: "<slug-nama-instansi>-<6 karakter acak>". Slug hanya penanda agar mudah
+ * dikenali; yang rahasia (dan yang di-hash di database) adalah 6 karakter acak. Link lama
+ * (12 karakter / format panjang) tetap berlaku.
  * @return array{0:string,1:string} [token untuk URL, hash]
  */
 function new_token(string $namaInstansi = ''): array
 {
     $abc = 'abcdefghijkmnpqrstuvwxyz23456789';
     $secret = '';
-    for ($i = 0; $i < 12; $i++) {
+    // 6 karakter dari 32 simbol (~1 miliar kemungkinan) + batas percobaan link salah per IP.
+    for ($i = 0; $i < 6; $i++) {
         $secret .= $abc[random_int(0, strlen($abc) - 1)];
     }
     $slug = trim(substr(strtolower(trim((string) preg_replace('/[^A-Za-z0-9]+/', '-', $namaInstansi), '-')), 0, 40), '-');
@@ -252,7 +255,7 @@ function new_token(string $namaInstansi = ''): array
 function find_instansi_by_token(string $token): ?array
 {
     $r = row('SELECT id FROM instansi WHERE token_hash = ?', [hash('sha256', $token)]);
-    if (!$r && preg_match('/(?:^|-)([a-z2-9]{12})$/', $token, $m)) {
+    if (!$r && preg_match('/(?:^|-)([a-z2-9]{6}|[a-z2-9]{12})$/', $token, $m)) {
         $r = row('SELECT id FROM instansi WHERE token_hash = ?', [hash('sha256', $m[1])]);
     }
     return $r;
@@ -360,6 +363,41 @@ function malam_menginap(string $tanggal): string
     $prev = date('Y-m-d', strtotime($tanggal . ' -1 day'));
     return tgl_pendek($prev) . ' → ' . tgl_pendek($tanggal);
 }
+
+/** No. HP/WA: hanya angka, 10–15 digit, diawali 0 atau 62. Mengembalikan angka saja, atau null bila tidak valid. */
+function valid_hp(string $hp): ?string
+{
+    $d = preg_replace('/\D/', '', $hp);
+    return preg_match('/^(0|62)\d{8,13}$/', $d) ? $d : null;
+}
+
+/** NIP PNS/PPPK: 18 digit angka. */
+function valid_nip(string $nip): bool
+{
+    return (bool) preg_match('/^\d{18}$/', $nip);
+}
+
+/** Daftar kabupaten/kota resmi (assets/kabkota.json), mis. "Kab. Bogor, Jawa Barat". */
+function kabkota_list(): array
+{
+    static $list = null;
+    if ($list === null) {
+        $list = json_decode((string) file_get_contents(dirname(__DIR__) . '/assets/kabkota.json'), true) ?: [];
+    }
+    return $list;
+}
+
+function valid_kabkota(string $v): bool
+{
+    return in_array($v, kabkota_list(), true);
+}
+
+function jk_label(?string $jk): string
+{
+    return $jk === 'L' ? 'Laki-laki' : ($jk === 'P' ? 'Perempuan' : '');
+}
+
+const KETERANGAN_TAMU = ['Panitia', 'Pejabat', 'Narasumber', 'Pendamping', 'Lainnya'];
 
 function normalize_hp(string $hp): string
 {

@@ -14,14 +14,14 @@ function kamar_tanggal(): string
 function penghuni_malam(string $tanggal): array
 {
     $out = [];
-    foreach (rows('SELECT p.id, p.nama, p.jk, p.hp, p.kamar_id, p.instansi_id, i.nama instansi
+    foreach (rows('SELECT p.id, p.nama, p.jk, p.hp, p.kamar_id, p.instansi_id, p.bagikan_kontak, i.nama instansi
                    FROM peserta p JOIN instansi i ON i.id = p.instansi_id
                    WHERE p.aktif = 1 AND p.menginap = 1 AND p.tanggal = ? ORDER BY i.nama, p.id', [$tanggal]) as $p) {
         $out['p' . $p['id']] = $p + ['key' => 'p' . $p['id'], 'tipe' => 'peserta', 'grup' => 'i' . $p['instansi_id']];
     }
     foreach (rows('SELECT * FROM tamu WHERE tanggal = ? ORDER BY id', [$tanggal]) as $t) {
         $ket = $t['keterangan'] ?: 'Tamu panitia';
-        $out['t' . $t['id']] = $t + ['key' => 't' . $t['id'], 'tipe' => 'tamu', 'instansi' => $ket, 'instansi_id' => null, 'grup' => 't' . mb_strtolower($ket)];
+        $out['t' . $t['id']] = $t + ['key' => 't' . $t['id'], 'tipe' => 'tamu', 'instansi' => $ket, 'instansi_id' => null, 'bagikan_kontak' => 0, 'grup' => 't' . mb_strtolower($ket)];
     }
     return $out;
 }
@@ -90,7 +90,11 @@ function admin_kamar_rekomendasi(): void
     $orang = penghuni_malam($tanggal);
     $rooms = kamar_list($tanggal, $orang);
     $belum = array_filter($orang, static fn ($o) => !$o['kamar_id'] || !isset($rooms[$o['kamar_id']]));
+    // Kamar bernomor yang masih kosong dipakai lebih dulu (urut nomor), baru buat kamar tanpa nomor.
+    $kosong = array_values(array_filter($rooms, static fn ($k) => !$k['penghuni'] && $k['nomor']));
+    usort($kosong, static fn ($a, $b) => strnatcmp($a['nomor'], $b['nomor']));
     $dibuat = 0;
+    $dipakai = 0;
     db()->beginTransaction();
     foreach (['L', 'P'] as $jk) {
         $grup = [];
@@ -125,16 +129,31 @@ function admin_kamar_rekomendasi(): void
         }
         unset($room);
         foreach (array_merge($isi, $campur) as $penghuni) {
-            q('INSERT INTO kamar (tanggal, kapasitas) VALUES (?, ?)', [$tanggal, $cap]);
-            $id = (int) db()->lastInsertId();
+            $id = null;
+            foreach ($kosong as $i => $k) {
+                if ((int) $k['kapasitas'] >= count($penghuni)) {
+                    $id = (int) $k['id'];
+                    unset($kosong[$i]);
+                    $dipakai++;
+                    break;
+                }
+            }
+            if ($id === null) {
+                q('INSERT INTO kamar (tanggal, kapasitas) VALUES (?, ?)', [$tanggal, $cap]);
+                $id = (int) db()->lastInsertId();
+                $dibuat++;
+            }
             foreach ($penghuni as $o) {
                 set_kamar($o, $id);
             }
-            $dibuat++;
         }
     }
     db()->commit();
-    flash('ok', $dibuat ? "$dibuat kamar direkomendasikan. Periksa, isi nomor kamar, lalu publikasikan." : 'Semua yang menginap sudah punya kamar.');
+    if ($dipakai + $dibuat === 0) {
+        flash('ok', 'Semua yang menginap sudah punya kamar.');
+    } else {
+        flash('ok', "Pembagian otomatis selesai: $dipakai kamar bernomor terisi" . ($dibuat ? ", $dibuat kamar tambahan dibuat tanpa nomor (beri nomor di langkah 2)" : '') . '. Periksa tabel penempatan, lalu publikasikan.');
+    }
     kamar_back($tanggal);
 }
 
@@ -162,6 +181,20 @@ function admin_kamar_daftar(): void
     if ($baru !== '' && isset($seen[$baru])) {
         throw new UserError("Nomor kamar $baru sudah ada.");
     }
+    $massal = [];
+    foreach (preg_split('/[\s,;]+/', post('nomor_massal'), -1, PREG_SPLIT_NO_EMPTY) as $part) {
+        if (preg_match('/^(\d+)-(\d+)$/', $part, $m) && (int) $m[2] >= (int) $m[1]) {
+            if ((int) $m[2] - (int) $m[1] > 200) {
+                throw new UserError("Rentang $part terlalu panjang (maks. 200 kamar).");
+            }
+            for ($n = (int) $m[1]; $n <= (int) $m[2]; $n++) {
+                $massal[] = (string) $n;
+            }
+        } else {
+            $massal[] = $part;
+        }
+    }
+    $massal = array_values(array_filter(array_unique($massal), static fn ($n) => !isset($seen[$n]) && mb_strlen($n) <= 30));
     db()->beginTransaction();
     foreach ($rooms as $id => $k) {
         q('UPDATE kamar SET nomor = ?, kapasitas = ?, catatan = ? WHERE id = ?', [
@@ -174,8 +207,11 @@ function admin_kamar_daftar(): void
     if ($baru !== '') {
         q('INSERT INTO kamar (tanggal, nomor, kapasitas) VALUES (?, ?, ?)', [$tanggal, $baru, max(1, (int) post('baru_kapasitas', setting('kapasitas_kamar')))]);
     }
+    foreach ($massal as $n) {
+        q('INSERT INTO kamar (tanggal, nomor, kapasitas) VALUES (?, ?, ?)', [$tanggal, $n, max(1, (int) post('massal_kapasitas', setting('kapasitas_kamar')))]);
+    }
     db()->commit();
-    flash('ok', 'Daftar kamar disimpan.');
+    flash('ok', $massal ? count($massal) . ' kamar ditambahkan.' : 'Daftar kamar disimpan.');
     kamar_back($tanggal);
 }
 
@@ -284,6 +320,9 @@ function admin_tamu_tambah(): void
     if ($nama === '' || !in_array($jk, ['L', 'P'], true)) {
         throw new UserError('Isi nama dan jenis kelamin tamu.');
     }
+    if (!in_array(post('keterangan'), KETERANGAN_TAMU, true)) {
+        throw new UserError('Pilih keterangan tamu.');
+    }
     q('INSERT INTO tamu (tanggal, nama, jk, keterangan, hp) VALUES (?, ?, ?, ?, ?)', [$tanggal, $nama, $jk, post('keterangan') ?: null, normalize_hp(post('hp')) ?: null]);
     flash('ok', "$nama ditambahkan ke daftar menginap.");
     kamar_back($tanggal);
@@ -311,7 +350,8 @@ function kamar_peserta(array $p): ?array
     $teman = [];
     foreach (penghuni_malam($p['tanggal']) as $o) {
         if ((int) $o['kamar_id'] === (int) $k['id'] && $o['key'] !== 'p' . $p['id']) {
-            $teman[] = $o['nama'] . ' (' . $o['instansi'] . ')';
+            // Nomor HP hanya ditampilkan bila pemiliknya mengizinkan (bagikan_kontak).
+            $teman[] = ['nama' => $o['nama'], 'instansi' => $o['instansi'], 'wa' => $o['bagikan_kontak'] && $o['hp'] ? preg_replace('/^0/', '62', $o['hp']) : null];
         }
     }
     return ['nomor' => $k['nomor'], 'catatan' => $k['catatan'], 'teman' => $teman];

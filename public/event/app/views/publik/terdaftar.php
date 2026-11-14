@@ -4,7 +4,7 @@ $wa = 'Link instansi ' . $inst['nama'] . ' untuk ' . setting('nama_kegiatan') . 
 <h1>Registrasi berhasil</h1>
 <p class="lead"><?= h($inst['nama']) ?> terdaftar dengan kode <b><?= h(kode_instansi((int) $inst['id'])) ?></b>.</p>
 
-<div class="panel">
+<div class="panel" style="max-width:760px">
   <h2>Simpan link instansi ini</h2>
   <p>Link ini adalah satu-satunya cara masuk untuk mengubah peserta, mengunggah foto kegiatan, dan mengajukan reimburse. Bagikan hanya ke rombongan instansi Anda.</p>
   <div class="linkbox">

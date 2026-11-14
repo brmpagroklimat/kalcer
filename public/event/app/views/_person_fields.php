@@ -7,13 +7,13 @@ if ($inap === '1') { $inap = 'ya'; } elseif ($inap === '0') { $inap = 'tidak'; }
 ?>
 <div class="fields two">
   <label class="field"><span>Nama lengkap (dengan gelar)</span>
-    <input type="text" name="<?= h($n('nama')) ?>" value="<?= h($v('nama')) ?>" maxlength="150" autocomplete="off" <?= !empty($required) ? 'required' : '' ?>></label>
-  <label class="field"><span>NIP <small>(opsional)</small></span>
-    <input type="text" name="<?= h($n('nip')) ?>" value="<?= h($v('nip')) ?>" inputmode="numeric" maxlength="30" autocomplete="off"></label>
+    <input type="text" data-role="nama" name="<?= h($n('nama')) ?>" value="<?= h($v('nama')) ?>" maxlength="150" autocomplete="off" <?= !empty($required) ? 'required' : '' ?>></label>
+  <label class="field"><span>NIP <small>(opsional, 18 digit)</small></span>
+    <input type="text" name="<?= h($n('nip')) ?>" value="<?= h($v('nip')) ?>" inputmode="numeric" maxlength="18" autocomplete="off" data-validate="nip"></label>
   <label class="field"><span>Jabatan</span>
     <input type="text" name="<?= h($n('jabatan')) ?>" value="<?= h($v('jabatan')) ?>" maxlength="150" autocomplete="off"></label>
-  <label class="field"><span>No. HP/WA</span>
-    <input type="tel" name="<?= h($n('hp')) ?>" value="<?= h($v('hp')) ?>" inputmode="tel" maxlength="30" autocomplete="off"></label>
+  <label class="field"><span>No. HP/WA <small>(angka saja)</small></span>
+    <input type="tel" name="<?= h($n('hp')) ?>" value="<?= h($v('hp')) ?>" inputmode="numeric" autocomplete="off" data-validate="hp" placeholder="081234567890"></label>
 </div>
 <div class="fields two" style="margin-top:14px">
   <div class="field"><span class="field-label" id="<?= h($idp) ?>-jk">Jenis kelamin <small>(untuk pembagian kamar)</small></span>
@@ -29,3 +29,7 @@ if ($inap === '1') { $inap = 'ya'; } elseif ($inap === '0') { $inap = 'tidak'; }
     </div>
   </div>
 </div>
+<label class="check small" style="margin-top:12px">
+  <input type="checkbox" name="<?= h($n('bagikan_kontak')) ?>" value="1" <?= $v('bagikan_kontak') === '1' ? 'checked' : '' ?>>
+  <span>Jika menginap: boleh tampilkan No. HP/WA saya ke teman sekamar (untuk koordinasi check-in).</span>
+</label>

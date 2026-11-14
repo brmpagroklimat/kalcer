@@ -1,6 +1,6 @@
 <?php /** @var array $materi @var array $albums @var array $jadwal (link/file) */ ?>
 <h1>Jadwal, materi & galeri</h1>
-<p class="lead">Konten ini tampil publik di menu <a href="<?= h(url('/materi')) ?>">Materi</a> dan <a href="<?= h(url('/galeri')) ?>">Galeri</a>.</p>
+<p class="lead">Konten ini tampil publik di menu <a href="<?= h(url('/jadwal')) ?>">Jadwal</a>, <a href="<?= h(url('/materi')) ?>">Materi</a>, dan <a href="<?= h(url('/galeri')) ?>">Galeri</a>.</p>
 
 <section class="panel" id="jadwal">
   <h2>Jadwal acara</h2>

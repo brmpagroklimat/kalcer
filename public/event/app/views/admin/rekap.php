@@ -24,13 +24,13 @@
   <div class="panel-head"><p class="muted" style="margin:0"><?= count($rows) ?> peserta (<?= $l ?> laki-laki, <?= count($rows) - $l ?> perempuan), <?= $inap ?> menginap, dari <?= count(array_unique(array_column($rows, 'instansi_id'))) ?> instansi.</p>
     <a class="btn small secondary" href="<?= h(url('/admin/ekspor/peserta.csv') . ($tanggal ? '?tanggal=' . $tanggal : '')) ?>">Unduh CSV</a></div>
   <div class="table-wrap"><table>
-    <thead><tr><th>#</th><th>Tanggal</th><th>Instansi</th><th>Nama</th><th>Jabatan</th><th>JK</th><th>HP</th><th>Menginap</th></tr></thead>
+    <thead><tr><th>#</th><th>Tanggal</th><th>Instansi</th><th>Nama</th><th>Jabatan</th><th>Jenis kelamin</th><th>HP</th><th>Menginap</th></tr></thead>
     <tbody>
     <?php foreach ($rows as $n => $p): ?>
       <tr><td class="num"><?= $n + 1 ?></td><td><?= h(tgl_pendek($p['tanggal'])) ?></td>
         <td><a href="<?= h(url('/admin/instansi/' . $p['instansi_id'])) ?>"><?= h($p['instansi']) ?></a><br><span class="muted small"><?= h(kode_instansi((int) $p['instansi_id'])) ?>, <?= h($p['kabkota']) ?></span></td>
         <td><b><?= h($p['nama']) ?></b><?= $p['nip'] ? '<br><span class="muted small">NIP ' . h($p['nip']) . '</span>' : '' ?></td>
-        <td><?= h($p['jabatan']) ?></td><td><?= h($p['jk']) ?></td><td><?= h($p['hp']) ?></td>
+        <td><?= h($p['jabatan']) ?></td><td><?= h(jk_label($p['jk'])) ?></td><td><?= h($p['hp']) ?></td>
         <td><?= $p['menginap'] ? '<span class="badge inap">Ya</span>' : '<span class="muted">Tidak</span>' ?></td></tr>
     <?php endforeach; ?>
     <?php if (!$rows): ?><tr><td colspan="8" class="muted">Belum ada peserta.</td></tr><?php endif; ?>
@@ -54,11 +54,11 @@
         <div class="stat"><b><?= count(array_filter($list, static fn ($p) => $p['kamar'] === null)) ?></b><span>belum dapat kamar</span></div>
       </div>
       <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>Kamar</th><th>Nama</th><th>JK</th><th>Instansi / keterangan</th><th>HP</th></tr></thead>
+        <thead><tr><th>#</th><th>Kamar</th><th>Nama</th><th>Jenis kelamin</th><th>Instansi / keterangan</th><th>HP</th></tr></thead>
         <tbody>
         <?php foreach ($list as $n => $p): ?>
           <tr><td class="num"><?= $n + 1 ?></td><td><?= $p['kamar'] !== null ? '<b>' . h($p['kamar']) . '</b>' : '<span class="badge warn">Belum</span>' ?></td>
-            <td><b><?= h($p['nama']) ?></b><?= $p['tipe'] === 'tamu' ? ' <span class="chip">Tamu</span>' : '' ?></td><td><?= h($p['jk']) ?></td>
+            <td><b><?= h($p['nama']) ?></b><?= $p['tipe'] === 'tamu' ? ' <span class="chip">Tamu</span>' : '' ?></td><td><?= h(jk_label($p['jk'])) ?></td>
             <td><?= $p['instansi_id'] ? '<a href="' . h(url('/admin/instansi/' . $p['instansi_id'])) . '">' . h($p['instansi']) . '</a>' : h($p['instansi']) ?></td><td><?= h($p['hp']) ?></td></tr>
         <?php endforeach; ?>
         </tbody>

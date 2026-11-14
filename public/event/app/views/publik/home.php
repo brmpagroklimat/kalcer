@@ -24,10 +24,13 @@ $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
     <legend>Instansi</legend>
     <div class="fields two">
       <label class="field"><span>Nama instansi</span><input type="text" name="nama" value="<?= h($o('nama')) ?>" maxlength="200" required></label>
-      <label class="field"><span>Kabupaten/kota</span><input type="text" name="kabkota" value="<?= h($o('kabkota')) ?>" maxlength="120" required></label>
-      <label class="field"><span>Nama PIC instansi</span><input type="text" name="koordinator" value="<?= h($o('koordinator')) ?>" maxlength="150" required></label>
-      <label class="field"><span>No. HP/WA PIC instansi</span><input type="tel" name="hp" value="<?= h($o('hp')) ?>" inputmode="tel" maxlength="30" required></label>
-      <label class="field"><span>Email PIC instansi <small>(opsional, link instansi dikirim ke sini)</small></span><input type="email" name="email" value="<?= h($o('email')) ?>" maxlength="190"></label>
+      <div class="field combo"><label for="kabkota"><span>Kabupaten/kota</span></label>
+        <input id="kabkota" type="text" name="kabkota" value="<?= h($o('kabkota')) ?>" maxlength="120" required autocomplete="off"
+               data-kabkota="<?= h(url('/assets/kabkota.json')) ?>" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="kabkota-list" placeholder="Ketik minimal 3 huruf, mis. bog">
+        <ul id="kabkota-list" class="combo-list" role="listbox" hidden></ul></div>
+      <label class="field"><span>Nama PIC instansi</span><input type="text" data-pic="nama" name="koordinator" value="<?= h($o('koordinator')) ?>" maxlength="150" required></label>
+      <label class="field"><span>No. HP/WA PIC instansi <small>(angka saja)</small></span><input type="tel" name="hp" value="<?= h($o('hp')) ?>" inputmode="numeric" required data-validate="hp" data-pic="hp" placeholder="081234567890"></label>
+      <label class="field"><span>Email PIC instansi <small>(opsional, link instansi dikirim ke sini)</small></span><input type="email" name="email" value="<?= h($o('email')) ?>" maxlength="190" data-validate="email" placeholder="nama@instansi.go.id"></label>
     </div>
   </fieldset>
 
@@ -47,6 +50,7 @@ $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
       <?php for ($i = 0; $i < max(1, $kuota); $i++): ?>
         <div class="person<?= $i > 0 ? ' optional' : '' ?>">
           <p class="person-title">Peserta <?= $i + 1 ?></p>
+          <?php if ($i === 0): ?><label class="check small same-pic"><input type="checkbox" data-same-pic> <span>Sama dengan PIC instansi (isi nama &amp; No. HP otomatis)</span></label><?php endif; ?>
           <?= view('_person_fields', ['prefix' => "peserta[$d][$i]", 'val' => $old['peserta'][$d][$i] ?? [], 'idp' => "p-$d-$i", 'malam' => malam_menginap($d)]) ?>
         </div>
       <?php endfor; ?>

@@ -343,21 +343,21 @@ function admin_ekspor(string $jenis): void
     $filterTgl = in_array($tanggal, event_dates(), true);
     $data = [];
     if ($jenis === 'menginap') {
-        $data[] = ['Malam', 'Tanggal acara', 'Kamar', 'Nama', 'JK', 'Instansi / keterangan', 'Jenis', 'HP'];
+        $data[] = ['Malam', 'Tanggal acara', 'Kamar', 'Nama', 'Jenis kelamin', 'Instansi / keterangan', 'Jenis', 'HP'];
         foreach ($filterTgl ? [$tanggal] : event_dates() as $d) {
             $orang = penghuni_malam($d);
             $rooms = kamar_list($d, $orang);
             foreach ($orang as $o) {
                 $k = $rooms[$o['kamar_id']] ?? null;
-                $data[] = [malam_menginap($d), $d, $k ? ($k['nomor'] ?: 'tanpa nomor') : '', $o['nama'], $o['jk'], $o['instansi'], $o['tipe'] === 'tamu' ? 'Tamu panitia' : 'Peserta', $o['hp']];
+                $data[] = [malam_menginap($d), $d, $k ? ($k['nomor'] ?: 'tanpa nomor') : '', $o['nama'], jk_label($o['jk']), $o['instansi'], $o['tipe'] === 'tamu' ? 'Tamu panitia' : 'Peserta', $o['hp']];
             }
         }
     } elseif ($jenis === 'peserta') {
-        $data[] = ['Tanggal', 'Kode', 'Instansi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'JK', 'Menginap', 'PIC instansi', 'HP PIC'];
+        $data[] = ['Tanggal', 'Kode', 'Instansi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'Jenis kelamin', 'Menginap', 'PIC instansi', 'HP PIC'];
         $sql = 'SELECT p.*, i.nama instansi, i.kabkota, i.koordinator, i.hp hp_koor FROM peserta p JOIN instansi i ON i.id = p.instansi_id
                 WHERE p.aktif = 1' . ($filterTgl ? ' AND p.tanggal = ?' : '') . ' ORDER BY p.tanggal, i.nama, p.id';
         foreach (rows($sql, $filterTgl ? [$tanggal] : []) as $p) {
-            $data[] = [$p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['kabkota'], $p['nama'], $p['nip'], $p['jabatan'], $p['hp'], $p['jk'], $p['menginap'] ? 'Ya' : 'Tidak', $p['koordinator'], $p['hp_koor']];
+            $data[] = [$p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['kabkota'], $p['nama'], $p['nip'], $p['jabatan'], $p['hp'], jk_label($p['jk']), $p['menginap'] ? 'Ya' : 'Tidak', $p['koordinator'], $p['hp_koor']];
         }
     } else {
         $data[] = ['Kode', 'Instansi', 'Kab/Kota', 'PIC instansi', 'HP PIC', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];

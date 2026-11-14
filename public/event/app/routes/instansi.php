@@ -66,9 +66,10 @@ function inst_update_instansi(): void
         'hp' => normalize_hp(post('hp')),
         'email' => post('email'),
     ];
-    if ($d['koordinator'] === '' || $d['hp'] === '') {
-        throw new UserError('Nama dan HP PIC instansi wajib diisi.');
+    if ($d['koordinator'] === '' || valid_hp($d['hp']) === null) {
+        throw new UserError('Isi nama PIC dan No. HP/WA (hanya angka, 10–15 digit, diawali 0 atau 62).');
     }
+    $d['hp'] = valid_hp($d['hp']);
     if ($d['email'] !== '' && !filter_var($d['email'], FILTER_VALIDATE_EMAIL)) {
         throw new UserError('Format email tidak valid.');
     }
@@ -89,8 +90,8 @@ function inst_tambah_peserta(): void
     }
     $p = clean_peserta($_POST, 'Peserta baru');
     check_kuota((int) $inst['id'], $tanggal, 1);
-    q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
-        $inst['id'], $tanggal, $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'],
+    q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap, bagikan_kontak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        $inst['id'], $tanggal, $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'],
     ]);
     log_riwayat((int) $inst['id'], 'tambah', 'Menambah peserta ' . $p['nama'] . ' (' . tgl($tanggal) . ')');
     flash('ok', $p['nama'] . ' ditambahkan.');
@@ -108,8 +109,8 @@ function inst_ubah_peserta(string $id): void
     }
     // Batal menginap atau jenis kelamin berubah: lepas dari kamar, panitia atur ulang.
     $lepasKamar = !$p['menginap'] || $p['jk'] !== $old['jk'];
-    q('UPDATE peserta SET nama = ?, nip = ?, jabatan = ?, hp = ?, jk = ?, menginap = ?, kamar_id = ' . ($lepasKamar ? 'NULL' : 'kamar_id') . ' WHERE id = ?', [
-        $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $old['id'],
+    q('UPDATE peserta SET nama = ?, nip = ?, jabatan = ?, hp = ?, jk = ?, menginap = ?, bagikan_kontak = ?, kamar_id = ' . ($lepasKamar ? 'NULL' : 'kamar_id') . ' WHERE id = ?', [
+        $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'], $old['id'],
     ]);
     $changes = [];
     foreach (['nama' => 'nama', 'nip' => 'NIP', 'jabatan' => 'jabatan', 'hp' => 'HP', 'jk' => 'jenis kelamin', 'menginap' => 'menginap'] as $k => $label) {
@@ -131,8 +132,8 @@ function inst_ganti_peserta(string $id): void
     $old = own_peserta($inst, $id);
     $p = clean_peserta($_POST, 'Peserta pengganti');
     db()->beginTransaction();
-    q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
-        $inst['id'], $old['tanggal'], $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'],
+    q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap, bagikan_kontak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        $inst['id'], $old['tanggal'], $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'],
     ]);
     $newId = (int) db()->lastInsertId();
     q('UPDATE peserta SET aktif = 0, diganti_oleh = ? WHERE id = ?', [$newId, $old['id']]);

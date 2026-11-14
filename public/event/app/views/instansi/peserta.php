@@ -33,7 +33,11 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
           </div>
           <div class="meta"><?= h(implode(' · ', array_filter([$p['jabatan'], $p['nip'] ? 'NIP ' . $p['nip'] : null, $p['jk'] === 'L' ? 'Laki-laki' : 'Perempuan', $p['hp']]))) ?></div>
           <?php if ($p['menginap']): $km = kamar_peserta($p); ?>
-            <div class="kamar-info"><?= $km ? '<b>Kamar ' . h($km['nomor']) . '</b>' . ($km['catatan'] ? ', ' . h($km['catatan']) : '') . ($km['teman'] ? '. Sekamar dengan ' . h(implode(', ', $km['teman'])) : '. Sendiri') : 'Kamar: menunggu pembagian panitia' ?></div>
+            <div class="kamar-info"><?php if (!$km): ?>Kamar: menunggu pembagian panitia<?php else: ?>
+              <b>Kamar <?= h($km['nomor']) ?></b><?= $km['catatan'] ? ', ' . h($km['catatan']) : '' ?>.
+              <?php if (!$km['teman']): ?>Sendiri.<?php else: ?>Sekamar dengan
+                <?php foreach ($km['teman'] as $ti => $t): ?><?= $ti ? ', ' : '' ?><?= h($t['nama']) ?> (<?= h($t['instansi']) ?>)<?php if ($t['wa']): ?> <a class="wa-link" href="https://wa.me/<?= h($t['wa']) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?><?php endforeach; ?>.
+              <?php endif; ?><?php endif; ?></div>
           <?php endif; ?>
           <?php if ($canEdit): ?>
             <div class="inline-actions">
@@ -81,8 +85,8 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
     <form method="post" action="<?= h(url('/saya/instansi')) ?>"><?= csrf_field() ?>
       <div class="fields">
         <label class="field"><span>Nama PIC</span><input type="text" name="koordinator" value="<?= h($inst['koordinator']) ?>" required></label>
-        <label class="field"><span>No. HP/WA</span><input type="tel" name="hp" value="<?= h($inst['hp']) ?>" required></label>
-        <label class="field"><span>Email</span><input type="email" name="email" value="<?= h($inst['email']) ?>"></label>
+        <label class="field"><span>No. HP/WA <small>(angka saja)</small></span><input type="tel" name="hp" value="<?= h($inst['hp']) ?>" inputmode="numeric" required data-validate="hp"></label>
+        <label class="field"><span>Email</span><input type="email" name="email" value="<?= h($inst['email']) ?>" data-validate="email"></label>
       </div>
       <div class="actions"><button class="btn small secondary">Simpan PIC</button></div>
     </form>

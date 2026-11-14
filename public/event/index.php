@@ -69,7 +69,7 @@ $routes = [
     ['GET', '/media/jadwal', 'media_jadwal'],
     ['GET', '/media/g/(\d+)(/thumb)?', 'media_galeri'],
     ['GET', '/terdaftar', 'publik_terdaftar'],
-    ['GET', '/i/([A-Za-z0-9_-]{12,})', 'publik_masuk_token'],
+    ['GET', '/i/([A-Za-z0-9_-]{6,})', 'publik_masuk_token'],
     ['POST', '/keluar', 'publik_keluar'],
 
     ['GET', '/saya', 'inst_peserta'],

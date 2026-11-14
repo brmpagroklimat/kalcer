@@ -48,8 +48,16 @@ function clean_peserta(array $p, string $label): array
     if ($d['hp'] === '') {
         throw new UserError("$label: nomor HP/WA wajib diisi.");
     }
-    $d['hp'] = normalize_hp($d['hp']);
+    $hp = valid_hp($d['hp']);
+    if ($hp === null) {
+        throw new UserError("$label: nomor HP/WA hanya angka, 10–15 digit, diawali 0 atau 62 (mis. 081234567890).");
+    }
+    $d['hp'] = $hp;
     $d['nip'] = preg_replace('/\s+/', '', $d['nip']);
+    if ($d['nip'] !== '' && !valid_nip($d['nip'])) {
+        throw new UserError("$label: NIP harus 18 digit angka (kosongkan bila tidak punya NIP).");
+    }
+    $d['bagikan_kontak'] = !empty($p['bagikan_kontak']) ? 1 : 0;
     $d['menginap'] = $d['menginap'] === 'ya' ? 1 : 0;
     return $d;
 }
@@ -95,6 +103,13 @@ function publik_daftar(): void
                 throw new UserError("$label wajib diisi.");
             }
         }
+        if (!valid_kabkota($inst['kabkota'])) {
+            throw new UserError('Pilih kabupaten/kota dari daftar (ketik minimal 3 huruf, lalu pilih).');
+        }
+        if (valid_hp($inst['hp']) === null) {
+            throw new UserError('No. HP/WA PIC instansi hanya angka, 10–15 digit, diawali 0 atau 62.');
+        }
+        $inst['hp'] = valid_hp($inst['hp']);
         if ($inst['email'] !== '' && !filter_var($inst['email'], FILTER_VALIDATE_EMAIL)) {
             throw new UserError('Format email PIC instansi tidak valid.');
         }
@@ -130,8 +145,8 @@ function publik_daftar(): void
         ]);
         $id = (int) db()->lastInsertId();
         foreach ($semua as $p) {
-            q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
-                $id, $p['tanggal'], $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'],
+            q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap, bagikan_kontak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+                $id, $p['tanggal'], $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'],
             ]);
         }
         log_riwayat($id, 'daftar', 'Registrasi dengan ' . count($semua) . ' peserta: ' . implode(', ', array_column($semua, 'nama')));
@@ -160,13 +175,19 @@ function publik_terdaftar(): void
         redirect('/saya');
     }
     unset($_SESSION['new_token']);
-    render('publik/terdaftar', 'Registrasi berhasil', ['inst' => $inst, 'link' => instansi_link($new['token']), 'mailed' => $new['mailed']], ['narrow' => true]);
+    render('publik/terdaftar', 'Registrasi berhasil', ['inst' => $inst, 'link' => instansi_link($new['token']), 'mailed' => $new['mailed']]);
 }
 
 function publik_masuk_token(string $token): void
 {
+    if (login_blocked()) {
+        http_response_code(429);
+        render_page('Terlalu banyak percobaan', '<h1>Terlalu banyak percobaan</h1><p>Terlalu banyak link yang salah dari perangkat ini. Coba lagi 15 menit lagi, atau ' . hubungi_panitia('', 'hubungi panitia via WhatsApp') . '.</p>', ['narrow' => true]);
+        return;
+    }
     $inst = find_instansi_by_token($token);
     if (!$inst) {
+        login_failed();
         http_response_code(404);
         render_page('Link tidak berlaku', view('publik/link_mati'), ['narrow' => true]);
         return;
