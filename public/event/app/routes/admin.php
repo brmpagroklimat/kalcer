@@ -11,7 +11,8 @@ function admin_setup(): void
         // tabel belum ada
     }
     if ($hasAdmin) {
-        forbidden('Setup sudah pernah dijalankan. Masuk lewat halaman login panitia.');
+        admin_reset();
+        return;
     }
     $error = null;
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -43,6 +44,53 @@ function admin_setup(): void
         }
     }
     render('admin/setup', 'Setup', ['error' => $error], ['narrow' => true]);
+}
+
+/**
+ * Setelah setup: reset password panitia (atau buat akun baru) dengan setup_key.
+ * Untuk saat panitia lupa username/password. Percobaan kunci salah dibatasi seperti login.
+ */
+function admin_reset(): void
+{
+    $error = null;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+            if (login_blocked()) {
+                throw new UserError('Terlalu banyak percobaan gagal. Coba lagi 15 menit lagi.');
+            }
+            if (!hash_equals((string) config('setup_key'), post('setup_key'))) {
+                login_failed();
+                throw new UserError('Kunci setup salah.');
+            }
+            [$user, $pass] = [strtolower(post('username')), (string) ($_POST['password'] ?? '')];
+            if (!preg_match('/^[a-z0-9._-]{3,60}$/', $user)) {
+                throw new UserError('Username 3–60 karakter (huruf kecil, angka, titik, strip).');
+            }
+            if (mb_strlen($pass) < 10) {
+                throw new UserError('Password minimal 10 karakter.');
+            }
+            $a = row('SELECT id FROM admin WHERE username = ?', [$user]);
+            if ($a) {
+                q('UPDATE admin SET password_hash = ? WHERE id = ?', [password_hash($pass, PASSWORD_DEFAULT), $a['id']]);
+                $id = (int) $a['id'];
+                flash('ok', "Password akun $user diganti.");
+            } else {
+                $nama = post('nama') !== '' ? post('nama') : $user;
+                q('INSERT INTO admin (nama, username, password_hash) VALUES (?, ?, ?)', [$nama, $user, password_hash($pass, PASSWORD_DEFAULT)]);
+                $id = (int) db()->lastInsertId();
+                flash('ok', "Akun panitia $user dibuat.");
+            }
+            session_regenerate_id(true);
+            $_SESSION['admin_id'] = $id;
+            redirect('/admin/pengaturan#akun');
+        } catch (UserError $e) {
+            $error = $e->getMessage();
+        }
+    }
+    render('admin/reset', 'Reset akun panitia', [
+        'error' => $error,
+        'usernames' => array_column(rows('SELECT username FROM admin ORDER BY id'), 'username'),
+    ], ['narrow' => true]);
 }
 
 function admin_login(): void

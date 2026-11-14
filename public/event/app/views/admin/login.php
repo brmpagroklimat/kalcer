@@ -6,5 +6,5 @@
     <label class="field"><span>Username</span><input type="text" name="username" value="<?= h(post('username')) ?>" autocapitalize="off" autocomplete="username" required></label>
     <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
   </div>
-  <div class="actions"><button class="btn deep">Masuk</button></div>
+  <div class="actions"><button class="btn deep">Masuk</button><a class="small" href="<?= h(url('/admin/setup')) ?>">Lupa username/password?</a></div>
 </form>
