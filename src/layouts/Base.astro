@@ -16,6 +16,8 @@ const ogImage = new URL('/og.png', Astro.site);
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="preload" href="/fonts/garet-book-1196.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/garet-heavy-1196.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon-64.png" type="image/png" sizes="64x64" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

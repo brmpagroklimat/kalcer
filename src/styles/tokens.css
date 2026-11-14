@@ -1,9 +1,6 @@
-@import '@fontsource/outfit/latin-500.css';
-@import '@fontsource/outfit/latin-600.css';
-@import '@fontsource/outfit/latin-700.css';
-@import '@fontsource/dm-sans/latin-400.css';
-@import '@fontsource/dm-sans/latin-500.css';
-@import '@fontsource/dm-sans/latin-600.css';
+/* Garet (Book & Heavy). Weight < 600 memakai Book, >= 600 memakai Heavy. */
+@font-face { font-family: 'Garet'; font-style: normal; font-weight: 100 599; font-display: swap; src: url(/fonts/garet-book-1196.woff2) format('woff2'); }
+@font-face { font-family: 'Garet'; font-style: normal; font-weight: 600 900; font-display: swap; src: url(/fonts/garet-heavy-1196.woff2) format('woff2'); }
 
 :root {
   --paper: #f4f1ec;      /* latar krem */
@@ -20,8 +17,8 @@
   --sand: #e6d8bc;       /* pasir */
   --white: #ffffff;
 
-  --font-display: 'Outfit', system-ui, sans-serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Garet', system-ui, sans-serif;
+  --font-body: 'Garet', system-ui, sans-serif;
 
   --gutter: clamp(20px, 5vw, 64px);
   --max: 1280px;

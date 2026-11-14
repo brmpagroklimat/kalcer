@@ -1,9 +1,7 @@
-/* KALCER Event: gaya mengikuti landing page (Outfit + DM Sans, palet krem/biru tua). */
-@font-face { font-family: 'Outfit'; font-weight: 500; font-display: swap; src: url(fonts/outfit-latin-500-normal.woff2) format('woff2'); }
-@font-face { font-family: 'Outfit'; font-weight: 600; font-display: swap; src: url(fonts/outfit-latin-600-normal.woff2) format('woff2'); }
-@font-face { font-family: 'DM Sans'; font-weight: 400; font-display: swap; src: url(fonts/dm-sans-latin-400-normal.woff2) format('woff2'); }
-@font-face { font-family: 'DM Sans'; font-weight: 500; font-display: swap; src: url(fonts/dm-sans-latin-500-normal.woff2) format('woff2'); }
-@font-face { font-family: 'DM Sans'; font-weight: 600; font-display: swap; src: url(fonts/dm-sans-latin-600-normal.woff2) format('woff2'); }
+/* KALCER Event: gaya mengikuti landing page (Garet, palet krem/biru tua). */
+/* Garet (Book & Heavy). Weight < 600 memakai Book, >= 600 memakai Heavy. */
+@font-face { font-family: 'Garet'; font-style: normal; font-weight: 100 599; font-display: swap; src: url(fonts/garet-book-1196.woff2) format('woff2'); }
+@font-face { font-family: 'Garet'; font-style: normal; font-weight: 600 900; font-display: swap; src: url(fonts/garet-heavy-1196.woff2) format('woff2'); }
 
 :root {
   --paper: #f4f1ec;
@@ -24,8 +22,8 @@
   --err-ink: #8f2f1b;
   --warn-bg: #fdf3d8;
   --warn-ink: #6e5208;
-  --font-display: 'Outfit', system-ui, sans-serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Garet', system-ui, sans-serif;
+  --font-body: 'Garet', system-ui, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -248,3 +246,4 @@ a.card:hover h2 { color: var(--deep); }
 @media (prefers-reduced-motion: reduce) { .gallery img { transition: none; } }
 details.panel > summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 18px; }
 details.panel[open] > summary { margin-bottom: 14px; }
+.field > span small, .field-label small, legend small { font-weight: 400; }
