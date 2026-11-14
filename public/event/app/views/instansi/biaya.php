@@ -1,0 +1,95 @@
+<?php /** @var array $inst @var array $items @var array $dates @var bool $editable */
+$total = array_sum(array_column($items, 'nominal'));
+$disetujui = 0;
+foreach ($items as $b) { if ($b['status'] === 'disetujui') { $disetujui += (int) ($b['nominal_disetujui'] ?? $b['nominal']); } }
+$st = $inst['reimburse_status'];
+?>
+<div class="panel-head">
+  <h1 style="margin:0">Reimburse perjalanan</h1>
+  <span class="badge <?= h($st) ?>" style="font-size:14px"><?= h(STATUS_REIMBURSE[$st]) ?></span>
+</div>
+<p class="lead">Biaya BBM, tol, dan kendaraan umum diganti <i>at cost</i> sesuai struk, dikumpulkan per instansi dan ditransfer ke satu rekening.</p>
+
+<?php if ($st === 'diajukan'): ?>
+  <p class="note">Diajukan pada <?= h(tgl_jam($inst['diajukan_at'])) ?>. Panitia sedang memeriksa bukti. Anda masih bisa menambah bukti yang terlewat.</p>
+<?php elseif ($st === 'diverifikasi'): ?>
+  <p class="note">Bukti sudah diverifikasi panitia. Total yang akan ditransfer: <b><?= h(rupiah($disetujui)) ?></b>.</p>
+<?php elseif ($st === 'dibayar'): ?>
+  <p class="note">Sudah ditransfer pada <?= h(tgl_jam($inst['dibayar_at'])) ?> sebesar <b><?= h(rupiah($disetujui)) ?></b>.</p>
+<?php endif; ?>
+<?php if ($inst['catatan_panitia']): ?><p class="note warn"><b>Catatan panitia:</b> <?= h($inst['catatan_panitia']) ?></p><?php endif; ?>
+<?php if (!can_upload() && $st === 'draft'): ?><p class="note warn">Batas pengajuan sudah lewat (<?= h(tgl_jam(setting('batas_upload'))) ?>). Hubungi panitia.</p><?php endif; ?>
+
+<section class="panel">
+  <div class="panel-head"><h2>Bukti biaya</h2>
+    <div class="totals" style="margin:0"><span>Diajukan <b><?= h(rupiah($total)) ?></b></span><?php if ($st !== 'draft'): ?><span>Disetujui <b><?= h(rupiah($disetujui)) ?></b></span><?php endif; ?></div>
+  </div>
+  <?php if (!$items): ?><p class="muted">Belum ada bukti. Tambahkan struk satu per satu di bawah.</p><?php else: ?>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tanggal</th><th>Jenis</th><th class="num">Nominal</th><th>Struk</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    <?php foreach ($items as $b): ?>
+      <tr>
+        <td><?= h(tgl_pendek($b['tanggal'])) ?></td>
+        <td><?= h(JENIS_BIAYA[$b['jenis']]) ?><?= $b['keterangan'] ? '<br><span class="muted small">' . h($b['keterangan']) . '</span>' : '' ?></td>
+        <td class="num"><?= h(rupiah($b['nominal'])) ?><?php if ($b['status'] === 'disetujui' && $b['nominal_disetujui'] !== null && (int) $b['nominal_disetujui'] !== (int) $b['nominal']): ?><br><span class="small">disetujui <?= h(rupiah($b['nominal_disetujui'])) ?></span><?php endif; ?></td>
+        <td><a href="<?= h(url('/file/b/' . $b['id'])) ?>" target="_blank" rel="noopener">Lihat</a></td>
+        <td><span class="badge <?= h($b['status']) ?>"><?= h(ucfirst($b['status'])) ?></span><?= $b['catatan'] ? '<br><span class="small">' . h($b['catatan']) . '</span>' : '' ?></td>
+        <td><?php if ($editable && $b['status'] === 'menunggu'): ?>
+          <form method="post" action="<?= h(url('/saya/biaya/' . $b['id'] . '/hapus')) ?>" data-confirm="Hapus bukti ini?"><?= csrf_field() ?><button class="linkbtn" style="color:var(--err-ink)">Hapus</button></form>
+        <?php endif; ?></td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table></div>
+  <?php endif; ?>
+
+  <?php if ($editable && $dates): ?>
+    <h3 style="margin-top:22px">Tambah bukti</h3>
+    <form class="js-receipt" method="post" enctype="multipart/form-data" action="<?= h(url('/saya/biaya')) ?>"><?= csrf_field() ?>
+      <div class="fields three">
+        <label class="field"><span>Jenis biaya</span>
+          <select name="jenis" required><option value="">Pilih…</option>
+            <?php foreach (JENIS_BIAYA as $k => $l): ?><option value="<?= h($k) ?>"><?= h($l) ?></option><?php endforeach; ?>
+          </select></label>
+        <label class="field"><span>Tanggal kegiatan</span>
+          <select name="tanggal" required>
+            <?php foreach ($dates as $d): ?><option value="<?= h($d) ?>"><?= h(tgl($d)) ?></option><?php endforeach; ?>
+          </select></label>
+        <label class="field"><span>Nominal (Rp)</span><input type="text" name="nominal" inputmode="numeric" placeholder="150000" required></label>
+      </div>
+      <div class="fields two" style="margin-top:14px">
+        <label class="field"><span>Keterangan <small>(mis. "Tol Cipularang pergi")</small></span><input type="text" name="keterangan" maxlength="255"></label>
+        <label class="field"><span>Foto struk atau PDF</span><input type="file" name="struk" accept="image/*,application/pdf" required></label>
+      </div>
+      <div class="actions"><button class="btn deep">Simpan bukti</button><span class="upload-status" aria-live="polite"></span></div>
+    </form>
+  <?php endif; ?>
+</section>
+
+<section class="panel">
+  <h2>Rekening tujuan transfer</h2>
+  <?php if ($editable): ?>
+    <form method="post" action="<?= h(url('/saya/rekening')) ?>"><?= csrf_field() ?>
+      <div class="fields three">
+        <label class="field"><span>Nama pemilik rekening</span><input type="text" name="atas_nama" value="<?= h($inst['atas_nama']) ?>" required></label>
+        <label class="field"><span>Bank</span><input type="text" name="bank" value="<?= h($inst['bank']) ?>" placeholder="BRI" required></label>
+        <label class="field"><span>Nomor rekening</span><input type="text" name="no_rek" value="<?= h($inst['no_rek']) ?>" inputmode="numeric" required></label>
+      </div>
+      <div class="actions"><button class="btn small secondary">Simpan rekening</button></div>
+    </form>
+  <?php else: ?>
+    <dl class="kv"><dt>Atas nama</dt><dd><?= h($inst['atas_nama']) ?></dd><dt>Bank</dt><dd><?= h($inst['bank']) ?></dd><dt>Nomor</dt><dd><?= h($inst['no_rek']) ?></dd></dl>
+  <?php endif; ?>
+</section>
+
+<?php if ($st === 'draft' && $editable): ?>
+  <section class="panel">
+    <h2>Ajukan reimburse</h2>
+    <p>Pastikan semua struk sudah diunggah dan rekening sudah benar. Setelah diajukan, panitia memeriksa setiap bukti; status dan catatan panitia tampil di halaman ini.</p>
+    <form method="post" action="<?= h(url('/saya/ajukan')) ?>" data-confirm="Ajukan reimburse sebesar <?= h(rupiah($total)) ?>?"><?= csrf_field() ?>
+      <button class="btn" <?= (!$items || !$inst['no_rek']) ? 'disabled' : '' ?>>Ajukan reimburse <?= h(rupiah($total)) ?></button>
+      <?php if (!$items || !$inst['no_rek']): ?><p class="hint" style="margin-top:8px">Tambahkan minimal satu bukti dan isi rekening terlebih dahulu.</p><?php endif; ?>
+    </form>
+  </section>
+<?php endif; ?>

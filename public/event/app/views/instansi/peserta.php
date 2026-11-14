@@ -1,0 +1,99 @@
+<?php /** @var array $inst @var array $byDate @var bool $canEdit @var array $riwayat */
+$kuota = (int) setting('kuota_per_instansi');
+$names = [];
+foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama']; } }
+?>
+<?php if (!$canEdit): ?>
+  <p class="note warn">Batas perubahan peserta sudah lewat (<?= h(tgl_jam(setting('batas_ganti'))) ?>). Untuk perubahan mendesak, hubungi panitia.</p>
+<?php else: ?>
+  <p class="note">Perubahan peserta bisa dilakukan sampai <b><?= h(tgl_jam(setting('batas_ganti'))) ?></b>. Gunakan <b>Ganti peserta</b> kalau orangnya berganti; nama lama tetap tercatat di riwayat.</p>
+<?php endif; ?>
+
+<?php if (setting('info_hotel') !== '' || setting('info_shuttle') !== ''): ?>
+  <div class="grid2">
+    <?php if (setting('info_hotel') !== ''): ?><div class="panel"><h2>Hotel</h2><p class="prewrap"><?= h(setting('info_hotel')) ?></p></div><?php endif; ?>
+    <?php if (setting('info_shuttle') !== ''): ?><div class="panel"><h2>Shuttle</h2><p class="prewrap"><?= h(setting('info_shuttle')) ?></p></div><?php endif; ?>
+  </div>
+<?php endif; ?>
+
+<?php foreach ($byDate as $d => $list):
+    $aktif = array_values(array_filter($list, static fn ($p) => (int) $p['aktif'] === 1));
+    $lama = array_values(array_filter($list, static fn ($p) => (int) $p['aktif'] === 0));
+    if (!$list && !$canEdit) { continue; }
+?>
+  <section class="panel">
+    <div class="panel-head">
+      <h2><?= h(tgl($d, true)) ?></h2>
+      <span class="muted small"><?= count($aktif) ?> dari <?= $kuota ?> peserta · menginap malam <?= h(malam_menginap($d)) ?></span>
+    </div>
+    <?php if (!$aktif): ?><p class="muted">Belum ada peserta untuk tanggal ini.</p><?php endif; ?>
+    <ul class="people">
+      <?php foreach ($aktif as $p): ?>
+        <li>
+          <div class="who"><b><?= h($p['nama']) ?></b>
+            <?= $p['menginap'] ? '<span class="badge inap">Menginap</span>' : '<span class="badge muted">Tidak menginap</span>' ?>
+          </div>
+          <div class="meta"><?= h(implode(' · ', array_filter([$p['jabatan'], $p['nip'] ? 'NIP ' . $p['nip'] : null, $p['jk'] === 'L' ? 'Laki-laki' : 'Perempuan', $p['hp']]))) ?></div>
+          <?php if ($canEdit): ?>
+            <div class="inline-actions">
+              <details class="edit"><summary>Ubah data</summary>
+                <form method="post" action="<?= h(url('/saya/peserta/' . $p['id'])) ?>"><?= csrf_field() ?>
+                  <p class="hint">Untuk memperbaiki penulisan. Mengganti orang lain? Pakai "Ganti peserta".</p>
+                  <?= view('_person_fields', ['prefix' => '', 'val' => $p, 'idp' => 'u' . $p['id'], 'required' => true]) ?>
+                  <div class="actions"><button class="btn small deep">Simpan</button></div>
+                </form>
+              </details>
+              <details class="edit"><summary>Ganti peserta</summary>
+                <form method="post" action="<?= h(url('/saya/peserta/' . $p['id'] . '/ganti')) ?>"><?= csrf_field() ?>
+                  <p class="hint">Isi data orang yang menggantikan <?= h($p['nama']) ?>.</p>
+                  <?= view('_person_fields', ['prefix' => '', 'val' => ['menginap' => $p['menginap']], 'idp' => 'g' . $p['id'], 'required' => true]) ?>
+                  <div class="actions"><button class="btn small deep">Ganti peserta</button></div>
+                </form>
+              </details>
+              <form method="post" action="<?= h(url('/saya/peserta/' . $p['id'] . '/hapus')) ?>" data-confirm="<?= h($p['nama']) ?> batal ikut kegiatan tanggal <?= h(tgl($d)) ?>?"><?= csrf_field() ?>
+                <button class="linkbtn" style="color:var(--err-ink)">Batal ikut</button>
+              </form>
+            </div>
+          <?php endif; ?>
+        </li>
+      <?php endforeach; ?>
+      <?php foreach ($lama as $p): ?>
+        <li class="replaced"><div class="who"><b><?= h($p['nama']) ?></b>
+          <span class="badge muted"><?= $p['diganti_oleh'] ? 'Diganti oleh ' . h($names[$p['diganti_oleh']] ?? '-') : 'Batal ikut' ?></span></div></li>
+      <?php endforeach; ?>
+    </ul>
+    <?php if ($canEdit && count($aktif) < $kuota): ?>
+      <details class="edit"><summary>+ Tambah peserta <?= h(tgl_pendek($d)) ?></summary>
+        <form method="post" action="<?= h(url('/saya/peserta')) ?>"><?= csrf_field() ?>
+          <input type="hidden" name="tanggal" value="<?= h($d) ?>">
+          <?= view('_person_fields', ['prefix' => '', 'val' => [], 'idp' => 'n' . $d, 'required' => true, 'malam' => malam_menginap($d)]) ?>
+          <div class="actions"><button class="btn small deep">Tambah peserta</button></div>
+        </form>
+      </details>
+    <?php endif; ?>
+  </section>
+<?php endforeach; ?>
+
+<div class="grid2">
+  <section class="panel">
+    <h2>Koordinator</h2>
+    <form method="post" action="<?= h(url('/saya/instansi')) ?>"><?= csrf_field() ?>
+      <div class="fields">
+        <label class="field"><span>Nama koordinator</span><input type="text" name="koordinator" value="<?= h($inst['koordinator']) ?>" required></label>
+        <label class="field"><span>No. HP/WA</span><input type="tel" name="hp" value="<?= h($inst['hp']) ?>" required></label>
+        <label class="field"><span>Email</span><input type="email" name="email" value="<?= h($inst['email']) ?>"></label>
+      </div>
+      <div class="actions"><button class="btn small secondary">Simpan koordinator</button></div>
+    </form>
+    <p class="small muted" style="margin-top:12px">Nama instansi: <?= h($inst['nama']) ?>, <?= h($inst['kabkota']) ?>. Untuk mengubahnya, hubungi panitia.</p>
+  </section>
+  <section class="panel">
+    <h2>Riwayat perubahan</h2>
+    <?php if (!$riwayat): ?><p class="muted">Belum ada.</p><?php endif; ?>
+    <ul class="people small">
+      <?php foreach ($riwayat as $r): ?>
+        <li><?= h($r['keterangan']) ?><div class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></div></li>
+      <?php endforeach; ?>
+    </ul>
+  </section>
+</div>
