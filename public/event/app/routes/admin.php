@@ -26,8 +26,14 @@ function admin_setup(): void
             if (mb_strlen($pass) < 10) {
                 throw new UserError('Password minimal 10 karakter.');
             }
-            migrate();
-            q('INSERT INTO admin (nama, username, password_hash) VALUES (?, ?, ?)', [$nama, $user, password_hash($pass, PASSWORD_DEFAULT)]);
+            // Kunci setup sudah benar, jadi pesan error database aman ditampilkan di sini.
+            try {
+                migrate();
+                q('INSERT INTO admin (nama, username, password_hash) VALUES (?, ?, ?)', [$nama, $user, password_hash($pass, PASSWORD_DEFAULT)]);
+            } catch (PDOException $e) {
+                error_log('KALCER setup: ' . $e->getMessage());
+                throw new UserError('Gagal menyiapkan database: ' . $e->getMessage());
+            }
             session_regenerate_id(true);
             $_SESSION['admin_id'] = (int) db()->lastInsertId();
             flash('ok', 'Setup selesai. Periksa pengaturan kegiatan sebelum pendaftaran dibuka.');

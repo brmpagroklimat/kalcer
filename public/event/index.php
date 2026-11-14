@@ -11,6 +11,22 @@ require __DIR__ . '/app/routes/instansi.php';
 require __DIR__ . '/app/routes/admin.php';
 
 config();
+
+// Error tak terduga: catat di log server, tampilkan halaman yang jelas ke pengguna.
+set_exception_handler(static function (Throwable $e): void {
+    $ref = strtoupper(bin2hex(random_bytes(3)));
+    error_log("KALCER Event [$ref] " . get_class($e) . ': ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+    if (!headers_sent()) {
+        http_response_code(500);
+    }
+    echo '<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+        . '<title>Terjadi kesalahan | KALCER Event</title><body style="margin:0;background:#f4f1ec;color:#1f2d33;font-family:system-ui,sans-serif">'
+        . '<main style="max-width:36rem;margin:18vh auto;padding:0 20px"><h1 style="font-weight:500">Terjadi kesalahan di server</h1>'
+        . '<p style="color:#4f5f66;font-size:18px;line-height:1.6">Permintaan Anda tidak bisa diproses. Coba lagi beberapa saat lagi. '
+        . 'Kalau masih terjadi, sampaikan kode <b>' . $ref . '</b> ke panitia.</p>'
+        . '<p><a href="/event/" style="color:#1d4d63">Kembali ke pendaftaran</a></p></main></body></html>';
+});
+
 start_session();
 
 $method = $_SERVER['REQUEST_METHOD'];
