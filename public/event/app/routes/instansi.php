@@ -232,6 +232,30 @@ function inst_hapus_foto(string $id): void
 
 // ---------- reimburse ----------
 
+/** Total reimburse instansi: diajukan (semua struk), disetujui, sudah dibayar, sisa. */
+function reimburse_totals(int $instansiId): array
+{
+    $b = row("SELECT COALESCE(SUM(nominal), 0) diajukan,
+                     COALESCE(SUM(CASE WHEN status = 'disetujui' THEN COALESCE(nominal_disetujui, nominal) ELSE 0 END), 0) disetujui
+              FROM biaya WHERE instansi_id = ?", [$instansiId]);
+    $dibayar = (int) row('SELECT COALESCE(SUM(nominal), 0) n FROM pembayaran WHERE instansi_id = ?', [$instansiId])['n'];
+    return ['diajukan' => (int) $b['diajukan'], 'disetujui' => (int) $b['disetujui'], 'dibayar' => $dibayar, 'sisa' => max(0, (int) $b['disetujui'] - $dibayar)];
+}
+
+/** Setelah diverifikasi, status mengikuti pembayaran: belum ada → Diverifikasi, kurang → Dibayar sebagian, lunas → Dibayar. */
+function reimburse_recalc(int $instansiId): void
+{
+    $inst = row('SELECT reimburse_status FROM instansi WHERE id = ?', [$instansiId]);
+    if (!$inst || !in_array($inst['reimburse_status'], ['diverifikasi', 'sebagian', 'dibayar'], true)) {
+        return;
+    }
+    $t = reimburse_totals($instansiId);
+    $status = $t['dibayar'] <= 0 ? 'diverifikasi' : ($t['dibayar'] < $t['disetujui'] ? 'sebagian' : 'dibayar');
+    q('UPDATE instansi SET reimburse_status = ?, dibayar_at = ? WHERE id = ?', [
+        $status, $status === 'dibayar' ? date('Y-m-d H:i:s') : null, $instansiId,
+    ]);
+}
+
 function biaya_editable(array $inst): bool
 {
     return can_upload() && in_array($inst['reimburse_status'], ['draft', 'diajukan'], true);

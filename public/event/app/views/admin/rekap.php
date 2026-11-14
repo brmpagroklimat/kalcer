@@ -98,7 +98,7 @@
 <?php else:
   $masuk = array_filter($rows, static fn ($r) => $r['reimburse_status'] !== 'draft');
   $draft = array_filter($rows, static fn ($r) => $r['reimburse_status'] === 'draft' && $r['n'] > 0);
-  $sumTotal = array_sum(array_column($masuk, 'total')); $sumOk = array_sum(array_column($masuk, 'disetujui'));
+  $sumTotal = array_sum(array_column($masuk, 'total')); $sumOk = array_sum(array_column($masuk, 'disetujui')); $sumBayar = array_sum(array_column($masuk, 'dibayar'));
 ?>
   <details class="panel" style="padding:14px 18px">
     <summary>Arti status reimburse</summary>
@@ -106,9 +106,10 @@
       <dt><span class="badge draft">Belum diajukan</span></dt><dd>Instansi sedang menyiapkan: struk & rekening bisa sudah diunggah, tetapi tombol <i>Ajukan reimburse</i> belum ditekan. Belum perlu diproses panitia.</dd>
       <dt><span class="badge diajukan">Diajukan</span></dt><dd>Instansi sudah mengajukan. Panitia memeriksa setiap struk: <i>setujui</i> (nominal bisa dikoreksi) atau <i>tolak</i> dengan alasan.</dd>
       <dt><span class="badge diverifikasi">Diverifikasi</span></dt><dd>Semua struk sudah diperiksa; total disetujui sudah final dan menunggu transfer.</dd>
-      <dt><span class="badge dibayar">Dibayar</span></dt><dd>Sudah ditransfer ke rekening instansi.</dd>
+      <dt><span class="badge sebagian">Dibayar sebagian</span></dt><dd>Sebagian sudah ditransfer (dicicil); sisanya menyusul. Otomatis dari pembayaran yang dicatat panitia.</dd>
+      <dt><span class="badge dibayar">Dibayar</span></dt><dd>Lunas: total transfer sudah sama dengan total disetujui. Otomatis dari pembayaran yang dicatat.</dd>
     </dl>
-    <p class="small muted" style="margin:10px 0 0">Status diubah panitia di halaman detail instansi (bagian Reimburse). Mengembalikan ke "Belum diajukan" membuka kembali pengajuan agar instansi bisa memperbaiki.</p>
+    <p class="small muted" style="margin:10px 0 0">"Belum diajukan" dan "Diajukan" diatur instansi. Panitia memverifikasi, mencatat pembayaran (dengan bukti transfer), atau mengembalikan ke instansi di halaman detail instansi, bagian Reimburse.</p>
   </details>
   <div class="filters">
     <div class="choices" role="group" aria-label="Status reimburse">
@@ -122,12 +123,13 @@
     <div class="stat"><b><?= count($masuk) ?></b><span>instansi sudah mengajukan</span></div>
     <div class="stat"><b><?= h(rupiah($sumTotal)) ?></b><span>total diajukan</span></div>
     <div class="stat"><b><?= h(rupiah($sumOk)) ?></b><span>total disetujui</span></div>
+    <div class="stat"><b><?= h(rupiah($sumBayar)) ?></b><span>sudah dibayar (sisa <?= h(rupiah(max(0, $sumOk - $sumBayar))) ?>)</span></div>
     <div class="stat"><b><?= (int) array_sum(array_column($masuk, 'menunggu')) ?></b><span>struk menunggu diperiksa</span></div>
   </div>
   <?php if ($draft): ?><p class="small muted"><?= count($draft) ?> instansi masih menyiapkan (<?= h(rupiah(array_sum(array_column($draft, 'total')))) ?> dalam draft, belum dihitung di atas).</p><?php endif; ?>
   <div class="panel-head"><span></span><a class="btn small secondary" href="<?= h(url('/admin/ekspor/reimburse.csv')) ?>">Unduh CSV</a></div>
   <div class="table-wrap"><table>
-    <thead><tr><th>Instansi</th><th>Status</th><th class="num">Bukti</th><th class="num">Diajukan</th><th class="num">Disetujui</th><th>Rekening</th><th>Diajukan pada</th></tr></thead>
+    <thead><tr><th>Instansi</th><th>Status</th><th class="num">Bukti</th><th class="num">Diajukan</th><th class="num">Disetujui</th><th class="num">Dibayar</th><th class="num">Sisa</th><th>Rekening</th><th>Diajukan pada</th></tr></thead>
     <tbody>
     <?php foreach ($rows as $r): ?>
       <tr>
@@ -136,12 +138,14 @@
         <td class="num"><?= (int) $r['n'] ?><?php if ($r['n']): ?><br><span class="small muted"><?= (int) $r['ok'] ?> ok, <?= (int) $r['tolak'] ?> tolak, <?= (int) $r['menunggu'] ?> tunggu</span><?php endif; ?></td>
         <td class="num"><?= $r['reimburse_status'] === 'draft' ? ($r['n'] ? '<span class="muted">' . h(rupiah($r['total'])) . '<br><span class="small">draft</span></span>' : '<span class="muted">-</span>') : h(rupiah($r['total'])) ?></td>
         <td class="num"><?= $r['reimburse_status'] === 'draft' ? '<span class="muted">-</span>' : '<b>' . h(rupiah($r['disetujui'])) . '</b>' ?></td>
+        <td class="num"><?= $r['dibayar'] > 0 ? h(rupiah($r['dibayar'])) : '<span class="muted">-</span>' ?></td>
+        <td class="num"><?= in_array($r['reimburse_status'], ['diverifikasi', 'sebagian'], true) ? h(rupiah(max(0, $r['disetujui'] - $r['dibayar']))) : '<span class="muted">-</span>' ?></td>
         <td class="small"><?= $r['no_rek'] ? h($r['bank'] . ' ' . $r['no_rek']) . '<br>a.n. ' . h($r['atas_nama']) : '<span class="muted">Belum diisi</span>' ?></td>
         <td class="small"><?= $r['diajukan_at'] ? h(tgl_jam($r['diajukan_at'])) : '<span class="muted">-</span>' ?></td>
       </tr>
     <?php endforeach; ?>
-    <?php if (!$rows): ?><tr><td colspan="7" class="muted">Tidak ada data.</td></tr><?php endif; ?>
+    <?php if (!$rows): ?><tr><td colspan="9" class="muted">Tidak ada data.</td></tr><?php endif; ?>
     </tbody>
-    <?php if ($rows): ?><tfoot><tr><th colspan="3">Total (tanpa draft)</th><th class="num"><?= h(rupiah($sumTotal)) ?></th><th class="num"><?= h(rupiah($sumOk)) ?></th><th colspan="2"></th></tr></tfoot><?php endif; ?>
+    <?php if ($rows): ?><tfoot><tr><th colspan="3">Total (tanpa draft)</th><th class="num"><?= h(rupiah($sumTotal)) ?></th><th class="num"><?= h(rupiah($sumOk)) ?></th><th class="num"><?= h(rupiah($sumBayar)) ?></th><th class="num"><?= h(rupiah(max(0, $sumOk - $sumBayar))) ?></th><th colspan="2"></th></tr></tfoot><?php endif; ?>
   </table></div>
 <?php endif; ?>

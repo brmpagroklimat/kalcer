@@ -224,25 +224,101 @@ function admin_instansi_buka(string $id): void
     redirect('/saya');
 }
 
+/**
+ * Aksi panitia atas reimburse. "Belum diajukan" & "Diajukan" diatur instansi; "Dibayar sebagian"
+ * & "Dibayar" mengikuti pembayaran yang dicatat. Panitia hanya: verifikasi, kembalikan ke
+ * instansi, batalkan verifikasi, dan menyimpan catatan.
+ */
 function admin_instansi_reimburse(string $id): void
 {
     $inst = admin_find_instansi($id);
-    $status = post('status');
-    if (!isset(STATUS_REIMBURSE[$status])) {
-        throw new UserError('Status tidak valid.');
-    }
-    if ($status === 'diverifikasi') {
+    $aksi = post('aksi');
+    $st = $inst['reimburse_status'];
+    $catatan = post('catatan');
+    if ($aksi === 'verifikasi') {
+        if ($st !== 'diajukan') {
+            throw new UserError('Hanya reimburse yang sudah diajukan instansi yang bisa diverifikasi.');
+        }
         $pending = (int) row("SELECT COUNT(*) n FROM biaya WHERE instansi_id = ? AND status = 'menunggu'", [$inst['id']])['n'];
         if ($pending > 0) {
-            throw new UserError("Masih ada $pending bukti yang belum diperiksa.");
+            throw new UserError("Masih ada $pending struk yang belum diperiksa.");
         }
+        q("UPDATE instansi SET reimburse_status = 'diverifikasi' WHERE id = ?", [$inst['id']]);
+        $t = reimburse_totals((int) $inst['id']);
+        log_riwayat((int) $inst['id'], 'status', 'Reimburse diverifikasi, total disetujui ' . rupiah($t['disetujui']));
+        flash('ok', 'Reimburse diverifikasi. Total yang akan dibayar: ' . rupiah($t['disetujui']) . '.');
+    } elseif ($aksi === 'kembalikan') {
+        if (!in_array($st, ['diajukan', 'diverifikasi'], true)) {
+            throw new UserError('Reimburse ini tidak bisa dikembalikan.');
+        }
+        if ((int) row('SELECT COUNT(*) n FROM pembayaran WHERE instansi_id = ?', [$inst['id']])['n'] > 0) {
+            throw new UserError('Sudah ada pembayaran; hapus pembayaran dulu bila memang perlu dikembalikan.');
+        }
+        if ($catatan === '') {
+            throw new UserError('Tulis alasan agar instansi tahu apa yang perlu diperbaiki.');
+        }
+        q("UPDATE instansi SET reimburse_status = 'draft', catatan_panitia = ? WHERE id = ?", [$catatan, $inst['id']]);
+        log_riwayat((int) $inst['id'], 'status', "Reimburse dikembalikan ke instansi: $catatan");
+        flash('ok', 'Reimburse dikembalikan ke instansi untuk diperbaiki.');
+    } elseif ($aksi === 'batal_verifikasi') {
+        if ($st !== 'diverifikasi') {
+            throw new UserError('Verifikasi hanya bisa dibatalkan sebelum ada pembayaran.');
+        }
+        q("UPDATE instansi SET reimburse_status = 'diajukan' WHERE id = ?", [$inst['id']]);
+        log_riwayat((int) $inst['id'], 'status', 'Verifikasi reimburse dibatalkan');
+        flash('ok', 'Verifikasi dibatalkan; status kembali Diajukan.');
+    } elseif ($aksi === 'catatan') {
+        q('UPDATE instansi SET catatan_panitia = ? WHERE id = ?', [$catatan ?: null, $inst['id']]);
+        flash('ok', 'Catatan panitia disimpan.');
+    } else {
+        throw new UserError('Aksi tidak dikenal.');
     }
-    q('UPDATE instansi SET reimburse_status = ?, catatan_panitia = ?, dibayar_at = ? WHERE id = ?', [
-        $status, post('catatan') ?: null, $status === 'dibayar' ? date('Y-m-d H:i:s') : null, $inst['id'],
-    ]);
-    log_riwayat((int) $inst['id'], 'status', 'Status reimburse: ' . STATUS_REIMBURSE[$status] . (post('catatan') ? ' (' . post('catatan') . ')' : ''));
-    flash('ok', 'Status reimburse: ' . STATUS_REIMBURSE[$status] . '.');
     redirect('/admin/instansi/' . $inst['id'] . '#reimburse');
+}
+
+function admin_bayar(string $id): void
+{
+    $inst = admin_find_instansi($id);
+    if (!in_array($inst['reimburse_status'], ['diverifikasi', 'sebagian'], true)) {
+        throw new UserError('Pembayaran dicatat setelah reimburse diverifikasi (dan belum lunas).');
+    }
+    $tanggal = post('tanggal');
+    $nominal = (int) preg_replace('/\D/', '', post('nominal'));
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal) || !strtotime($tanggal)) {
+        throw new UserError('Isi tanggal transfer.');
+    }
+    $t = reimburse_totals((int) $inst['id']);
+    if ($nominal <= 0) {
+        throw new UserError('Isi nominal yang ditransfer.');
+    }
+    if ($nominal > $t['sisa']) {
+        throw new UserError('Nominal melebihi sisa yang harus dibayar (' . rupiah($t['sisa']) . ').');
+    }
+    if (empty($_FILES['bukti']['name'])) {
+        throw new UserError('Unggah bukti transfer.');
+    }
+    $saved = store_upload($_FILES['bukti'], (int) $inst['id'], 'transfer', true);
+    $admin = current_admin();
+    q('INSERT INTO pembayaran (instansi_id, tanggal, nominal, file, mime, catatan, oleh) VALUES (?, ?, ?, ?, ?, ?, ?)', [
+        $inst['id'], $tanggal, $nominal, $saved['file'], $saved['mime'], post('catatan') ?: null, $admin['nama'],
+    ]);
+    reimburse_recalc((int) $inst['id']);
+    $t = reimburse_totals((int) $inst['id']);
+    log_riwayat((int) $inst['id'], 'bayar', 'Transfer ' . rupiah($nominal) . ' (' . tgl($tanggal) . '); sisa ' . rupiah($t['sisa']));
+    flash('ok', 'Pembayaran ' . rupiah($nominal) . ' dicatat. ' . ($t['sisa'] > 0 ? 'Sisa ' . rupiah($t['sisa']) . '.' : 'Reimburse lunas.'));
+    redirect('/admin/instansi/' . $inst['id'] . '#reimburse');
+}
+
+function admin_bayar_hapus(string $id): void
+{
+    require_admin();
+    $p = row('SELECT * FROM pembayaran WHERE id = ?', [(int) $id]) ?? not_found();
+    q('DELETE FROM pembayaran WHERE id = ?', [$p['id']]);
+    delete_upload($p['file']);
+    reimburse_recalc((int) $p['instansi_id']);
+    log_riwayat((int) $p['instansi_id'], 'bayar', 'Catatan pembayaran ' . rupiah($p['nominal']) . ' (' . tgl($p['tanggal']) . ') dihapus');
+    flash('ok', 'Pembayaran dihapus.');
+    redirect('/admin/instansi/' . $p['instansi_id'] . '#reimburse');
 }
 
 function admin_biaya(string $id): void
@@ -263,6 +339,7 @@ function admin_biaya(string $id): void
     q('UPDATE biaya SET status = ?, nominal_disetujui = ?, catatan = ? WHERE id = ?', [
         $status, $status === 'disetujui' ? ($nominal ?? (int) $b['nominal']) : null, post('catatan') ?: null, $b['id'],
     ]);
+    reimburse_recalc((int) $b['instansi_id']);
     log_riwayat((int) $b['instansi_id'], 'verifikasi', JENIS_BIAYA[$b['jenis']] . ' ' . rupiah($b['nominal']) . ': ' . $status . (post('catatan') ? ' (' . post('catatan') . ')' : ''));
     redirect('/admin/instansi/' . $b['instansi_id'] . '#reimburse');
 }
@@ -360,13 +437,14 @@ function admin_ekspor(string $jenis): void
             $data[] = [$p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['kabkota'], $p['nama'], $p['nip'], $p['jabatan'], $p['hp'], jk_label($p['jk']), $p['menginap'] ? 'Ya' : 'Tidak', $p['koordinator'], $p['hp_koor']];
         }
     } else {
-        $data[] = ['Kode', 'Instansi', 'Kab/Kota', 'PIC instansi', 'HP PIC', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];
+        $data[] = ['Kode', 'Instansi', 'Kab/Kota', 'PIC instansi', 'HP PIC', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Sudah dibayar', 'Sisa', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];
         foreach (rows(
             "SELECT i.*, COUNT(b.id) n, COALESCE(SUM(b.nominal), 0) total,
-                    COALESCE(SUM(CASE WHEN b.status = 'disetujui' THEN COALESCE(b.nominal_disetujui, b.nominal) ELSE 0 END), 0) disetujui
+                    COALESCE(SUM(CASE WHEN b.status = 'disetujui' THEN COALESCE(b.nominal_disetujui, b.nominal) ELSE 0 END), 0) disetujui,
+                    (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran WHERE instansi_id = i.id) dibayar
              FROM instansi i LEFT JOIN biaya b ON b.instansi_id = i.id GROUP BY i.id ORDER BY i.nama"
         ) as $i) {
-            $data[] = [kode_instansi((int) $i['id']), $i['nama'], $i['kabkota'], $i['koordinator'], $i['hp'], STATUS_REIMBURSE[$i['reimburse_status']], $i['n'], $i['total'], $i['disetujui'], $i['bank'], $i['no_rek'] ? "'" . $i['no_rek'] : '', $i['atas_nama'], $i['diajukan_at'], $i['dibayar_at'], $i['catatan_panitia']];
+            $data[] = [kode_instansi((int) $i['id']), $i['nama'], $i['kabkota'], $i['koordinator'], $i['hp'], STATUS_REIMBURSE[$i['reimburse_status']], $i['n'], $i['total'], $i['disetujui'], $i['dibayar'], max(0, $i['disetujui'] - $i['dibayar']), $i['bank'], $i['no_rek'] ? "'" . $i['no_rek'] : '', $i['atas_nama'], $i['diajukan_at'], $i['dibayar_at'], $i['catatan_panitia']];
         }
     }
     $name = "kalcer-$jenis" . ($filterTgl ? "-$tanggal" : '') . '.csv';

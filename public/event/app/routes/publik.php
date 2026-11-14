@@ -205,7 +205,7 @@ function publik_keluar(): void
 
 function serve_upload(string $kind, string $id): void
 {
-    $table = $kind === 'e' ? 'evidence' : 'biaya';
+    $table = ['e' => 'evidence', 'b' => 'biaya', 't' => 'pembayaran'][$kind];
     $f = row("SELECT * FROM $table WHERE id = ?", [(int) $id]);
     if (!$f) {
         not_found();

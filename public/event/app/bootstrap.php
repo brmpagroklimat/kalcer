@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '5';
+const SCHEMA_VERSION = '6';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -29,6 +29,7 @@ const STATUS_REIMBURSE = [
     'draft' => 'Belum diajukan',
     'diajukan' => 'Diajukan',
     'diverifikasi' => 'Diverifikasi',
+    'sebagian' => 'Dibayar sebagian',
     'dibayar' => 'Dibayar',
 ];
 
@@ -114,6 +115,8 @@ function migrate(): void
     // Kolom tambahan pada tabel lama (MySQL 8 belum punya ADD COLUMN IF NOT EXISTS).
     ensure_column('peserta', 'kamar_id', 'INT UNSIGNED NULL');
     ensure_column('peserta', 'bagikan_kontak', 'TINYINT(1) NOT NULL DEFAULT 0');
+    // v6: status "Dibayar sebagian" (pembayaran dicicil).
+    db()->exec("ALTER TABLE instansi MODIFY reimburse_status ENUM('draft','diajukan','diverifikasi','sebagian','dibayar') NOT NULL DEFAULT 'draft'");
     // v5: publikasi per kamar. Pengaturan lama "semua dipublikasikan" dipindah ke tiap kamar.
     if (ensure_column('kamar', 'publik', 'TINYINT(1) NOT NULL DEFAULT 0') && setting('kamar_dipublikasikan') === '1') {
         db()->exec('UPDATE kamar SET publik = 1');

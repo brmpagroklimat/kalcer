@@ -86,7 +86,7 @@ $routes = [
     ['POST', '/saya/biaya', 'inst_tambah_biaya'],
     ['POST', '/saya/biaya/(\d+)/hapus', 'inst_hapus_biaya'],
     ['POST', '/saya/ajukan', 'inst_ajukan'],
-    ['GET', '/file/(e|b)/(\d+)', 'serve_upload'],
+    ['GET', '/file/(e|b|t)/(\d+)', 'serve_upload'],
 
     ['GET', '/admin/setup', 'admin_setup'],
     ['POST', '/admin/setup', 'admin_setup'],
@@ -102,6 +102,8 @@ $routes = [
     ['POST', '/admin/instansi/(\d+)/hapus', 'admin_instansi_hapus'],
     ['GET', '/admin/instansi/(\d+)/evidence\.zip', 'admin_evidence_zip'],
     ['POST', '/admin/biaya/(\d+)', 'admin_biaya'],
+    ['POST', '/admin/instansi/(\d+)/bayar', 'admin_bayar'],
+    ['POST', '/admin/bayar/(\d+)/hapus', 'admin_bayar_hapus'],
     ['GET', '/admin/rekap', 'admin_rekap'],
     ['GET', '/admin/rekap/(peserta|menginap|foto|reimburse)', 'admin_rekap'],
     ['GET', '/admin/kamar', 'admin_kamar'],

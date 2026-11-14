@@ -1,7 +1,8 @@
 <?php /** @var array $inst @var array $items @var array $dates @var bool $editable */
-$total = array_sum(array_column($items, 'nominal'));
-$disetujui = 0;
-foreach ($items as $b) { if ($b['status'] === 'disetujui') { $disetujui += (int) ($b['nominal_disetujui'] ?? $b['nominal']); } }
+$tot = reimburse_totals((int) $inst['id']);
+$total = $tot['diajukan'];
+$disetujui = $tot['disetujui'];
+$bayar = rows('SELECT * FROM pembayaran WHERE instansi_id = ? ORDER BY tanggal, id', [$inst['id']]);
 $st = $inst['reimburse_status'];
 ?>
 <div class="panel-head">
@@ -14,8 +15,10 @@ $st = $inst['reimburse_status'];
   <p class="note">Diajukan pada <?= h(tgl_jam($inst['diajukan_at'])) ?>. Panitia sedang memeriksa bukti. Anda masih bisa menambah bukti yang terlewat.</p>
 <?php elseif ($st === 'diverifikasi'): ?>
   <p class="note">Bukti sudah diverifikasi panitia. Total yang akan ditransfer: <b><?= h(rupiah($disetujui)) ?></b>.</p>
+<?php elseif ($st === 'sebagian'): ?>
+  <p class="note">Sudah ditransfer <b><?= h(rupiah($tot['dibayar'])) ?></b> dari <?= h(rupiah($disetujui)) ?>. Sisa <b><?= h(rupiah($tot['sisa'])) ?></b> akan ditransfer menyusul.</p>
 <?php elseif ($st === 'dibayar'): ?>
-  <p class="note">Sudah ditransfer pada <?= h(tgl_jam($inst['dibayar_at'])) ?> sebesar <b><?= h(rupiah($disetujui)) ?></b>.</p>
+  <p class="note">Lunas: <b><?= h(rupiah($tot['dibayar'])) ?></b> sudah ditransfer ke rekening instansi.</p>
 <?php endif; ?>
 <?php if ($inst['catatan_panitia']): ?><p class="note warn"><b>Catatan panitia:</b> <?= h($inst['catatan_panitia']) ?></p><?php endif; ?>
 <?php if (!can_upload() && $st === 'draft'): ?><p class="note warn">Batas pengajuan sudah lewat (<?= h(tgl_jam(setting('batas_upload'))) ?>). <?= hubungi_panitia('Halo panitia, kami dari ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ') ingin bertanya soal reimburse.', 'Hubungi panitia via WhatsApp') ?>.</p><?php endif; ?>
@@ -66,6 +69,22 @@ $st = $inst['reimburse_status'];
     </form>
   <?php endif; ?>
 </section>
+
+<?php if ($bayar): ?>
+<section class="panel">
+  <h2>Pembayaran dari panitia</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tanggal transfer</th><th class="num">Nominal</th><th>Bukti transfer</th><th>Catatan</th></tr></thead>
+    <tbody>
+    <?php foreach ($bayar as $p): ?>
+      <tr><td><?= h(tgl($p['tanggal'])) ?></td><td class="num"><b><?= h(rupiah($p['nominal'])) ?></b></td>
+        <td><a href="<?= h(url('/file/t/' . $p['id'])) ?>" target="_blank" rel="noopener">Lihat bukti</a></td><td class="small"><?= h($p['catatan']) ?></td></tr>
+    <?php endforeach; ?>
+    </tbody>
+    <tfoot><tr><th>Total dibayar</th><th class="num"><?= h(rupiah($tot['dibayar'])) ?></th><th colspan="2"><?= $tot['sisa'] > 0 ? 'Sisa ' . h(rupiah($tot['sisa'])) : 'Lunas' ?></th></tr></tfoot>
+  </table></div>
+</section>
+<?php endif; ?>
 
 <section class="panel">
   <h2>Rekening tujuan transfer</h2>

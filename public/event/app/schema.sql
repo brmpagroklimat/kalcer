@@ -155,3 +155,18 @@ CREATE TABLE IF NOT EXISTS tamu (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY tgl (tanggal)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v6: pembayaran reimburse (bisa dicicil), dengan bukti transfer dari panitia.
+CREATE TABLE IF NOT EXISTS pembayaran (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  instansi_id INT UNSIGNED NOT NULL,
+  tanggal DATE NOT NULL,
+  nominal BIGINT UNSIGNED NOT NULL,
+  file VARCHAR(255) NOT NULL,
+  mime VARCHAR(60) NOT NULL,
+  catatan VARCHAR(255) NULL,
+  oleh VARCHAR(160) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY inst (instansi_id),
+  CONSTRAINT fk_pembayaran_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -2,9 +2,9 @@
 $kode = kode_instansi((int) $inst['id']);
 $names = [];
 foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama']; } }
-$total = array_sum(array_column($biaya, 'nominal'));
-$disetujui = 0;
-foreach ($biaya as $b) { if ($b['status'] === 'disetujui') { $disetujui += (int) ($b['nominal_disetujui'] ?? $b['nominal']); } }
+$tot = reimburse_totals((int) $inst['id']);
+$bayar = rows('SELECT * FROM pembayaran WHERE instansi_id = ? ORDER BY tanggal, id', [$inst['id']]);
+$st = $inst['reimburse_status'];
 $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
 ?>
 <p class="small"><a href="<?= h(url('/admin/instansi')) ?>">Semua instansi</a></p>
@@ -67,7 +67,8 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
 
 <section class="panel" id="reimburse">
   <div class="panel-head"><h2>Reimburse</h2><span class="badge <?= h($inst['reimburse_status']) ?>"><?= h(STATUS_REIMBURSE[$inst['reimburse_status']]) ?></span></div>
-  <div class="totals"><span>Diajukan <b><?= h(rupiah($total)) ?></b></span><span>Disetujui <b><?= h(rupiah($disetujui)) ?></b></span>
+  <div class="totals"><span>Diajukan <b><?= h(rupiah($tot['diajukan'])) ?></b></span><span>Disetujui <b><?= h(rupiah($tot['disetujui'])) ?></b></span>
+    <span>Dibayar <b><?= h(rupiah($tot['dibayar'])) ?></b></span><?php if (in_array($st, ['diverifikasi', 'sebagian'], true)): ?><span>Sisa <b><?= h(rupiah($tot['sisa'])) ?></b></span><?php endif; ?>
     <span>Rekening: <?= $inst['no_rek'] ? h($inst['bank'] . ' ' . $inst['no_rek'] . ' a.n. ' . $inst['atas_nama']) : '<span class="muted">belum diisi</span>' ?></span></div>
   <?php if (!$biaya): ?><p class="muted">Belum ada bukti biaya.</p><?php else: ?>
   <div class="table-wrap"><table>
@@ -95,14 +96,62 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
     </tbody>
   </table></div>
   <?php endif; ?>
-  <form method="post" action="<?= h(url('/admin/instansi/' . $inst['id'] . '/reimburse')) ?>" style="margin-top:18px"><?= csrf_field() ?>
-    <div class="fields two">
-      <label class="field"><span>Status reimburse instansi</span><select name="status">
-        <?php foreach (STATUS_REIMBURSE as $k => $l): ?><option value="<?= h($k) ?>" <?= $inst['reimburse_status'] === $k ? 'selected' : '' ?>><?= h($l) ?></option><?php endforeach; ?>
-      </select><small>"Belum diajukan" mengembalikan ke instansi untuk diperbaiki.</small></label>
-      <label class="field"><span>Catatan panitia <small>(tampil di halaman instansi)</small></span><input type="text" name="catatan" value="<?= h($inst['catatan_panitia']) ?>"></label>
+  <?php $aksi = url('/admin/instansi/' . $inst['id'] . '/reimburse'); ?>
+  <div class="reimburse-actions">
+    <?php if ($st === 'draft'): ?>
+      <p class="muted" style="margin:0"><b>Belum diajukan.</b> Menunggu instansi menekan <i>Ajukan reimburse</i>. Struk bisa diperiksa lebih dulu.</p>
+    <?php elseif ($st === 'diajukan'): ?>
+      <p style="margin:0 0 10px"><b>Diajukan instansi.</b> Periksa setiap struk di atas, lalu verifikasi. Bila ada yang perlu diperbaiki instansi, kembalikan dengan alasan.</p>
+      <div class="actions" style="margin-top:0">
+        <form method="post" action="<?= h($aksi) ?>"><?= csrf_field() ?><input type="hidden" name="aksi" value="verifikasi"><button class="btn small deep">Tandai diverifikasi (<?= h(rupiah($tot['disetujui'])) ?>)</button></form>
+      </div>
+    <?php elseif ($st === 'diverifikasi' || $st === 'sebagian'): ?>
+      <p style="margin:0 0 10px"><b><?= $st === 'sebagian' ? 'Dibayar sebagian.' : 'Diverifikasi.' ?></b> Catat setiap transfer beserta buktinya. Status menjadi <i>Dibayar</i> otomatis saat total transfer mencapai <?= h(rupiah($tot['disetujui'])) ?>.</p>
+    <?php else: ?>
+      <p style="margin:0"><b>Lunas.</b> Total <?= h(rupiah($tot['dibayar'])) ?> sudah ditransfer<?= $inst['dibayar_at'] ? ' (' . h(tgl_jam($inst['dibayar_at'])) . ')' : '' ?>.</p>
+    <?php endif; ?>
+  </div>
+
+  <?php if ($bayar || in_array($st, ['diverifikasi', 'sebagian', 'dibayar'], true)): ?>
+    <h3 style="margin-top:18px">Pembayaran</h3>
+    <?php if ($bayar): ?>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tanggal transfer</th><th class="num">Nominal</th><th>Bukti transfer</th><th>Catatan</th><th>Dicatat</th><th></th></tr></thead>
+        <tbody>
+        <?php foreach ($bayar as $p): ?>
+          <tr><td><?= h(tgl($p['tanggal'])) ?></td><td class="num"><b><?= h(rupiah($p['nominal'])) ?></b></td>
+            <td><a href="<?= h(url('/file/t/' . $p['id'])) ?>" target="_blank" rel="noopener">Lihat bukti</a></td>
+            <td class="small"><?= h($p['catatan']) ?></td><td class="small"><?= h($p['oleh']) ?>, <?= h(tgl_jam($p['created_at'])) ?></td>
+            <td><form method="post" action="<?= h(url('/admin/bayar/' . $p['id'] . '/hapus')) ?>" data-confirm="Hapus catatan pembayaran <?= h(rupiah($p['nominal'])) ?> ini?"><?= csrf_field() ?><button class="linkbtn danger-link small">Hapus</button></form></td></tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table></div>
+    <?php else: ?><p class="muted small">Belum ada pembayaran.</p><?php endif; ?>
+    <?php if (in_array($st, ['diverifikasi', 'sebagian'], true)): ?>
+      <form method="post" enctype="multipart/form-data" action="<?= h(url('/admin/instansi/' . $inst['id'] . '/bayar')) ?>" class="panel" style="margin:14px 0 0;background:var(--paper)"><?= csrf_field() ?>
+        <h3 style="margin-top:0">Catat pembayaran</h3>
+        <div class="fields three">
+          <label class="field"><span>Tanggal transfer</span><input type="date" name="tanggal" value="<?= h(date('Y-m-d')) ?>" required></label>
+          <label class="field"><span>Nominal (Rp) <small>(sisa <?= h(rupiah($tot['sisa'])) ?>)</small></span><input type="text" name="nominal" inputmode="numeric" value="<?= (int) $tot['sisa'] ?>" required></label>
+          <label class="field"><span>Bukti transfer <small>(foto/PDF)</small></span><input type="file" name="bukti" accept="image/*,application/pdf" required></label>
+        </div>
+        <label class="field" style="margin-top:12px"><span>Catatan <small>(opsional, tampil di instansi)</small></span><input type="text" name="catatan" maxlength="255" placeholder="mis. Termin 1"></label>
+        <div class="actions"><button class="btn small deep">Simpan pembayaran</button></div>
+      </form>
+    <?php endif; ?>
+  <?php endif; ?>
+
+  <form method="post" action="<?= h($aksi) ?>" style="margin-top:18px"><?= csrf_field() ?>
+    <label class="field"><span>Catatan panitia <small>(tampil di halaman instansi; wajib saat mengembalikan)</small></span><input type="text" name="catatan" value="<?= h($inst['catatan_panitia']) ?>" maxlength="255"></label>
+    <div class="actions">
+      <button class="btn small secondary" name="aksi" value="catatan">Simpan catatan</button>
+      <?php if (in_array($st, ['diajukan', 'diverifikasi'], true) && !$bayar): ?>
+        <button class="btn small danger" name="aksi" value="kembalikan" onclick="return confirm('Kembalikan reimburse ke instansi untuk diperbaiki?')">Kembalikan ke instansi</button>
+      <?php endif; ?>
+      <?php if ($st === 'diverifikasi' && !$bayar): ?>
+        <button class="btn small secondary" name="aksi" value="batal_verifikasi">Batalkan verifikasi</button>
+      <?php endif; ?>
     </div>
-    <div class="actions"><button class="btn small deep">Simpan status</button></div>
   </form>
 </section>
 

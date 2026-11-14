@@ -182,7 +182,7 @@ details.edit[open] { background: var(--paper); border-radius: 10px; padding: 4px
 .badge.inap { background: #e2f2f5; color: #1d4d63; }
 .badge.ok, .badge.disetujui, .badge.dibayar { background: var(--ok-bg); color: var(--ok-ink); }
 .badge.err, .badge.ditolak { background: var(--err-bg); color: var(--err-ink); }
-.badge.warn, .badge.menunggu, .badge.diajukan { background: var(--warn-bg); color: var(--warn-ink); }
+.badge.warn, .badge.menunggu, .badge.diajukan, .badge.sebagian { background: var(--warn-bg); color: var(--warn-ink); }
 .badge.diverifikasi { background: #e2ecf5; color: #1d4d63; }
 .badge.draft, .badge.muted { background: var(--paper); color: var(--muted); border: 1px solid var(--line); }
 
@@ -325,3 +325,5 @@ input[readonly] { background: #f3f1ec; color: var(--muted); }
 .kamar-table input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--deep); }
 .kontak-grid { display: grid; gap: 8px; grid-template-columns: 1fr; }
 @media (min-width: 640px) { .kontak-grid { grid-template-columns: 1fr 1fr; } }
+
+.reimburse-actions { margin-top: 18px; padding: 14px 16px; background: var(--paper); border-radius: 10px; }

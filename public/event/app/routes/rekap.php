@@ -73,10 +73,11 @@ function admin_rekap(string $jenis = 'peserta'): void
             "SELECT i.*, COUNT(b.id) n,
                     SUM(b.status = 'menunggu') menunggu, SUM(b.status = 'disetujui') ok, SUM(b.status = 'ditolak') tolak,
                     COALESCE(SUM(b.nominal), 0) total,
-                    COALESCE(SUM(CASE WHEN b.status = 'disetujui' THEN COALESCE(b.nominal_disetujui, b.nominal) ELSE 0 END), 0) disetujui
+                    COALESCE(SUM(CASE WHEN b.status = 'disetujui' THEN COALESCE(b.nominal_disetujui, b.nominal) ELSE 0 END), 0) disetujui,
+                    (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran WHERE instansi_id = i.id) dibayar
              FROM instansi i LEFT JOIN biaya b ON b.instansi_id = i.id" .
             ($vars['status'] !== '' ? ' WHERE i.reimburse_status = ?' : '') .
-            " GROUP BY i.id ORDER BY FIELD(i.reimburse_status, 'diajukan', 'diverifikasi', 'draft', 'dibayar'), i.nama",
+            " GROUP BY i.id ORDER BY FIELD(i.reimburse_status, 'diajukan', 'diverifikasi', 'sebagian', 'draft', 'dibayar'), i.nama",
             $vars['status'] !== '' ? [$vars['status']] : []
         );
     }
