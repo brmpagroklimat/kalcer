@@ -2,9 +2,15 @@
 <h1>Foto kegiatan</h1>
 <p class="lead">Foto ini menjadi bukti sah perjalanan dan kehadiran di laporan kegiatan. Unggah minimal satu foto untuk setiap tahap.</p>
 <div class="note">
-  <p><b>Ukuran foto maksimal 1 MB.</b> Foto langsung dari kamera HP biasanya lebih besar, jadi kecilkan dulu sebelum diunggah.</p>
-  <p style="margin:0">Agar <b>waktu dan lokasi foto</b> tetap terbaca, cara paling aman adalah mengatur resolusi kamera HP ke ukuran kecil (mis. 2–3 MP) sebelum memotret. Foto yang dikirim lewat WhatsApp atau dikompres dengan aplikasi lain biasanya kehilangan data waktu kamera, sehingga ditandai "tanpa timestamp kamera".</p>
+  <p><b>Setiap foto wajib memiliki watermark tanggal, jam, dan lokasi</b> yang terlihat di foto. Gunakan aplikasi kamera ber-watermark, misalnya <i>Timestamp Camera</i> atau <i>GPS Map Camera</i> (Android/iPhone), lalu unggah fotonya dari galeri.</p>
+  <p style="margin:0"><b>Ukuran maksimal 1 MB per foto.</b> Atur resolusi di aplikasi kamera ke ukuran kecil (mis. 2–3 MP) agar foto langsung di bawah 1 MB.</p>
 </div>
+<?php if ($canUpload && $dates): ?>
+  <label class="check panel" style="padding:14px 16px">
+    <input type="checkbox" id="konfirmasi-watermark">
+    <span>Saya memastikan foto yang saya unggah sudah memiliki watermark tanggal, jam, dan lokasi yang sesuai dengan kegiatan.</span>
+  </label>
+<?php endif; ?>
 <?php if (!$canUpload): ?><p class="note warn">Batas upload sudah lewat (<?= h(tgl_jam(setting('batas_upload'))) ?>).</p><?php endif; ?>
 <?php if (!$dates): ?><p class="muted">Belum ada peserta aktif, jadi belum ada tanggal kegiatan.</p><?php endif; ?>
 
@@ -40,13 +46,13 @@
           <?php endif; ?>
           <?php if ($canUpload): ?>
             <form class="uploader js-photo" method="post" enctype="multipart/form-data" action="<?= h(url('/saya/foto')) ?>"
-                  data-instansi="<?= h($inst['nama']) ?>" data-max="<?= MAX_EVIDENCE ?>" data-tahap="<?= h($label) ?>" data-tanggal="<?= h(tgl($d)) ?>" style="margin-top:<?= $list ? '12px' : '0' ?>">
+                  data-max="<?= MAX_EVIDENCE ?>" style="margin-top:<?= $list ? '12px' : '0' ?>">
               <?= csrf_field() ?>
               <input type="hidden" name="tanggal" value="<?= h($d) ?>">
               <input type="hidden" name="tahap" value="<?= h($key) ?>">
-              <label class="btn small deep">Ambil foto<input type="file" name="foto" accept="image/*" capture="environment"></label>
-              <label class="btn small secondary">Pilih dari galeri<input type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/heic" multiple></label>
-              <noscript><button class="btn small">Unggah</button></noscript>
+              <input type="hidden" name="watermark" value="">
+              <label class="btn small deep">Pilih foto dari galeri<input type="file" name="foto" accept="image/jpeg,image/png" multiple></label>
+              <noscript><label class="check small"><input type="checkbox" name="watermark" value="1"> Foto sudah ber-watermark</label><button class="btn small">Unggah</button></noscript>
               <span class="upload-status" aria-live="polite"></span>
             </form>
           <?php endif; ?>

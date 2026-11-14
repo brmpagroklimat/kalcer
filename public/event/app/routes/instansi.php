@@ -171,22 +171,7 @@ function inst_foto(): void
         'dates' => inst_dates((int) $inst['id']),
         'foto' => $foto,
         'canUpload' => can_upload(),
-    ], ['inst' => $inst, 'tab' => 'foto', 'scripts' => ['exifr.lite.umd.js', 'upload.js']]);
-}
-
-function parse_client_datetime(string $s): ?string
-{
-    $t = strtotime($s);
-    return $s !== '' && $t ? date('Y-m-d H:i:s', $t) : null;
-}
-
-function parse_coord(string $s, float $limit): ?float
-{
-    if ($s === '' || !is_numeric($s)) {
-        return null;
-    }
-    $f = (float) $s;
-    return abs($f) <= $limit ? round($f, 6) : null;
+    ], ['inst' => $inst, 'tab' => 'foto', 'scripts' => ['upload.js']]);
 }
 
 function inst_upload_foto(): void
@@ -200,18 +185,18 @@ function inst_upload_foto(): void
     if ($tanggal !== instansi_tanggal((int) $inst['id']) || !isset(TAHAP[$tahap])) {
         throw new UserError('Pilih tanggal dan tahap foto.');
     }
+    if (post('watermark') !== '1') {
+        throw new UserError('Centang konfirmasi bahwa foto sudah ber-watermark tanggal, jam, dan lokasi.');
+    }
     $file = $_FILES['foto'] ?? [];
     if ((int) ($file['size'] ?? 0) > MAX_EVIDENCE) {
         throw new UserError('Foto maksimal 1 MB (file ini ' . ukuran($file['size']) . '). Kecilkan foto dulu lalu unggah lagi.');
     }
-    // Browser mengirim metadata EXIF yang dibaca sebelum foto dikompres.
-    $meta = [
-        'taken_at' => parse_client_datetime(post('taken_at')),
-        'lat' => parse_coord(post('lat'), 90),
-        'lon' => parse_coord(post('lon'), 180),
-    ];
-    if ($meta['taken_at'] === null && !empty($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
-        $meta = array_merge($meta, array_filter(read_exif_meta($file['tmp_name']), static fn ($v) => $v !== null));
+    // Watermark dibuat peserta (aplikasi kamera). Sistem hanya mencatat waktu & GPS dari EXIF
+    // file asli sebagai data pendukung; file disimpan ulang tanpa diubah isinya selain kompresi.
+    $meta = ['taken_at' => null, 'lat' => null, 'lon' => null];
+    if (!empty($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
+        $meta = array_merge($meta, read_exif_meta($file['tmp_name']));
     }
     $saved = store_upload($file, (int) $inst['id'], 'evidence', false);
     q('INSERT INTO evidence (instansi_id, tanggal, tahap, file, mime, size, taken_at, lat, lon, exif_ok) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [

@@ -6,7 +6,7 @@ $tanggal = $tanggal ?? null;
     <h2>Alur kegiatan</h2>
     <ol class="steps">
       <li><b>Sebelum acara</b>, lewat link instansi Anda bisa mengubah atau mengganti peserta sampai <?= h(tgl_jam(setting('batas_ganti'))) ?>.</li>
-      <li><b>Hari H</b>, unggah foto saat berangkat, tiba, kegiatan, pulang, dan tiba kembali di menu <i>Foto kegiatan</i>. Ambil foto langsung dengan kamera HP agar waktu dan lokasi foto terbaca otomatis.</li>
+      <li><b>Hari H</b>, unggah foto saat berangkat, tiba, kegiatan, pulang, dan tiba kembali di menu <i>Foto kegiatan</i>. Setiap foto wajib ber-watermark tanggal, jam, dan lokasi (pakai aplikasi kamera ber-watermark, mis. <i>Timestamp Camera</i>), maksimal 1 MB per foto.</li>
       <li><b>Setelah acara</b>, unggah struk BBM, tol, atau tiket kendaraan umum, isi rekening instansi, lalu ajukan reimburse di menu <i>Reimburse</i> sebelum <?= h(tgl_jam(setting('batas_upload'))) ?>.</li>
     </ol>
   </div>

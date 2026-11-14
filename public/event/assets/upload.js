@@ -1,37 +1,10 @@
-/* KALCER Event: upload foto evidence & struk.
- * Foto evidence: baca EXIF (waktu + GPS) dari file ASLI, kompres, tempel
- * watermark (instansi, tahap, waktu), lalu kirim. Struk: hanya dikompres.
- * Kalau gambar tidak bisa diproses di browser (mis. HEIC di Chrome), file
- * asli dikirim apa adanya dan server yang memprosesnya. */
+/* KALCER Event: upload foto dokumentasi peserta, struk biaya, dan galeri panitia.
+ * Foto peserta dikirim apa adanya (watermark dibuat peserta). Struk & galeri
+ * dikompres di browser; kalau gambar tidak bisa diproses (mis. HEIC di Chrome),
+ * file asli dikirim dan server yang memprosesnya. */
 (function () {
   'use strict';
   var MAX_SIDE = 2000;
-
-  function pad(n) { return (n < 10 ? '0' : '') + n; }
-  function fmt(d) {
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' +
-      pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-  }
-  var BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-  function human(d) {
-    return d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear() + ' ' + pad(d.getHours()) + '.' + pad(d.getMinutes());
-  }
-
-  // Catatan: opsi `pick` rusak di build lite exifr 7.1.3, jadi pakai parse() default
-  // (TIFF + EXIF + GPS, termasuk latitude/longitude desimal).
-  function readMeta(file) {
-    var out = { taken: null, lat: null, lon: null };
-    if (!window.exifr) return Promise.resolve(out);
-    return window.exifr.parse(file).then(function (m) {
-      if (!m) return out;
-      var t = m.DateTimeOriginal || m.CreateDate;
-      if (t instanceof Date && !isNaN(t)) out.taken = t;
-      if (typeof m.latitude === 'number' && typeof m.longitude === 'number' && !isNaN(m.latitude)) {
-        out.lat = m.latitude; out.lon = m.longitude;
-      }
-      return out;
-    }).catch(function () { return out; });
-  }
 
   function loadImage(file) {
     if (window.createImageBitmap) {
@@ -49,38 +22,15 @@
     });
   }
 
-  function render(file, lines, side, quality) {
+  function render(file, side, quality) {
     return loadImage(file).then(function (img) {
       var w = img.width, h = img.height, s = Math.min(1, (side || MAX_SIDE) / Math.max(w, h));
       w = Math.round(w * s); h = Math.round(h * s);
       var c = document.createElement('canvas');
       c.width = w; c.height = h;
-      var ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      if (lines && lines.length) {
-        var fs = Math.max(14, Math.round(Math.min(w, h) * 0.026));
-        var lh = Math.round(fs * 1.35), padY = Math.round(fs * 0.7);
-        var bandH = lines.length * lh + padY * 2;
-        ctx.fillStyle = 'rgba(0,0,0,0.55)';
-        ctx.fillRect(0, h - bandH, w, bandH);
-        ctx.fillStyle = '#fff';
-        ctx.font = '600 ' + fs + 'px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
-        ctx.textBaseline = 'top';
-        lines.forEach(function (t, i) { ctx.fillText(t, Math.round(fs * 0.8), h - bandH + padY + i * lh, w - fs * 1.6); });
-      }
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
       return new Promise(function (resolve) { c.toBlob(resolve, 'image/jpeg', quality || 0.85); });
     });
-  }
-
-  // Render + watermark, turunkan kualitas/resolusi sampai hasilnya <= max byte.
-  function renderFit(file, lines, max) {
-    var tries = [[2000, 0.85], [2000, 0.75], [1600, 0.75], [1280, 0.7], [1024, 0.65]];
-    function attempt(i) {
-      return render(file, lines, tries[i][0], tries[i][1]).then(function (blob) {
-        return blob.size <= max || i === tries.length - 1 ? blob : attempt(i + 1);
-      });
-    }
-    return attempt(0);
   }
 
   function mb(n) { return (n / 1048576).toFixed(1).replace('.', ','); }
@@ -136,49 +86,40 @@
     };
   }
 
-  // ---- foto evidence ----
+  // ---- foto dokumentasi peserta ----
+  // Watermark tanggal/jam/lokasi dibuat peserta dengan aplikasi kamera, jadi foto dikirim
+  // apa adanya (tanpa diubah di browser). Wajib centang konfirmasi; maks. 1 MB per foto.
+  var konfirmasi = document.getElementById('konfirmasi-watermark');
   document.querySelectorAll('form.js-photo').forEach(function (form) {
     form.addEventListener('change', function (e) {
       if (e.target.type !== 'file' || !e.target.files.length) return;
+      var st = statusUi(form);
+      if (konfirmasi && !konfirmasi.checked) {
+        st.set('Centang dulu konfirmasi bahwa foto sudah ber-watermark tanggal, jam, dan lokasi (di atas).', true);
+        e.target.value = '';
+        konfirmasi.focus();
+        return;
+      }
       var max = +form.dataset.max || 1048576;
       var all = Array.prototype.slice.call(e.target.files);
-      // Foto asli > batas ditolak: peserta diminta mengecilkan sendiri.
       var big = all.filter(function (f) { return f.size > max; });
       var files = all.filter(function (f) { return f.size <= max; });
       var tooBig = big.length ? big.map(function (f) { return f.name + ' (' + mb(f.size) + ' MB)'; }).join(', ') +
         ' melebihi ' + mb(max) + ' MB. Kecilkan foto dulu lalu unggah lagi.' : '';
-      var st = statusUi(form);
       if (!files.length) {
         st.set(tooBig, true);
         e.target.value = '';
         return;
       }
       st.lock(true);
-      var done = 0, noExif = 0;
+      var done = 0;
       files.reduce(function (p, file, i) {
         return p.then(function () {
-          st.set('Memproses foto ' + (i + 1) + ' dari ' + files.length + '…');
+          st.set('Mengunggah foto ' + (i + 1) + ' dari ' + files.length + '…');
           st.bar.style.width = '0';
-          return readMeta(file).then(function (meta) {
-            var now = new Date();
-            var lines = [
-              form.dataset.instansi + ' | ' + form.dataset.tahap + ' | ' + form.dataset.tanggal,
-              (meta.taken ? 'Foto: ' + human(meta.taken) : 'Foto: tanpa timestamp kamera') + ' | Diunggah: ' + human(now)
-            ];
-            if (meta.lat !== null) lines.push('GPS: ' + meta.lat.toFixed(5) + ', ' + meta.lon.toFixed(5));
-            if (!meta.taken) noExif++;
-            var fields = baseFields(form);
-            fields.taken_at = meta.taken ? fmt(meta.taken) : '';
-            fields.lat = meta.lat !== null ? meta.lat.toFixed(6) : '';
-            fields.lon = meta.lon !== null ? meta.lon.toFixed(6) : '';
-            return renderFit(file, lines, max)
-              .then(function (blob) { return [blob, 'foto.jpg']; }, function () { return [file, file.name]; })
-              .then(function (b) {
-                st.set('Mengunggah foto ' + (i + 1) + ' dari ' + files.length + '…');
-                return send(form, fields, b[0], b[1], st);
-              })
-              .then(function () { done++; });
-          });
+          var fields = baseFields(form);
+          fields.watermark = '1';
+          return send(form, fields, file, file.name, st).then(function () { done++; });
         });
       }, Promise.resolve())
         .then(function () {
@@ -189,7 +130,7 @@
             setTimeout(function () { location.reload(); }, 6000);
             return;
           }
-          st.set(done + ' foto terunggah' + (noExif ? ' (' + noExif + ' tanpa timestamp kamera)' : '') + '. Memuat ulang…');
+          st.set(done + ' foto terunggah. Memuat ulang…');
           location.reload();
         })
         .catch(function (err) {
@@ -206,23 +147,13 @@
   function shrink(file, max) {
     var tries = [[2000, 0.85], [2000, 0.72], [1600, 0.72], [1280, 0.7]];
     function attempt(i) {
-      return renderSized(file, tries[i][0], tries[i][1]).then(function (blob) {
+      return render(file, tries[i][0], tries[i][1]).then(function (blob) {
         if (blob.size <= max || i === tries.length - 1) return [blob, 'foto.jpg'];
         return attempt(i + 1);
       });
     }
     return attempt(0).catch(function () { return [file, file.name]; });
   }
-  function renderSized(file, side, quality) {
-    return loadImage(file).then(function (img) {
-      var s = Math.min(1, side / Math.max(img.width, img.height));
-      var c = document.createElement('canvas');
-      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      return new Promise(function (resolve) { c.toBlob(resolve, 'image/jpeg', quality); });
-    });
-  }
-
   // ---- galeri panitia: banyak foto, dikompres, dikirim satu per satu ----
   document.querySelectorAll('form.js-gallery').forEach(function (form) {
     form.dataset.fileField = 'foto';
@@ -265,7 +196,7 @@
       st.set('Memproses…');
       var prep = file.type === 'application/pdf'
         ? Promise.resolve([file, file.name])
-        : render(file, null).then(function (b) { return [b, 'struk.jpg']; }, function () { return [file, file.name]; });
+        : render(file).then(function (b) { return [b, 'struk.jpg']; }, function () { return [file, file.name]; });
       prep.then(function (b) {
         st.set('Mengunggah…');
         return send(form, baseFields(form), b[0], b[1], st);
