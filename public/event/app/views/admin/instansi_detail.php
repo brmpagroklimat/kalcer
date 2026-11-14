@@ -69,7 +69,15 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
   <div class="panel-head"><h2>Reimburse</h2><span class="badge <?= h($inst['reimburse_status']) ?>"><?= h(STATUS_REIMBURSE[$inst['reimburse_status']]) ?></span></div>
   <div class="totals"><span>Diajukan <b><?= h(rupiah($tot['diajukan'])) ?></b></span><span>Disetujui <b><?= h(rupiah($tot['disetujui'])) ?></b></span>
     <span>Dibayar <b><?= h(rupiah($tot['dibayar'])) ?></b></span><?php if (in_array($st, ['diverifikasi', 'sebagian'], true)): ?><span>Sisa <b><?= h(rupiah($tot['sisa'])) ?></b></span><?php endif; ?>
-    <span>Rekening: <?= $inst['no_rek'] ? h($inst['bank'] . ' ' . $inst['no_rek'] . ' a.n. ' . $inst['atas_nama']) : '<span class="muted">belum diisi</span>' ?></span></div>
+    <span>Rekening: <?= $inst['no_rek'] ? h($inst['bank'] . ' ' . $inst['no_rek'] . ' a.n. ' . $inst['atas_nama']) : '<span class="muted">belum diisi</span>' ?></span>
+    <details class="inline-edit"><summary>Ubah rekening</summary>
+      <form method="post" action="<?= h(url('/admin/instansi/' . $inst['id'] . '/rekening')) ?>" class="inline-form" style="margin-top:8px"><?= csrf_field() ?>
+        <input type="text" name="atas_nama" value="<?= h($inst['atas_nama']) ?>" placeholder="Atas nama" aria-label="Atas nama" required>
+        <input type="text" name="bank" value="<?= h($inst['bank']) ?>" placeholder="Bank" aria-label="Bank" required style="width:7rem">
+        <input type="text" name="no_rek" value="<?= h($inst['no_rek']) ?>" placeholder="Nomor rekening" aria-label="Nomor rekening" inputmode="numeric" required>
+        <button class="btn small secondary">Simpan</button>
+      </form>
+    </details></div>
   <?php if (!$biaya): ?><p class="muted">Belum ada bukti biaya.</p><?php else: ?>
   <div class="table-wrap"><table>
     <thead><tr><th>Bukti</th><th class="num">Nominal</th><th>Verifikasi</th></tr></thead>

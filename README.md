@@ -60,3 +60,7 @@ Config dan upload ada di luar `public_html`, jadi tidak bisa dibuka dari browser
 ```
 
 Setup lokal memakai `setup_key` `dev-setup-key` (lihat `dev/event/event-config.php`).
+
+### Alur kerja panitia (dashboard)
+
+Diagram alur di bagian bawah Dashboard panitia berasal dari `public/event/app/views/admin/_alur.php`. **Perbarui daftar `$fase` di file itu setiap kali proses bisnis berubah** (fitur baru, langkah baru, atau urutan berubah).

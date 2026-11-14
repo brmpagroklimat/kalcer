@@ -99,6 +99,7 @@ $st = $inst['reimburse_status'];
     </form>
   <?php else: ?>
     <dl class="kv"><dt>Atas nama</dt><dd><?= h($inst['atas_nama']) ?></dd><dt>Bank</dt><dd><?= h($inst['bank']) ?></dd><dt>Nomor</dt><dd><?= h($inst['no_rek']) ?></dd></dl>
+    <p class="small muted" style="margin:10px 0 0">Rekening terkunci setelah diverifikasi. Perlu diganti? <?= hubungi_panitia('Halo panitia, kami dari ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ') perlu mengganti rekening reimburse.', 'Hubungi panitia via WhatsApp') ?>.</p>
   <?php endif; ?>
 </section>
 

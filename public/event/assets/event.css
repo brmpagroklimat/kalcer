@@ -100,6 +100,7 @@ main.narrow { max-width: 680px; }
 .panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 12px; }
 .panel-head h2, .panel-head h3 { margin: 0; }
 .grid2 { display: grid; gap: 20px; }
+.grid2 > * { min-width: 0; }   /* tabel lebar tetap di dalam kolomnya (scroll), tidak melebarkan halaman */
 @media (min-width: 860px) { .grid2 { grid-template-columns: 1fr 1fr; } }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .stat { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
@@ -340,3 +341,46 @@ input[readonly] { background: #f3f1ec; color: var(--muted); }
 .activity li { padding: 7px 0; border-top: 1px solid var(--line); }
 .activity li:first-child { border-top: 0; padding-top: 0; }
 .activity .meta { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.inline-edit { flex-basis: 100%; }
+.inline-edit > summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--deep); display: inline-block; }
+.inline-edit input { min-height: 36px; padding: 6px 10px; font-size: 14px; width: auto; }
+
+/* ---------- alur kerja panitia (dashboard) ---------- */
+.alur { --lane-i: #e8f1ea; --lane-p: #e3eef2; }
+.alur-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin-bottom: 14px; color: var(--muted); }
+.alur-legend .chip-i, .alur-legend .chip-p { font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.alur-legend .chip-i { background: var(--lane-i); color: var(--leaf); }
+.alur-legend .chip-p { background: var(--lane-p); color: var(--deep); }
+.alur-cols { display: none; }
+.alur-fase { list-style: none; margin: 0; padding: 0; }
+.fase { display: grid; gap: 8px; padding-bottom: 18px; position: relative; }
+.fase-head { display: flex; gap: 10px; align-items: flex-start; }
+.fase-head b { display: block; font-size: 16px; }
+.fase-num { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--deep); color: var(--white); font-weight: 700; font-size: 14px; position: relative; z-index: 1; }
+.lane { border-radius: 10px; padding: 10px; }
+.lane-i { background: var(--lane-i); }
+.lane-p { background: var(--lane-p); }
+.lane ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.lane-kosong { color: var(--muted); font-size: 13px; padding: 4px 6px; display: block; }
+.alur-step { position: relative; }
+.alur-step + .alur-step::before { content: '↓'; position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 13px; line-height: 1; color: var(--muted); }
+.alur-step > a, .alur-step > div { display: block; background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13.5px; line-height: 1.4; color: var(--ink); text-decoration: none; }
+.alur-step.p > a:hover { border-color: var(--deep); background: #f7fbfc; }
+.alur-step .go { color: var(--deep); font-weight: 700; }
+.alur-cabang { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+@media (min-width: 860px) {
+  .alur-cols, .fase { grid-template-columns: 190px 1fr 1fr; gap: 12px; }
+  .alur-cols { display: grid; color: var(--muted); font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .alur-cols span:nth-child(2) { color: var(--leaf); }
+  .alur-cols span:nth-child(3) { color: var(--deep); }
+  /* garis penghubung antarfase */
+  .fase:not(:last-child)::before { content: ''; position: absolute; left: 14px; top: 30px; bottom: 0; width: 2px; background: var(--line); }
+  .fase:not(:last-child)::after { content: '▼'; position: absolute; left: 9px; bottom: 2px; font-size: 10px; color: #c9c2b5; }
+}
+@media (max-width: 859px) {
+  .lane::before { content: attr(aria-label); display: block; font-size: 12px; font-weight: 700; margin: 0 0 6px 2px; }
+  .lane-i::before { color: var(--leaf); }
+  .lane-p::before { color: var(--deep); }
+  .lane:has(.lane-kosong) { display: none; }
+}

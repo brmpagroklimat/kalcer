@@ -103,6 +103,7 @@ $routes = [
     ['GET', '/admin/instansi/(\d+)/evidence\.zip', 'admin_evidence_zip'],
     ['POST', '/admin/biaya/(\d+)', 'admin_biaya'],
     ['POST', '/admin/instansi/(\d+)/bayar', 'admin_bayar'],
+    ['POST', '/admin/instansi/(\d+)/rekening', 'admin_rekening'],
     ['POST', '/admin/bayar/(\d+)/hapus', 'admin_bayar_hapus'],
     ['GET', '/admin/rekap', 'admin_rekap'],
     ['GET', '/admin/rekap/(peserta|menginap|foto|reimburse)', 'admin_rekap'],

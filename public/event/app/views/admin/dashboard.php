@@ -45,3 +45,5 @@
     </ul>
   </section>
 </div>
+
+<?= view('admin/_alur') ?>

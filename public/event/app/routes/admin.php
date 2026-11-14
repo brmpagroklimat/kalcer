@@ -277,6 +277,20 @@ function admin_instansi_reimburse(string $id): void
     redirect('/admin/instansi/' . $inst['id'] . '#reimburse');
 }
 
+/** Panitia mengubah rekening instansi (mis. salah tulis setelah diverifikasi). */
+function admin_rekening(string $id): void
+{
+    $inst = admin_find_instansi($id);
+    $d = ['bank' => post('bank'), 'no_rek' => preg_replace('/\D/', '', post('no_rek')), 'atas_nama' => post('atas_nama')];
+    if (in_array('', $d, true)) {
+        throw new UserError('Lengkapi nama bank, nomor rekening, dan nama pemilik rekening.');
+    }
+    q('UPDATE instansi SET bank = ?, no_rek = ?, atas_nama = ? WHERE id = ?', [$d['bank'], $d['no_rek'], $d['atas_nama'], $inst['id']]);
+    log_riwayat((int) $inst['id'], 'rekening', 'Rekening diubah panitia: ' . $d['bank'] . ' ' . $d['no_rek'] . ' a.n. ' . $d['atas_nama']);
+    flash('ok', 'Rekening instansi diperbarui.');
+    redirect('/admin/instansi/' . $inst['id'] . '#reimburse');
+}
+
 function admin_bayar(string $id): void
 {
     $inst = admin_find_instansi($id);
