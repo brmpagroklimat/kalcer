@@ -67,14 +67,14 @@ function inst_update_instansi(): void
         'email' => post('email'),
     ];
     if ($d['koordinator'] === '' || $d['hp'] === '') {
-        throw new UserError('Nama dan HP koordinator wajib diisi.');
+        throw new UserError('Nama dan HP PIC instansi wajib diisi.');
     }
     if ($d['email'] !== '' && !filter_var($d['email'], FILTER_VALIDATE_EMAIL)) {
         throw new UserError('Format email tidak valid.');
     }
     q('UPDATE instansi SET koordinator = ?, hp = ?, email = ? WHERE id = ?', [$d['koordinator'], $d['hp'], $d['email'] ?: null, $inst['id']]);
-    log_riwayat((int) $inst['id'], 'ubah_instansi', 'Mengubah data koordinator: ' . $d['koordinator'] . ' (' . $d['hp'] . ')');
-    flash('ok', 'Data koordinator disimpan.');
+    log_riwayat((int) $inst['id'], 'ubah_instansi', 'Mengubah data PIC instansi: ' . $d['koordinator'] . ' (' . $d['hp'] . ')');
+    flash('ok', 'Data PIC instansi disimpan.');
     redirect('/saya');
 }
 

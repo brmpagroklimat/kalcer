@@ -4,7 +4,7 @@ $names = [];
 foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama']; } }
 ?>
 <?php if (!$canEdit): ?>
-  <p class="note warn">Batas perubahan peserta sudah lewat (<?= h(tgl_jam(setting('batas_ganti'))) ?>). Untuk perubahan mendesak, hubungi panitia.</p>
+  <p class="note warn">Batas perubahan peserta sudah lewat (<?= h(tgl_jam(setting('batas_ganti'))) ?>). Untuk perubahan mendesak, <?= hubungi_panitia('Halo panitia, kami perlu mengubah peserta ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ').', 'hubungi panitia via WhatsApp') ?>.</p>
 <?php else: ?>
   <p class="note">Perubahan peserta bisa dilakukan sampai <b><?= h(tgl_jam(setting('batas_ganti'))) ?></b>. Gunakan <b>Ganti peserta</b> kalau orangnya berganti; nama lama tetap tercatat di riwayat.</p>
 <?php endif; ?>
@@ -49,7 +49,7 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
                 </form>
               </details>
               <form method="post" action="<?= h(url('/saya/peserta/' . $p['id'] . '/hapus')) ?>" data-confirm="<?= h($p['nama']) ?> batal ikut kegiatan tanggal <?= h(tgl($d)) ?>?"><?= csrf_field() ?>
-                <button class="linkbtn" style="color:var(--err-ink)">Batal ikut</button>
+                <button class="linkbtn danger-link">Batal ikut</button>
               </form>
             </div>
           <?php endif; ?>
@@ -74,16 +74,16 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
 
 <div class="grid2">
   <section class="panel">
-    <h2>Koordinator</h2>
+    <h2>PIC instansi</h2>
     <form method="post" action="<?= h(url('/saya/instansi')) ?>"><?= csrf_field() ?>
       <div class="fields">
-        <label class="field"><span>Nama koordinator</span><input type="text" name="koordinator" value="<?= h($inst['koordinator']) ?>" required></label>
+        <label class="field"><span>Nama PIC</span><input type="text" name="koordinator" value="<?= h($inst['koordinator']) ?>" required></label>
         <label class="field"><span>No. HP/WA</span><input type="tel" name="hp" value="<?= h($inst['hp']) ?>" required></label>
         <label class="field"><span>Email</span><input type="email" name="email" value="<?= h($inst['email']) ?>"></label>
       </div>
-      <div class="actions"><button class="btn small secondary">Simpan koordinator</button></div>
+      <div class="actions"><button class="btn small secondary">Simpan PIC</button></div>
     </form>
-    <p class="small muted" style="margin-top:12px">Nama instansi: <?= h($inst['nama']) ?>, <?= h($inst['kabkota']) ?>. Untuk mengubahnya, hubungi panitia.</p>
+    <p class="small muted" style="margin-top:12px">Nama instansi: <?= h($inst['nama']) ?>, <?= h($inst['kabkota']) ?>. Untuk mengubahnya, <?= hubungi_panitia('Halo panitia, kami ingin mengubah nama instansi ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ').', 'hubungi panitia via WhatsApp') ?>.</p>
   </section>
   <section class="panel">
     <h2>Riwayat perubahan</h2>

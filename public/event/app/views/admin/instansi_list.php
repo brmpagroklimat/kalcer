@@ -1,7 +1,7 @@
 <?php /** @var array $list @var string $cari @var string $tanggal @var string $status */ ?>
 <h1>Instansi</h1>
 <form class="filters" method="get">
-  <label class="field"><span>Cari</span><input type="text" name="q" value="<?= h($cari) ?>" placeholder="Nama, kab/kota, koordinator, atau kode"></label>
+  <label class="field"><span>Cari</span><input type="text" name="q" value="<?= h($cari) ?>" placeholder="Nama, kab/kota, PIC, atau kode"></label>
   <label class="field"><span>Tanggal</span><select name="tanggal"><option value="">Semua</option>
     <?php foreach (event_dates() as $d): ?><option value="<?= h($d) ?>" <?= $tanggal === $d ? 'selected' : '' ?>><?= h(tgl($d)) ?></option><?php endforeach; ?></select></label>
   <label class="field"><span>Reimburse</span><select name="status"><option value="">Semua</option>
@@ -10,7 +10,7 @@
 </form>
 <p class="muted small"><?= count($list) ?> instansi.</p>
 <div class="table-wrap"><table>
-  <thead><tr><th>Kode</th><th>Instansi</th><th>Koordinator</th><th>Peserta</th><th class="num">Menginap</th><th class="num">Foto</th><th>Reimburse</th></tr></thead>
+  <thead><tr><th>Kode</th><th>Instansi</th><th>PIC instansi</th><th>Peserta</th><th class="num">Menginap</th><th class="num">Foto</th><th>Reimburse</th></tr></thead>
   <tbody>
   <?php foreach ($list as $i): ?>
     <tr>

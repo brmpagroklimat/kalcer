@@ -7,7 +7,7 @@ $lokasi = setting('lokasi');
     <p class="when"><?= implode(' dan ', array_map(static fn ($d) => h(tgl($d, true)), $dates)) ?><?= $lokasi !== '' ? '<br>' . h($lokasi) : '' ?></p>
     <?php if (setting('deskripsi') !== ''): ?><p class="desc prewrap"><?= h(setting('deskripsi')) ?></p><?php endif; ?>
     <div class="actions">
-      <?php if ($open): ?><a class="btn" href="<?= h(url('/daftar')) ?>">Daftarkan instansi</a><?php endif; ?>
+      <?php if ($open): ?><a class="btn" href="<?= h(url('/daftar')) ?>">Registrasi</a><?php endif; ?>
       <?php if ($nMateri): ?><a class="btn secondary" href="<?= h(url('/materi')) ?>">Unduh materi</a><?php endif; ?>
     </div>
   </div>
@@ -17,9 +17,9 @@ $lokasi = setting('lokasi');
 <div class="cards">
   <a class="card" href="<?= h(url('/daftar')) ?>">
     <span class="shape" aria-hidden="true"><span style="inset:0;background:var(--deep);border-radius:100% 0 0 0"></span><span style="right:0;bottom:0;width:18px;height:18px;background:var(--sun);border-radius:50%"></span></span>
-    <h2>Pendaftaran</h2>
-    <p><?= $open ? 'Dibuka sampai ' . h(tgl_jam(setting('batas_daftar'))) . '. Setiap instansi memilih satu tanggal, maksimal ' . (int) setting('kuota_per_instansi') . ' peserta.' : 'Pendaftaran sudah ditutup.' ?></p>
-    <span class="go"><?= $open ? 'Isi formulir' : 'Lihat info' ?></span>
+    <h2>Registrasi</h2>
+    <p><?= $open ? 'Dibuka sampai ' . h(tgl_jam(setting('batas_daftar'))) . '. Setiap instansi memilih satu tanggal, maksimal ' . (int) setting('kuota_per_instansi') . ' peserta.' : 'Registrasi sudah ditutup.' ?></p>
+    <span class="go"><?= $open ? 'Registrasi' : 'Lihat info' ?></span>
   </a>
   <a class="card" href="<?= h(url('/materi')) ?>">
     <span class="shape" aria-hidden="true"><span style="left:0;bottom:0;width:40px;height:20px;background:var(--sand);border-radius:20px 20px 0 0"></span><span style="left:10px;top:0;width:20px;height:20px;background:var(--leaf);border-radius:100% 0 100% 0"></span></span>
@@ -35,4 +35,4 @@ $lokasi = setting('lokasi');
   </a>
 </div>
 
-<p class="note">Sudah mendaftar? Buka <b>link instansi</b> yang Anda terima setelah mendaftar untuk mengelola peserta, mengunggah foto kegiatan, dan mengajukan reimburse.<?= setting('kontak_panitia') !== '' ? ' Link hilang? Hubungi panitia: ' . h(setting('kontak_panitia')) . '.' : '' ?></p>
+<p class="note">Sudah registrasi? Buka <b>link instansi</b> yang Anda terima setelah registrasi untuk mengelola peserta, mengunggah foto kegiatan, dan mengajukan reimburse. Link hilang? <?= hubungi_panitia('Halo panitia ' . setting('nama_kegiatan') . ', link instansi kami hilang. Nama instansi: ') ?>.</p>

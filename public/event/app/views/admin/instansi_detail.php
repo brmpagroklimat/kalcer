@@ -15,14 +15,14 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
     <a class="btn small secondary" href="<?= h(url('/admin/instansi/' . $inst['id'] . '/evidence.zip')) ?>">Unduh ZIP bukti</a>
   </div>
 </div>
-<p class="muted"><?= h($inst['kabkota']) ?>. Koordinator <?= h($inst['koordinator']) ?>, <a href="https://wa.me/<?= h($waHp) ?>" target="_blank" rel="noopener"><?= h($inst['hp']) ?></a><?= $inst['email'] ? ', ' . h($inst['email']) : '' ?>. Daftar <?= h(tgl_jam($inst['created_at'])) ?>.</p>
+<p class="muted"><?= h($inst['kabkota']) ?>. PIC <?= h($inst['koordinator']) ?>, <a href="https://wa.me/<?= h($waHp) ?>" target="_blank" rel="noopener"><?= h($inst['hp']) ?></a><?= $inst['email'] ? ', ' . h($inst['email']) : '' ?>. Registrasi <?= h(tgl_jam($inst['created_at'])) ?>.</p>
 
 <?php if ($newLink): ?>
   <div class="panel" style="border-color:var(--deep)">
     <h2>Link baru untuk <?= h($inst['nama']) ?></h2>
-    <p>Link lama sudah tidak berlaku. <?= $newLink['mailed'] ? 'Link juga sudah dikirim ke ' . h($inst['email']) . '.' : 'Kirimkan link ini ke koordinator.' ?></p>
+    <p>Link lama sudah tidak berlaku. <?= $newLink['mailed'] ? 'Link juga sudah dikirim ke ' . h($inst['email']) . '.' : 'Kirimkan link ini ke PIC instansi.' ?></p>
     <div class="linkbox"><input id="newlink" type="text" readonly value="<?= h($newLink['link']) ?>"><button class="btn deep" type="button" data-copy="#newlink">Salin link</button></div>
-    <a class="btn secondary" href="https://wa.me/<?= h($waHp) ?>?text=<?= h(rawurlencode('Link instansi ' . $inst['nama'] . ' untuk ' . setting('nama_kegiatan') . ': ' . $newLink['link'])) ?>" target="_blank" rel="noopener">Kirim ke WA koordinator</a>
+    <a class="btn secondary" href="https://wa.me/<?= h($waHp) ?>?text=<?= h(rawurlencode('Link instansi ' . $inst['nama'] . ' untuk ' . setting('nama_kegiatan') . ': ' . $newLink['link'])) ?>" target="_blank" rel="noopener">Kirim ke WA PIC instansi</a>
   </div>
 <?php endif; ?>
 

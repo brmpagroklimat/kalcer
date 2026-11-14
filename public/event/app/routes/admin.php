@@ -37,7 +37,7 @@ function admin_setup(): void
             }
             session_regenerate_id(true);
             $_SESSION['admin_id'] = (int) db()->lastInsertId();
-            flash('ok', 'Setup selesai. Periksa pengaturan kegiatan sebelum pendaftaran dibuka.');
+            flash('ok', 'Setup selesai. Periksa pengaturan kegiatan sebelum registrasi dibuka.');
             redirect('/admin/pengaturan');
         } catch (UserError $e) {
             $error = $e->getMessage();
@@ -209,7 +209,7 @@ function admin_instansi_detail(string $id): void
 function admin_instansi_link(string $id): void
 {
     $inst = admin_find_instansi($id);
-    [$token, $hash] = new_token();
+    [$token, $hash] = new_token($inst['nama']);
     q('UPDATE instansi SET token_hash = ? WHERE id = ?', [$hash, $inst['id']]);
     log_riwayat((int) $inst['id'], 'link_baru', 'Link instansi diterbitkan ulang; link lama tidak berlaku.');
     $mailed = mail_link_instansi($inst, $token);
@@ -344,7 +344,7 @@ function admin_ekspor(string $jenis): void
     $data = [];
     if ($jenis === 'peserta' || $jenis === 'menginap') {
         $data[] = $jenis === 'peserta'
-            ? ['Tanggal', 'Kode', 'Instansi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'JK', 'Menginap', 'Koordinator', 'HP koordinator']
+            ? ['Tanggal', 'Kode', 'Instansi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'JK', 'Menginap', 'PIC instansi', 'HP PIC']
             : ['Malam', 'Tanggal acara', 'Kode', 'Instansi', 'Nama', 'JK', 'HP'];
         $sql = 'SELECT p.*, i.nama instansi, i.kabkota, i.koordinator, i.hp hp_koor FROM peserta p JOIN instansi i ON i.id = p.instansi_id
                 WHERE p.aktif = 1' . ($jenis === 'menginap' ? ' AND p.menginap = 1' : '') . ($filterTgl ? ' AND p.tanggal = ?' : '') .
@@ -355,7 +355,7 @@ function admin_ekspor(string $jenis): void
                 : [malam_menginap($p['tanggal']), $p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['nama'], $p['jk'], $p['hp']];
         }
     } else {
-        $data[] = ['Kode', 'Instansi', 'Kab/Kota', 'Koordinator', 'HP', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];
+        $data[] = ['Kode', 'Instansi', 'Kab/Kota', 'PIC instansi', 'HP PIC', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];
         foreach (rows(
             "SELECT i.*, COUNT(b.id) n, COALESCE(SUM(b.nominal), 0) total,
                     COALESCE(SUM(CASE WHEN b.status = 'disetujui' THEN COALESCE(b.nominal_disetujui, b.nominal) ELSE 0 END), 0) disetujui
@@ -375,15 +375,16 @@ const SETTING_FIELDS = [
     'deskripsi' => 'Deskripsi kegiatan',
     'lokasi' => 'Lokasi kegiatan',
     'tanggal_acara' => 'Tanggal acara',
-    'daftar_dibuka' => 'Pendaftaran dibuka',
-    'batas_daftar' => 'Batas pendaftaran',
+    'daftar_dibuka' => 'Registrasi dibuka',
+    'batas_daftar' => 'Batas registrasi',
     'batas_ganti' => 'Batas perubahan peserta',
     'batas_upload' => 'Batas upload foto & bukti biaya',
     'kuota_per_instansi' => 'Maks. peserta per instansi',
     'kuota_per_hari' => 'Kuota peserta per hari (0 = tanpa batas)',
     'info_hotel' => 'Info hotel',
     'info_shuttle' => 'Info shuttle',
-    'kontak_panitia' => 'Kontak panitia',
+    'kontak_panitia' => 'Nama kontak panitia',
+    'wa_panitia' => 'No. WhatsApp panitia',
 ];
 
 function admin_pengaturan(): void

@@ -3,16 +3,16 @@
 $o = static fn (string $k) => (string) ($old[$k] ?? '');
 $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
 ?>
-<h1>Pendaftaran</h1>
-<p class="lead">Setiap instansi memilih satu tanggal dan mendaftarkan paling banyak <?= (int) $kuota ?> peserta. Setelah mendaftar, Anda mendapat link khusus instansi beserta panduan kegiatan.</p>
-<p class="note">Sudah mendaftar? Buka <b>link instansi</b> yang Anda terima setelah mendaftar. Link hilang? Hubungi panitia<?= setting('kontak_panitia') !== '' ? ': ' . h(setting('kontak_panitia')) : '' ?>.</p>
+<h1>Registrasi</h1>
+<p class="lead">Setiap instansi memilih satu tanggal dan meregistrasi paling banyak <?= (int) $kuota ?> peserta. Setelah registrasi, Anda mendapat link khusus instansi beserta panduan kegiatan.</p>
+<p class="note">Sudah registrasi? Buka <b>link instansi</b> yang Anda terima setelah registrasi. Link hilang? <?= hubungi_panitia('Halo panitia ' . setting('nama_kegiatan') . ', link instansi kami hilang. Nama instansi: ') ?>.</p>
 
 <?php if (!$open): ?>
-  <div class="panel"><h2>Pendaftaran ditutup</h2><p>Pendaftaran tidak dibuka saat ini. Hubungi panitia untuk informasi lebih lanjut.</p></div>
+  <div class="panel"><h2>Registrasi ditutup</h2><p>Registrasi tidak dibuka saat ini. Untuk informasi lebih lanjut, <?= hubungi_panitia() ?>.</p></div>
 <?php else: ?>
 <form method="post" action="<?= h(url('/daftar')) ?>" class="panel" id="daftar" novalidate>
-  <h2>Formulir pendaftaran</h2>
-  <p class="muted small">Batas pendaftaran: <?= h(tgl_jam(setting('batas_daftar'))) ?>.</p>
+  <h2>Formulir registrasi</h2>
+  <p class="muted small">Batas registrasi: <?= h(tgl_jam(setting('batas_daftar'))) ?>.</p>
   <?php if ($errors): ?>
     <div class="errors" role="alert" tabindex="-1" id="form-errors"><ul><?php foreach ($errors as $e): ?><li><?= h($e) ?></li><?php endforeach; ?></ul></div>
   <?php endif; ?>
@@ -25,9 +25,9 @@ $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
     <div class="fields two">
       <label class="field"><span>Nama instansi</span><input type="text" name="nama" value="<?= h($o('nama')) ?>" maxlength="200" required></label>
       <label class="field"><span>Kabupaten/kota</span><input type="text" name="kabkota" value="<?= h($o('kabkota')) ?>" maxlength="120" required></label>
-      <label class="field"><span>Nama koordinator</span><input type="text" name="koordinator" value="<?= h($o('koordinator')) ?>" maxlength="150" required></label>
-      <label class="field"><span>No. HP/WA koordinator</span><input type="tel" name="hp" value="<?= h($o('hp')) ?>" inputmode="tel" maxlength="30" required></label>
-      <label class="field"><span>Email koordinator <small>(opsional, link instansi dikirim ke sini)</small></span><input type="email" name="email" value="<?= h($o('email')) ?>" maxlength="190"></label>
+      <label class="field"><span>Nama PIC instansi</span><input type="text" name="koordinator" value="<?= h($o('koordinator')) ?>" maxlength="150" required></label>
+      <label class="field"><span>No. HP/WA PIC instansi</span><input type="tel" name="hp" value="<?= h($o('hp')) ?>" inputmode="tel" maxlength="30" required></label>
+      <label class="field"><span>Email PIC instansi <small>(opsional, link instansi dikirim ke sini)</small></span><input type="email" name="email" value="<?= h($o('email')) ?>" maxlength="190"></label>
     </div>
   </fieldset>
 
@@ -54,8 +54,8 @@ $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
   <?php endforeach; ?>
 
   <div class="actions">
-    <button class="btn" type="submit">Daftarkan instansi</button>
-    <span class="hint">Setelah mendaftar, Anda mendapat link khusus untuk mengelola peserta dan mengunggah bukti.</span>
+    <button class="btn" type="submit">Registrasi</button>
+    <span class="hint">Setelah registrasi, Anda mendapat link khusus untuk mengelola peserta dan mengunggah bukti.</span>
   </div>
 </form>
 <?php endif; ?>

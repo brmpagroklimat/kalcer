@@ -4,7 +4,7 @@ $inst = $inst ?? null;
 $isAdmin = current_admin() !== null;
 $admin = !empty($admin);
 $flashes = take_flash();
-$v = '9';
+$v = '10';
 ?>
 <!doctype html>
 <html lang="id">
@@ -28,12 +28,13 @@ $v = '9';
       <nav class="topnav" aria-label="Menu panitia">
         <a href="<?= h(url('/admin')) ?>">Dashboard</a>
         <a href="<?= h(url('/admin/instansi')) ?>">Instansi</a>
+        <a href="<?= h(url('/admin/rekap')) ?>">Rekap</a>
         <a href="<?= h(url('/admin/konten')) ?>">Materi & galeri</a>
         <a href="<?= h(url('/admin/pengaturan')) ?>">Pengaturan</a>
         <a href="<?= h(url('/')) ?>">Lihat situs</a>
         <form method="post" action="<?= h(url('/admin/keluar')) ?>"><?= csrf_field() ?><button class="linkbtn">Keluar</button></form>
       </nav>
-    <?php else: $navItems = ['beranda' => ['/', 'Beranda'], 'daftar' => ['/daftar', 'Pendaftaran'], 'materi' => ['/materi', 'Materi'], 'galeri' => ['/galeri', 'Galeri']]; ?>
+    <?php else: $navItems = ['beranda' => ['/', 'Beranda'], 'daftar' => ['/daftar', 'Registrasi'], 'materi' => ['/materi', 'Materi'], 'galeri' => ['/galeri', 'Galeri']]; ?>
       <nav class="topnav" aria-label="Menu utama">
         <?php foreach ($navItems as $key => [$href, $label]): ?>
           <a href="<?= h(url($href)) ?>" <?= ($nav ?? '') === $key ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>

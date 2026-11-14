@@ -1,7 +1,7 @@
 <?php /** @var array $inst @var string $link @var bool $mailed */
 $wa = 'Link instansi ' . $inst['nama'] . ' untuk ' . setting('nama_kegiatan') . ' (ubah peserta, upload foto & bukti biaya): ' . $link;
 ?>
-<h1>Pendaftaran berhasil</h1>
+<h1>Registrasi berhasil</h1>
 <p class="lead"><?= h($inst['nama']) ?> terdaftar dengan kode <b><?= h(kode_instansi((int) $inst['id'])) ?></b>.</p>
 
 <div class="panel">

@@ -46,8 +46,8 @@ function config(?string $key = null)
                 . '<title>Segera dibuka | KALCER Event</title>'
                 . '<!-- event-config.php tidak ditemukan di folder induk public_html. Lihat README repo (bagian Event). -->'
                 . '<body style="margin:0;background:#f4f1ec;color:#1f2d33;font-family:system-ui,sans-serif">'
-                . '<main style="max-width:36rem;margin:18vh auto;padding:0 20px"><h1 style="font-weight:500">Pendaftaran segera dibuka</h1>'
-                . '<p style="color:#4f5f66;font-size:18px;line-height:1.6">Halaman pendaftaran kegiatan KALCER sedang disiapkan panitia. Silakan kembali lagi nanti.</p>'
+                . '<main style="max-width:36rem;margin:18vh auto;padding:0 20px"><h1 style="font-weight:400">Registrasi segera dibuka</h1>'
+                . '<p style="color:#4f5f66;font-size:18px;line-height:1.6">Halaman registrasi kegiatan KALCER sedang disiapkan panitia. Silakan kembali lagi nanti.</p>'
                 . '<p><a href="/" style="color:#1d4d63">Kembali ke KALCER</a></p></main></body></html>';
             exit;
         }
@@ -130,6 +130,7 @@ const SETTING_DEFAULTS = [
     'info_hotel' => '',
     'info_shuttle' => '',
     'kontak_panitia' => '',
+    'wa_panitia' => '',
 ];
 
 function setting(string $k): string
@@ -211,10 +212,30 @@ function take_flash(): array
 
 // ---------- token instansi ----------
 
-function new_token(): array
+/**
+ * Link instansi: "<slug-nama-instansi>-<12 karakter acak>". Slug hanya penanda agar mudah
+ * dikenali; yang rahasia (dan yang di-hash di database) adalah 12 karakter acak (~62 bit).
+ * @return array{0:string,1:string} [token untuk URL, hash]
+ */
+function new_token(string $namaInstansi = ''): array
 {
-    $token = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
-    return [$token, hash('sha256', $token)];
+    $abc = 'abcdefghijkmnpqrstuvwxyz23456789';
+    $secret = '';
+    for ($i = 0; $i < 12; $i++) {
+        $secret .= $abc[random_int(0, strlen($abc) - 1)];
+    }
+    $slug = trim(substr(strtolower(trim((string) preg_replace('/[^A-Za-z0-9]+/', '-', $namaInstansi), '-')), 0, 40), '-');
+    return [($slug !== '' ? $slug . '-' : '') . $secret, hash('sha256', $secret)];
+}
+
+/** Cari instansi dari token di URL (format baru "slug-rahasia" maupun format lama). */
+function find_instansi_by_token(string $token): ?array
+{
+    $r = row('SELECT id FROM instansi WHERE token_hash = ?', [hash('sha256', $token)]);
+    if (!$r && preg_match('/(?:^|-)([a-z2-9]{12})$/', $token, $m)) {
+        $r = row('SELECT id FROM instansi WHERE token_hash = ?', [hash('sha256', $m[1])]);
+    }
+    return $r;
 }
 
 function instansi_link(string $token): string
@@ -337,6 +358,38 @@ function json_ok(array $data = []): void
     exit;
 }
 
+/**
+ * Kontak panitia: nama (setting kontak_panitia) + nomor WhatsApp (setting wa_panitia).
+ * Kompatibel dengan isian lama "Nama, 0812-xxx" di kontak_panitia.
+ * @return array{nama:string,wa:string}
+ */
+function kontak_panitia(): array
+{
+    $nama = setting('kontak_panitia');
+    $wa = setting('wa_panitia');
+    if ($wa === '' && preg_match('/\+?\d[\d\s.-]{6,}\d/', $nama, $m)) {
+        $wa = $m[0];
+        $nama = trim(str_replace($m[0], '', $nama), " ,;-");
+    }
+    $digits = preg_replace('/\D/', '', $wa);
+    if (str_starts_with($digits, '0')) {
+        $digits = '62' . substr($digits, 1);
+    }
+    return ['nama' => $nama, 'wa' => $digits];
+}
+
+/** Tautan "Hubungi panitia" ke WhatsApp (nomor tidak ditampilkan). */
+function hubungi_panitia(string $pesan = '', string $label = 'Hubungi panitia via WhatsApp'): string
+{
+    $k = kontak_panitia();
+    if ($k['wa'] === '') {
+        return 'hubungi panitia';
+    }
+    $pesan = $pesan !== '' ? $pesan : 'Halo panitia ' . setting('nama_kegiatan') . ', saya ingin bertanya.';
+    return '<a class="wa-link" href="https://wa.me/' . h($k['wa']) . '?text=' . h(rawurlencode($pesan)) . '" target="_blank" rel="noopener">'
+        . h($label) . ($k['nama'] !== '' ? ' (' . h($k['nama']) . ')' : '') . '</a>';
+}
+
 function wa_link(string $text): string
 {
     return 'https://wa.me/?text=' . rawurlencode($text);
@@ -370,7 +423,7 @@ function render(string $name, string $title, array $vars = [], array $opts = [])
 function not_found(): void
 {
     http_response_code(404);
-    render_page('Halaman tidak ditemukan', '<h1>Halaman tidak ditemukan</h1><p>Alamat ini tidak ada. <a href="' . h(url('/')) . '">Kembali ke pendaftaran</a>.</p>');
+    render_page('Halaman tidak ditemukan', '<h1>Halaman tidak ditemukan</h1><p>Alamat ini tidak ada. <a href="' . h(url('/')) . '">Kembali ke beranda</a>.</p>');
     exit;
 }
 

@@ -19,7 +19,7 @@ function form_stamp_ok(string $s): bool
 
 function publik_home(array $old = [], array $errors = []): void
 {
-    render('publik/home', 'Pendaftaran', [
+    render('publik/home', 'Registrasi', [
         'old' => $old,
         'errors' => $errors,
         'dates' => event_dates(),
@@ -75,7 +75,7 @@ function check_kuota(int $instansiId, string $tanggal, int $tambah): void
 function publik_daftar(): void
 {
     if (!(setting('daftar_dibuka') === '1' && before('batas_daftar'))) {
-        throw new UserError('Pendaftaran sudah ditutup.');
+        throw new UserError('Registrasi sudah ditutup.');
     }
     $old = $_POST;
     $errors = [];
@@ -90,16 +90,16 @@ function publik_daftar(): void
             'hp' => normalize_hp(post('hp')),
             'email' => post('email'),
         ];
-        foreach (['nama' => 'Nama instansi', 'kabkota' => 'Kabupaten/kota', 'koordinator' => 'Nama koordinator', 'hp' => 'HP/WA koordinator'] as $k => $label) {
+        foreach (['nama' => 'Nama instansi', 'kabkota' => 'Kabupaten/kota', 'koordinator' => 'Nama PIC instansi', 'hp' => 'HP/WA PIC instansi'] as $k => $label) {
             if ($inst[$k] === '') {
                 throw new UserError("$label wajib diisi.");
             }
         }
         if ($inst['email'] !== '' && !filter_var($inst['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new UserError('Format email koordinator tidak valid.');
+            throw new UserError('Format email PIC instansi tidak valid.');
         }
         if (row('SELECT id FROM instansi WHERE LOWER(nama) = LOWER(?) AND LOWER(kabkota) = LOWER(?)', [$inst['nama'], $inst['kabkota']])) {
-            throw new UserError('Instansi ini sudah terdaftar. Gunakan link instansi yang sudah dikirim, atau hubungi panitia untuk meminta link baru.');
+            throw new UserError('Instansi ini sudah teregistrasi. Gunakan link instansi yang sudah dikirim, atau hubungi panitia untuk meminta link baru.');
         }
 
         // Satu instansi hanya ikut satu tanggal.
@@ -123,7 +123,7 @@ function publik_daftar(): void
             check_kuota(0, $tgl, count(array_filter($semua, static fn ($p) => $p['tanggal'] === $tgl)));
         }
 
-        [$token, $hash] = new_token();
+        [$token, $hash] = new_token($inst['nama']);
         db()->beginTransaction();
         q('INSERT INTO instansi (nama, kabkota, koordinator, hp, email, token_hash) VALUES (?, ?, ?, ?, ?, ?)', [
             $inst['nama'], $inst['kabkota'], $inst['koordinator'], $inst['hp'], $inst['email'] ?: null, $hash,
@@ -134,7 +134,7 @@ function publik_daftar(): void
                 $id, $p['tanggal'], $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'],
             ]);
         }
-        log_riwayat($id, 'daftar', 'Mendaftar dengan ' . count($semua) . ' peserta: ' . implode(', ', array_column($semua, 'nama')));
+        log_riwayat($id, 'daftar', 'Registrasi dengan ' . count($semua) . ' peserta: ' . implode(', ', array_column($semua, 'nama')));
         db()->commit();
 
         $instRow = row('SELECT * FROM instansi WHERE id = ?', [$id]);
@@ -160,12 +160,12 @@ function publik_terdaftar(): void
         redirect('/saya');
     }
     unset($_SESSION['new_token']);
-    render('publik/terdaftar', 'Pendaftaran berhasil', ['inst' => $inst, 'link' => instansi_link($new['token']), 'mailed' => $new['mailed']], ['narrow' => true]);
+    render('publik/terdaftar', 'Registrasi berhasil', ['inst' => $inst, 'link' => instansi_link($new['token']), 'mailed' => $new['mailed']], ['narrow' => true]);
 }
 
 function publik_masuk_token(string $token): void
 {
-    $inst = row('SELECT id FROM instansi WHERE token_hash = ?', [hash('sha256', $token)]);
+    $inst = find_instansi_by_token($token);
     if (!$inst) {
         http_response_code(404);
         render_page('Link tidak berlaku', view('publik/link_mati'), ['narrow' => true]);

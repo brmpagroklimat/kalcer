@@ -9,12 +9,14 @@ $dt = static fn (string $k) => setting($k) !== '' ? date('Y-m-d\TH:i', strtotime
     <label class="field"><span>Lokasi kegiatan</span><input type="text" name="lokasi" value="<?= h(setting('lokasi')) ?>"></label>
     <label class="field"><span>Tanggal acara</span><input type="text" name="tanggal_acara" value="<?= h(setting('tanggal_acara')) ?>"><small>Format YYYY-MM-DD, dipisah koma. Hati-hati mengubahnya setelah ada pendaftar.</small></label>
     <label class="field" style="grid-column:1/-1"><span>Deskripsi kegiatan <small>(tampil di beranda)</small></span><textarea name="deskripsi" placeholder="Ringkasan kegiatan untuk calon peserta"><?= h(setting('deskripsi')) ?></textarea></label>
-    <label class="field"><span>Kontak panitia</span><input type="text" name="kontak_panitia" value="<?= h(setting('kontak_panitia')) ?>" placeholder="Nama, 08xx (WA)"></label>
+    <?php $kp = kontak_panitia(); ?>
+    <label class="field"><span>Nama kontak panitia</span><input type="text" name="kontak_panitia" value="<?= h($kp['nama']) ?>" placeholder="Amelia"></label>
+    <label class="field"><span>No. WhatsApp panitia <small>(tidak ditampilkan; dipakai tombol "Hubungi panitia")</small></span><input type="tel" name="wa_panitia" value="<?= h(setting('wa_panitia') !== '' ? setting('wa_panitia') : $kp['wa']) ?>" placeholder="0812xxxxxxx"></label>
   </div>
-  <h2 style="margin-top:22px">Pendaftaran & batas waktu</h2>
-  <label class="check" style="margin-bottom:14px"><input type="checkbox" name="daftar_dibuka" value="1" <?= setting('daftar_dibuka') === '1' ? 'checked' : '' ?>> Pendaftaran dibuka</label>
+  <h2 style="margin-top:22px">Registrasi & batas waktu</h2>
+  <label class="check" style="margin-bottom:14px"><input type="checkbox" name="daftar_dibuka" value="1" <?= setting('daftar_dibuka') === '1' ? 'checked' : '' ?>> Registrasi dibuka</label>
   <div class="fields two">
-    <label class="field"><span>Batas pendaftaran</span><input type="datetime-local" name="batas_daftar" value="<?= h($dt('batas_daftar')) ?>"></label>
+    <label class="field"><span>Batas registrasi</span><input type="datetime-local" name="batas_daftar" value="<?= h($dt('batas_daftar')) ?>"></label>
     <label class="field"><span>Batas perubahan peserta</span><input type="datetime-local" name="batas_ganti" value="<?= h($dt('batas_ganti')) ?>"></label>
     <label class="field"><span>Batas upload foto & bukti biaya</span><input type="datetime-local" name="batas_upload" value="<?= h($dt('batas_upload')) ?>"></label>
     <label class="field"><span>Maks. peserta per instansi</span><input type="number" min="1" name="kuota_per_instansi" value="<?= h(setting('kuota_per_instansi')) ?>"></label>

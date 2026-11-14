@@ -18,7 +18,7 @@ $st = $inst['reimburse_status'];
   <p class="note">Sudah ditransfer pada <?= h(tgl_jam($inst['dibayar_at'])) ?> sebesar <b><?= h(rupiah($disetujui)) ?></b>.</p>
 <?php endif; ?>
 <?php if ($inst['catatan_panitia']): ?><p class="note warn"><b>Catatan panitia:</b> <?= h($inst['catatan_panitia']) ?></p><?php endif; ?>
-<?php if (!can_upload() && $st === 'draft'): ?><p class="note warn">Batas pengajuan sudah lewat (<?= h(tgl_jam(setting('batas_upload'))) ?>). Hubungi panitia.</p><?php endif; ?>
+<?php if (!can_upload() && $st === 'draft'): ?><p class="note warn">Batas pengajuan sudah lewat (<?= h(tgl_jam(setting('batas_upload'))) ?>). <?= hubungi_panitia('Halo panitia, kami dari ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ') ingin bertanya soal reimburse.', 'Hubungi panitia via WhatsApp') ?>.</p><?php endif; ?>
 
 <section class="panel">
   <div class="panel-head"><h2>Bukti biaya</h2>

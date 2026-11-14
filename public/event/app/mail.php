@@ -71,7 +71,7 @@ function mail_link_instansi(array $inst, string $token): bool
     }
     $link = instansi_link($token);
     $text = "Yth. {$inst['koordinator']},\n\n"
-        . "Pendaftaran {$inst['nama']} untuk " . setting('nama_kegiatan') . " sudah kami terima.\n"
+        . "Registrasi {$inst['nama']} untuk " . setting('nama_kegiatan') . " sudah kami terima.\n"
         . 'Kode instansi: ' . kode_instansi((int) $inst['id']) . "\n\n"
         . "Gunakan link berikut untuk mengubah data peserta, mengunggah foto kegiatan, dan mengajukan reimburse:\n$link\n\n"
         . "Simpan link ini dan jangan dibagikan di luar rombongan instansi Anda. Siapa pun yang memegang link ini dapat mengubah data instansi.\n\n"
