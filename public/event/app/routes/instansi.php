@@ -28,11 +28,18 @@ function own_peserta(array $inst, string $id): array
     return $p;
 }
 
+/** Satu instansi hanya ikut satu tanggal: tanggal yang dipilih saat mendaftar. */
+function instansi_tanggal(int $instansiId): ?string
+{
+    $r = row('SELECT tanggal FROM peserta WHERE instansi_id = ? ORDER BY id LIMIT 1', [$instansiId]);
+    return $r ? $r['tanggal'] : null;
+}
+
 function peserta_by_date(int $instansiId): array
 {
     $out = [];
-    foreach (event_dates() as $d) {
-        $out[$d] = [];
+    if ($t = instansi_tanggal($instansiId)) {
+        $out[$t] = [];
     }
     foreach (rows('SELECT * FROM peserta WHERE instansi_id = ? ORDER BY tanggal, aktif DESC, id', [$instansiId]) as $p) {
         $out[$p['tanggal']][] = $p;
@@ -76,8 +83,9 @@ function inst_tambah_peserta(): void
     $inst = require_instansi();
     guard_peserta_edit();
     $tanggal = post('tanggal');
-    if (!in_array($tanggal, event_dates(), true)) {
-        throw new UserError('Tanggal tidak valid.');
+    $milik = instansi_tanggal((int) $inst['id']);
+    if (!in_array($tanggal, event_dates(), true) || ($milik !== null && $tanggal !== $milik)) {
+        throw new UserError('Satu instansi hanya ikut satu tanggal' . ($milik ? ' (' . tgl($milik) . ')' : '') . '.');
     }
     $p = clean_peserta($_POST, 'Peserta baru');
     check_kuota((int) $inst['id'], $tanggal, 1);
@@ -147,7 +155,8 @@ function inst_hapus_peserta(string $id): void
 
 function inst_dates(int $instansiId): array
 {
-    return array_column(rows('SELECT DISTINCT tanggal FROM peserta WHERE instansi_id = ? AND aktif = 1 ORDER BY tanggal', [$instansiId]), 'tanggal');
+    $t = instansi_tanggal($instansiId);
+    return $t ? [$t] : [];
 }
 
 function inst_foto(): void
@@ -188,7 +197,7 @@ function inst_upload_foto(): void
     }
     $tanggal = post('tanggal');
     $tahap = post('tahap');
-    if (!in_array($tanggal, event_dates(), true) || !isset(TAHAP[$tahap])) {
+    if ($tanggal !== instansi_tanggal((int) $inst['id']) || !isset(TAHAP[$tahap])) {
         throw new UserError('Pilih tanggal dan tahap foto.');
     }
     $file = $_FILES['foto'] ?? [];
@@ -274,7 +283,7 @@ function inst_tambah_biaya(): void
     $tanggal = post('tanggal');
     $jenis = post('jenis');
     $nominal = (int) preg_replace('/[^0-9]/', '', post('nominal'));
-    if (!in_array($tanggal, event_dates(), true) || !isset(JENIS_BIAYA[$jenis])) {
+    if ($tanggal !== instansi_tanggal((int) $inst['id']) || !isset(JENIS_BIAYA[$jenis])) {
         throw new UserError('Pilih tanggal dan jenis biaya.');
     }
     if ($nominal <= 0) {

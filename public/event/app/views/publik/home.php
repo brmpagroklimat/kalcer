@@ -1,14 +1,14 @@
 <?php
 /** @var array $old @var array $errors @var array $dates @var bool $open @var int $kuota @var string $stamp */
 $o = static fn (string $k) => (string) ($old[$k] ?? '');
-$ikut = (array) ($old['ikut'] ?? []);
+$ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
 $lokasi = setting('lokasi');
 ?>
 <section class="intro">
   <h1><?= h(setting('nama_kegiatan')) ?></h1>
   <p class="lead">
     <?= implode(' dan ', array_map(static fn ($d) => h(tgl($d, true)), $dates)) ?><?= $lokasi !== '' ? ', ' . h($lokasi) : '' ?>.
-    Peserta tiap tanggal berbeda. Satu instansi mengirim paling banyak <?= (int) $kuota ?> orang per tanggal.
+    Setiap instansi memilih satu tanggal dan mengirim paling banyak <?= (int) $kuota ?> orang.
   </p>
 </section>
 
@@ -57,13 +57,13 @@ $lokasi = setting('lokasi');
   </fieldset>
 
   <fieldset>
-    <legend>Ikut tanggal</legend>
+    <legend>Pilih tanggal</legend>
     <div class="choices">
       <?php foreach ($dates as $d): ?>
-        <label class="choice"><input type="checkbox" name="ikut[]" value="<?= h($d) ?>" data-day-toggle="<?= h($d) ?>" <?= in_array($d, $ikut, true) ? 'checked' : '' ?>><span><?= h(tgl($d, true)) ?></span></label>
+        <label class="choice"><input type="radio" name="ikut" value="<?= h($d) ?>" data-day-toggle="<?= h($d) ?>" <?= $ikut === $d ? 'checked' : '' ?>><span><?= h(tgl($d, true)) ?></span></label>
       <?php endforeach; ?>
     </div>
-    <p class="hint" style="margin-top:8px">Instansi boleh ikut kedua tanggal dengan peserta yang berbeda.</p>
+    <p class="hint" style="margin-top:8px">Satu instansi hanya ikut satu tanggal.</p>
   </fieldset>
 
   <?php foreach ($dates as $d): ?>

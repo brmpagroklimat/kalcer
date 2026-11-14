@@ -102,11 +102,12 @@ function publik_daftar(): void
             throw new UserError('Instansi ini sudah terdaftar. Gunakan link instansi yang sudah dikirim, atau hubungi panitia untuk meminta link baru.');
         }
 
-        $dates = event_dates();
-        $ikut = array_values(array_intersect($dates, (array) ($_POST['ikut'] ?? [])));
-        if (!$ikut) {
-            throw new UserError('Pilih minimal satu tanggal kegiatan.');
+        // Satu instansi hanya ikut satu tanggal.
+        $tanggal = post('ikut');
+        if (!in_array($tanggal, event_dates(), true)) {
+            throw new UserError('Pilih tanggal kegiatan.');
         }
+        $ikut = [$tanggal];
         $semua = [];
         foreach ($ikut as $tgl) {
             $baris = array_filter((array) ($_POST['peserta'][$tgl] ?? []), static fn ($p) => is_array($p) && trim((string) ($p['nama'] ?? '')) !== '');

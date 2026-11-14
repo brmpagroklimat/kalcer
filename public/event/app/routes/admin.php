@@ -378,7 +378,7 @@ const SETTING_FIELDS = [
     'batas_daftar' => 'Batas pendaftaran',
     'batas_ganti' => 'Batas perubahan peserta',
     'batas_upload' => 'Batas upload foto & bukti biaya',
-    'kuota_per_instansi' => 'Maks. peserta per instansi per hari',
+    'kuota_per_instansi' => 'Maks. peserta per instansi',
     'kuota_per_hari' => 'Kuota peserta per hari (0 = tanpa batas)',
     'info_hotel' => 'Info hotel',
     'info_shuttle' => 'Info shuttle',
