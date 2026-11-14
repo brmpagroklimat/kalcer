@@ -40,9 +40,9 @@ $fase = [
             ['Kamar 2: tambah tamu panitia/pejabat bila ada → Bagi otomatis → periksa', '/admin/kamar', 'Ubah lewat dropdown; ditolak bila penuh/beda jenis kelamin'],
             ['Kamar 3: publikasikan kamar yang sudah final', '/admin/kamar'],
             ['Kirim daftar menginap ke hotel', '/admin/rekap/menginap'],
-            ['Shuttle 1: tambah kendaraan (kapasitas, jam, supir & PIC teknis)', '/admin/shuttle'],
-            ['Shuttle 2: bagi penumpang otomatis → periksa', '/admin/shuttle', 'Satu orang hanya di satu kendaraan; ditolak bila melebihi kapasitas'],
-            ['Shuttle 3: publikasikan; kirim manifest ke supir & PIC teknis', '/admin/shuttle'],
+            ['Shuttle 1: tambah kendaraan (kapasitas, jam, supir & PIC Shuttle)', '/admin/shuttle'],
+            ['Shuttle 2: pilih kendaraan → centang penumpangnya (atau Bagi otomatis)', '/admin/shuttle', 'Satu orang hanya di satu kendaraan; ditolak bila melebihi kapasitas'],
+            ['Shuttle 3: publikasikan; kirim manifest ke supir & PIC Shuttle', '/admin/shuttle'],
         ],
     ],
     [

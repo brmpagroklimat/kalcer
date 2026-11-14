@@ -202,6 +202,28 @@
     });
   });
 
+  // Checklist penumpang shuttle: pilih semua per instansi + hitung kursi.
+  document.querySelectorAll('.isi-form').forEach(function (form) {
+    var cap = +form.dataset.kapasitas, out = form.querySelector('[data-count]'), kursi = form.querySelector('.kursi');
+    function hitung() {
+      var n = form.querySelectorAll('input[name="orang[]"]:checked').length;
+      out.textContent = n;
+      kursi.classList.toggle('over', n > cap);
+      form.querySelectorAll('.grup').forEach(function (g) {
+        var boxes = g.querySelectorAll('input[name="orang[]"]:not(:disabled)'), all = g.querySelector('[data-group-toggle]');
+        all.disabled = boxes.length === 0;
+        all.checked = boxes.length > 0 && Array.prototype.every.call(boxes, function (b) { return b.checked; });
+      });
+    }
+    form.addEventListener('change', function (e) {
+      if (e.target.matches('[data-group-toggle]')) {
+        e.target.closest('.grup').querySelectorAll('input[name="orang[]"]:not(:disabled)').forEach(function (b) { b.checked = e.target.checked; });
+      }
+      hitung();
+    });
+    hitung();
+  });
+
   var errs = document.getElementById('form-errors');
   if (errs) errs.focus();
 })();

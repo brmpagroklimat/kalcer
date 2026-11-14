@@ -94,7 +94,7 @@ $opsi = static function (?int $sel) use ($rooms, $jkLabel): string {
   <?php if (!$orang): ?><p class="muted" style="margin:0">Belum ada yang menginap malam ini.</p>
   <?php elseif (!$rooms): ?><p class="note warn" style="margin:0">Masukkan nomor kamar di langkah 1 terlebih dahulu.</p>
   <?php else: ?>
-  <form method="post" action="<?= h(url('/admin/kamar/penempatan')) ?>"><?= csrf_field() . $hidden ?>
+  <form method="post" action="<?= h(url('/admin/kamar/penempatan')) ?>" autocomplete="off"><?= csrf_field() . $hidden ?>
     <div class="table-wrap"><table class="kamar-table">
       <thead><tr><th>#</th><th>Nama</th><th>Jenis kelamin</th><th>Instansi / keterangan</th><th>Kamar</th><th>Sekamar dengan</th></tr></thead>
       <tbody>

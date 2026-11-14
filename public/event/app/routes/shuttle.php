@@ -90,7 +90,7 @@ function admin_kendaraan_simpan(): void
             $nama, $f('plat', $id, $k['plat'] ?? '') ?: null, $cap, $jam !== '' ? substr($jam, 0, 5) : null,
             $f('titik_jemput', $id, $k['titik_jemput'] ?? '') ?: null,
             $f('supir_nama', $id, $k['supir_nama'] ?? '') ?: null, $hp($f('supir_hp', $id, $k['supir_hp'] ?? ''), "$nama (supir)"),
-            $f('pic_nama', $id, $k['pic_nama'] ?? '') ?: null, $hp($f('pic_hp', $id, $k['pic_hp'] ?? ''), "$nama (PIC teknis)"),
+            $f('pic_nama', $id, $k['pic_nama'] ?? '') ?: null, $hp($f('pic_hp', $id, $k['pic_hp'] ?? ''), "$nama (PIC Shuttle)"),
         ];
     }
     db()->beginTransaction();
@@ -171,52 +171,47 @@ function admin_shuttle_bagi(): void
         }
     }
     db()->commit();
-    flash($tidakMuat ? 'error' : 'ok', "$n penumpang ditempatkan." . ($tidakMuat ? " $tidakMuat orang belum dapat kendaraan karena kapasitas kurang; tambah kendaraan atau kapasitas." : ' Periksa, lalu publikasikan.'));
+    flash($tidakMuat ? 'error' : 'ok', "$n penumpang ditempatkan." . ($tidakMuat ? " $tidakMuat orang belum dapat kendaraan karena kapasitas kurang; tambah kendaraan atau kapasitas." : ' Periksa tiap kendaraan, lalu publikasikan.'));
     shuttle_back($tanggal, '#langkah-2');
 }
 
-/** Simpan tabel penempatan penumpang (dropdown kendaraan); dicek kapasitas dulu, tanpa simpan sebagian. */
-function admin_shuttle_penempatan(): void
+/**
+ * Isi satu kendaraan lewat checklist: yang dicentang masuk kendaraan ini, yang tidak dicentang
+ * (dan sebelumnya di kendaraan ini) dikeluarkan. Orang di kendaraan lain tidak bisa dicentang,
+ * jadi tidak ada penumpang dobel.
+ */
+function admin_shuttle_isi(): void
 {
     require_admin();
     $tanggal = kamar_tanggal();
     $orang = penghuni_malam($tanggal);
     $mobil = kendaraan_list($tanggal, $orang);
-    $input = array_map(static fn ($v) => trim((string) $v), (array) ($_POST['kendaraan'] ?? []));
-    $target = [];
-    $errors = [];
-    foreach ($orang as $key => $o) {
-        $v = $input[$key] ?? (string) ($o['shuttle_id'] ?? '');
-        if ($v === '') {
-            $target[$key] = null;
-        } elseif (ctype_digit($v) && isset($mobil[(int) $v])) {
-            $target[$key] = (int) $v;
-        } else {
-            $errors[] = $o['nama'] . ': kendaraan tidak ditemukan.';
+    $kid = (int) post('kendaraan_id');
+    $k = $mobil[$kid] ?? null;
+    if (!$k) {
+        throw new UserError('Pilih kendaraan.');
+    }
+    $pilih = array_values(array_intersect(array_keys($orang), (array) ($_POST['orang'] ?? [])));
+    foreach ($pilih as $key) {
+        $sid = $orang[$key]['shuttle_id'];
+        if ($sid && $sid != $kid && isset($mobil[$sid])) {
+            throw new UserError($orang[$key]['nama'] . ' sudah di ' . $mobil[$sid]['nama'] . '. Keluarkan dari sana dulu.');
         }
     }
-    $isi = [];
-    foreach ($target as $key => $t) {
-        if ($t !== null) {
-            $isi[$t][] = $orang[$key]['nama'];
-        }
-    }
-    foreach ($isi as $t => $nama) {
-        if (count($nama) > (int) $mobil[$t]['kapasitas']) {
-            $errors[] = $mobil[$t]['nama'] . ' kelebihan penumpang (' . count($nama) . '/' . $mobil[$t]['kapasitas'] . ').';
-        }
-    }
-    if ($errors) {
-        admin_shuttle($input, $errors);
-        return;
+    if (count($pilih) > (int) $k['kapasitas']) {
+        throw new UserError($k['nama'] . ' hanya ' . $k['kapasitas'] . ' kursi; yang dipilih ' . count($pilih) . ' orang.');
     }
     db()->beginTransaction();
-    foreach ($target as $key => $t) {
-        set_shuttle($orang[$key], $t);
+    foreach ($orang as $key => $o) {
+        if (in_array($key, $pilih, true)) {
+            set_shuttle($o, $kid);
+        } elseif ((int) $o['shuttle_id'] === $kid) {
+            set_shuttle($o, null);
+        }
     }
     db()->commit();
-    flash('ok', 'Penempatan penumpang disimpan.');
-    shuttle_back($tanggal, '#langkah-2');
+    flash('ok', $k['nama'] . ': ' . count($pilih) . '/' . $k['kapasitas'] . ' penumpang disimpan.');
+    redirect('/admin/shuttle?tanggal=' . $tanggal . '&k=' . $kid . '#langkah-2');
 }
 
 function admin_shuttle_publikasi(): void
@@ -233,14 +228,14 @@ function admin_shuttle_publikasi(): void
     shuttle_back($tanggal, '#langkah-3');
 }
 
-/** Manifest penumpang per kendaraan (untuk supir & PIC teknis). */
+/** Manifest penumpang per kendaraan (untuk supir & PIC Shuttle). */
 function admin_shuttle_csv(): void
 {
     require_admin();
     $tanggal = kamar_tanggal();
     $orang = penghuni_malam($tanggal);
     $mobil = kendaraan_list($tanggal, $orang);
-    $data = [['Tanggal acara', 'Kendaraan', 'Plat', 'Jam berangkat', 'Titik jemput', 'Supir', 'HP supir', 'PIC teknis', 'HP PIC', 'No.', 'Penumpang', 'Instansi / keterangan', 'HP penumpang']];
+    $data = [['Tanggal acara', 'Kendaraan', 'Plat', 'Jam berangkat', 'Titik jemput', 'Supir', 'HP supir', 'PIC Shuttle', 'HP PIC Shuttle', 'No.', 'Penumpang', 'Instansi / keterangan', 'HP penumpang']];
     foreach ($mobil as $k) {
         foreach ($k['penumpang'] ?: [null] as $i => $o) {
             $data[] = [$tanggal, $k['nama'], $k['plat'], jam($k['jam']), $k['titik_jemput'], $k['supir_nama'], $k['supir_hp'], $k['pic_nama'], $k['pic_hp'],

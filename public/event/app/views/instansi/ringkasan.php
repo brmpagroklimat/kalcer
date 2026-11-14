@@ -61,7 +61,7 @@ $wa = static fn (?string $hp) => $hp ? '<a class="wa-link" href="https://wa.me/'
         <div class="mini"><b><?= h($k['nama']) ?></b><?= $k['plat'] ? ' <span class="chip">' . h($k['plat']) . '</span>' : '' ?>
           <span class="small">Berangkat <?= $k['jam'] ? h(jam($k['jam'])) : '(jam menyusul)' ?><?= $k['titik_jemput'] ? ' dari ' . h($k['titik_jemput']) : '' ?></span>
           <?php if ($k['supir_nama']): ?><span class="small">Supir: <?= h($k['supir_nama']) ?> <?= $wa($k['supir_hp']) ?></span><?php endif; ?>
-          <?php if ($k['pic_nama']): ?><span class="small">PIC teknis: <?= h($k['pic_nama']) ?> <?= $wa($k['pic_hp']) ?></span><?php endif; ?>
+          <?php if ($k['pic_nama']): ?><span class="small">PIC Shuttle: <?= h($k['pic_nama']) ?> <?= $wa($k['pic_hp']) ?></span><?php endif; ?>
         </div>
       <?php endforeach; ?>
     </div>

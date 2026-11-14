@@ -4,9 +4,9 @@ $terisi = array_filter($mobil, static fn ($k) => $k['penumpang']);
 $publikN = count(array_filter($terisi, static fn ($k) => $k['publik']));
 $hidden = '<input type="hidden" name="tanggal" value="' . h($tanggal) . '">';
 $steps = [
-    ['Kendaraan', 'Tambahkan mobil/bus: kapasitas, jam berangkat, supir & PIC teknis.', $mobil && $kapasitas >= count($orang), count($mobil) . ' kendaraan, ' . $kapasitas . ' kursi untuk ' . count($orang) . ' orang'],
-    ['Bagi penumpang', 'Klik "Bagi otomatis", lalu periksa. Satu orang hanya di satu kendaraan.', $orang && !$belum, $belum ? count($belum) . ' orang belum dapat kendaraan' : (count($orang) ? 'semua dapat kendaraan' : 'belum ada yang menginap')],
-    ['Publikasikan', 'Peserta melihat kendaraan, jam, titik jemput, dan kontak supir/PIC.', $terisi && $publikN === count($terisi), $publikN . ' dari ' . count($terisi) . ' kendaraan'],
+    ['Kendaraan', 'Tambahkan mobil/bus: kapasitas, jam berangkat, supir & PIC Shuttle.', $mobil && $kapasitas >= count($orang), count($mobil) . ' kendaraan, ' . $kapasitas . ' kursi untuk ' . count($orang) . ' orang'],
+    ['Isi penumpang', 'Pilih kendaraan, centang penumpangnya (atau "Bagi otomatis"). Satu orang hanya di satu kendaraan.', $orang && !$belum, $belum ? count($belum) . ' orang belum dapat kendaraan' : (count($orang) ? 'semua dapat kendaraan' : 'belum ada yang menginap')],
+    ['Publikasikan', 'Peserta melihat kendaraan, jam, titik jemput, dan kontak supir & PIC Shuttle.', $terisi && $publikN === count($terisi), $publikN . ' dari ' . count($terisi) . ' kendaraan'],
 ];
 $opsi = static function (?int $sel) use ($mobil): string {
     $h = '<option value="">Belum dapat kendaraan</option>';
@@ -16,7 +16,7 @@ $opsi = static function (?int $sel) use ($mobil): string {
     return $h;
 };
 $kolom = ['nama' => ['Nama kendaraan', 'mis. Bus 1', 'text'], 'plat' => ['Plat', 'B 1234 XY', 'text'], 'kapasitas' => ['Kapasitas', '', 'number'], 'jam' => ['Jam berangkat', '', 'time'],
-    'titik_jemput' => ['Titik jemput', 'Lobi hotel', 'text'], 'supir_nama' => ['Supir', 'Nama', 'text'], 'supir_hp' => ['HP supir', '08…', 'tel'], 'pic_nama' => ['PIC teknis', 'Nama', 'text'], 'pic_hp' => ['HP PIC', '08…', 'tel']];
+    'titik_jemput' => ['Titik jemput', 'Lobi hotel', 'text'], 'supir_nama' => ['Supir', 'Nama', 'text'], 'supir_hp' => ['HP supir', '08…', 'tel'], 'pic_nama' => ['PIC Shuttle', 'Nama', 'text'], 'pic_hp' => ['HP PIC Shuttle', '08…', 'tel']];
 $input = static function (string $k, $id, $val) use ($kolom): string {
     [$label, $ph, $type] = $kolom[$k];
     $extra = $type === 'number' ? ' min="1" max="60"' : ($type === 'tel' ? ' inputmode="numeric" data-validate="hp"' : '');
@@ -42,58 +42,75 @@ $input = static function (string $k, $id, $val) use ($kolom): string {
 
 <section class="panel" id="langkah-1">
   <div class="panel-head"><h2>1. Kendaraan</h2><a class="btn small secondary" href="<?= h(url('/admin/shuttle/manifest.csv?tanggal=' . $tanggal)) ?>">Unduh manifest (CSV)</a></div>
-  <form method="post" action="<?= h(url('/admin/shuttle/kendaraan')) ?>"><?= csrf_field() . $hidden ?>
-    <div class="table-wrap"><table class="kamar-table mobil-table">
-      <thead><tr><?php foreach ($kolom as [$label]): ?><th><?= h($label) ?></th><?php endforeach; ?><th>Isi</th><th></th></tr></thead>
-      <tbody>
-      <?php foreach ($mobil as $id => $k): ?>
-        <tr><?php foreach (array_keys($kolom) as $c): ?><td><?= $input($c, $id, $k[$c]) ?></td><?php endforeach; ?>
-          <td class="small"><?= count($k['penumpang']) ?>/<?= (int) $k['kapasitas'] ?></td>
-          <td><button class="linkbtn danger-link small" formaction="<?= h(url('/admin/shuttle/kendaraan/' . $id . '/hapus')) ?>" formnovalidate onclick="return confirm('Hapus kendaraan ini? Penumpangnya kembali ke belum dapat kendaraan.')">Hapus</button></td></tr>
+  <form method="post" action="<?= h(url('/admin/shuttle/kendaraan')) ?>" autocomplete="off"><?= csrf_field() . $hidden ?>
+    <div class="mobil-cards">
+      <?php foreach ($mobil + ['baru' => null] as $id => $k): $isBaru = $id === 'baru'; ?>
+        <div class="mobil-card<?= $isBaru ? ' baru' : '' ?>">
+          <div class="mobil-card-head"><b><?= $isBaru ? '+ Kendaraan baru' : h($k['nama']) ?></b>
+            <?php if (!$isBaru): ?><span class="small muted"><?= count($k['penumpang']) ?>/<?= (int) $k['kapasitas'] ?> penumpang</span>
+              <button class="linkbtn danger-link small" formaction="<?= h(url('/admin/shuttle/kendaraan/' . $id . '/hapus')) ?>" formnovalidate onclick="return confirm('Hapus kendaraan ini? Penumpangnya kembali ke belum dapat kendaraan.')">Hapus</button><?php endif; ?></div>
+          <div class="mobil-grid">
+            <?php foreach ($kolom as $c => [$label]): ?>
+              <label><span><?= h($label) ?></span><?= $input($c, $id, $isBaru ? ($c === 'kapasitas' ? 10 : ($c === 'titik_jemput' ? 'Lobi hotel' : '')) : $k[$c]) ?></label>
+            <?php endforeach; ?>
+          </div>
+        </div>
       <?php endforeach; ?>
-        <tr class="row-new"><?php foreach (array_keys($kolom) as $c): ?><td><?= $input($c, 'baru', $c === 'kapasitas' ? 10 : ($c === 'titik_jemput' ? 'Lobi hotel' : '')) ?></td><?php endforeach; ?><td colspan="2" class="small muted">Baris baru</td></tr>
-      </tbody>
-    </table></div>
-    <p class="small muted">Isi baris baru untuk menambah kendaraan. Supir & PIC teknis tampil ke peserta (dengan tombol WhatsApp) setelah dipublikasikan.</p>
+    </div>
+    <p class="small muted">Isi kartu "+ Kendaraan baru" untuk menambah kendaraan. Supir & PIC Shuttle tampil ke peserta (dengan tombol WhatsApp) setelah dipublikasikan.</p>
     <div class="actions"><button class="btn deep">Simpan kendaraan</button></div>
   </form>
 </section>
 
 <section class="panel" id="langkah-2">
-  <div class="panel-head"><h2>2. Bagi penumpang</h2>
+  <div class="panel-head"><h2>2. Isi penumpang</h2>
     <?php if ($belum && $mobil): ?>
-      <form method="post" action="<?= h(url('/admin/shuttle/bagi')) ?>"><?= csrf_field() . $hidden ?><button class="btn deep">Bagi otomatis (<?= count($belum) ?> orang)</button></form>
+      <form method="post" action="<?= h(url('/admin/shuttle/bagi')) ?>"><?= csrf_field() . $hidden ?><button class="btn secondary">Bagi otomatis (<?= count($belum) ?> orang)</button></form>
     <?php endif; ?>
   </div>
-  <p class="small muted">Pembagian otomatis mengusahakan satu rombongan instansi satu kendaraan, mengisi kendaraan yang berangkat lebih dulu. Ubah lewat dropdown lalu <b>Simpan penempatan</b>; kendaraan yang kelebihan penumpang ditolak.</p>
-  <?php if ($errors): ?><div class="errors" role="alert"><b>Belum disimpan:</b><ul><?php foreach ($errors as $e): ?><li><?= h($e) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
   <?php if (!$orang): ?><p class="muted" style="margin:0">Belum ada yang menginap malam ini.</p>
   <?php elseif (!$mobil): ?><p class="note warn" style="margin:0">Tambahkan kendaraan di langkah 1 terlebih dahulu.</p>
-  <?php else: ?>
-  <form method="post" action="<?= h(url('/admin/shuttle/penempatan')) ?>"><?= csrf_field() . $hidden ?>
-    <div class="table-wrap"><table class="kamar-table">
-      <thead><tr><th>#</th><th>Nama</th><th>Instansi / keterangan</th><th>Kamar</th><th>Kendaraan</th></tr></thead>
-      <tbody>
-      <?php $n = 0; $rooms = kamar_list($tanggal, $orang); foreach ($orang as $key => $o):
-        $sel = array_key_exists($key, $pending) ? ($pending[$key] === '' ? null : (int) $pending[$key]) : (isset($mobil[$o['shuttle_id']]) ? (int) $o['shuttle_id'] : null); ?>
-        <tr class="<?= isset($mobil[$o['shuttle_id']]) ? '' : 'row-warn' ?>">
-          <td class="num"><?= ++$n ?></td>
-          <td><b><?= h($o['nama']) ?></b><?= $o['tipe'] === 'tamu' ? ' <span class="chip">Tamu</span>' : '' ?></td>
-          <td class="small"><?= h($o['instansi']) ?></td>
-          <td class="small"><?= isset($rooms[$o['kamar_id']]) ? h(kamar_label($rooms[$o['kamar_id']])) : '<span class="muted">-</span>' ?></td>
-          <td><select class="kamar-select" name="kendaraan[<?= h($key) ?>]" aria-label="Kendaraan untuk <?= h($o['nama']) ?>"><?= $opsi($sel) ?></select></td>
-        </tr>
+  <?php else:
+    $pilihId = (int) ($_GET['k'] ?? 0);
+    if (!isset($mobil[$pilihId])) { $pilihId = (int) array_key_first($mobil); }
+    $km = $mobil[$pilihId];
+    $grup = [];
+    foreach ($orang as $key => $o) { $grup[$o['instansi']][$key] = $o; }
+    $rooms = kamar_list($tanggal, $orang);
+  ?>
+    <p class="small muted">Pilih kendaraan, centang penumpangnya, lalu simpan. Yang sudah di kendaraan lain tidak bisa dicentang (keluarkan dulu dari kendaraan tersebut). <?= $belum ? '<b>' . count($belum) . ' orang belum dapat kendaraan.</b>' : 'Semua sudah dapat kendaraan.' ?></p>
+    <div class="mobil-pills" role="tablist" aria-label="Pilih kendaraan">
+      <?php foreach ($mobil as $id => $k): $penuh = count($k['penumpang']) >= $k['kapasitas']; ?>
+        <a role="tab" aria-selected="<?= $id === $pilihId ? 'true' : 'false' ?>" class="<?= $id === $pilihId ? 'on' : '' ?>" href="<?= h(url('/admin/shuttle?tanggal=' . $tanggal . '&k=' . $id . '#langkah-2')) ?>"><b><?= h(kendaraan_label($k)) ?></b> <span class="<?= $penuh ? 'full' : '' ?>"><?= count($k['penumpang']) ?>/<?= (int) $k['kapasitas'] ?></span></a>
       <?php endforeach; ?>
-      </tbody>
-    </table></div>
-    <div class="actions"><button class="btn deep">Simpan penempatan</button></div>
-  </form>
+    </div>
+    <form method="post" action="<?= h(url('/admin/shuttle/isi')) ?>" autocomplete="off" class="isi-form" data-kapasitas="<?= (int) $km['kapasitas'] ?>"><?= csrf_field() . $hidden ?>
+      <input type="hidden" name="kendaraan_id" value="<?= (int) $pilihId ?>">
+      <div class="isi-head"><b>Penumpang <?= h($km['nama']) ?></b> <span class="kursi" aria-live="polite"><span data-count><?= count($km['penumpang']) ?></span>/<?= (int) $km['kapasitas'] ?> kursi</span></div>
+      <div class="isi-grup">
+        <?php foreach ($grup as $nama => $list): ?>
+          <fieldset class="grup">
+            <legend><label class="check small"><input type="checkbox" data-group-toggle> <span><b><?= h($nama) ?></b> (<?= count($list) ?>)</span></label></legend>
+            <?php foreach ($list as $key => $o):
+              $di = isset($mobil[$o['shuttle_id']]) ? $mobil[$o['shuttle_id']] : null;
+              $lain = $di && (int) $di['id'] !== $pilihId; ?>
+              <label class="check small orang<?= $lain ? ' lain' : '' ?>">
+                <input type="checkbox" name="orang[]" value="<?= h($key) ?>" <?= $di && !$lain ? 'checked' : '' ?> <?= $lain ? 'disabled' : '' ?>>
+                <span><?= h($o['nama']) ?><?= $o['tipe'] === 'tamu' ? ' <span class="chip">Tamu</span>' : '' ?>
+                  <span class="muted"><?= isset($rooms[$o['kamar_id']]) ? 'kamar ' . h(kamar_label($rooms[$o['kamar_id']])) : '' ?><?= $lain ? ', di ' . h($di['nama']) : '' ?></span></span>
+              </label>
+            <?php endforeach; ?>
+          </fieldset>
+        <?php endforeach; ?>
+      </div>
+      <div class="actions"><button class="btn deep">Simpan penumpang <?= h($km['nama']) ?></button></div>
+    </form>
   <?php endif; ?>
 </section>
 
 <section class="panel" id="langkah-3">
   <h2>3. Publikasikan ke peserta</h2>
-  <p class="small muted">Centang kendaraan yang sudah final. Penumpangnya melihat nama kendaraan, plat, jam berangkat, titik jemput, serta WhatsApp supir & PIC teknis di halaman instansi.</p>
+  <p class="small muted">Centang kendaraan yang sudah final. Penumpangnya melihat nama kendaraan, plat, jam berangkat, titik jemput, serta WhatsApp supir & PIC Shuttle di halaman instansi.</p>
   <?php if (!$terisi): ?><p class="muted" style="margin:0">Belum ada kendaraan yang berpenumpang.</p><?php else: ?>
   <form method="post" action="<?= h(url('/admin/shuttle/publikasi')) ?>"><?= csrf_field() . $hidden ?>
     <div class="table-wrap"><table class="kamar-table">

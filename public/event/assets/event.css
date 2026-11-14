@@ -406,3 +406,30 @@ input[readonly] { background: #f3f1ec; color: var(--muted); }
 .mobil-table input[type=tel] { min-width: 132px; }
 .mobil-table input[type=time] { min-width: 118px; }
 @media (min-width: 1100px) { .top-inner .topnav a, .top-inner .topnav .linkbtn { padding: 8px 9px; } }
+
+/* shuttle: kartu kendaraan & checklist penumpang */
+.mobil-cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.mobil-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--paper); }
+.mobil-card.baru { background: var(--white); border-style: dashed; }
+.mobil-card-head { display: flex; gap: 8px 12px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.mobil-card-head .linkbtn { margin-left: auto; }
+.mobil-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; }
+.mobil-grid label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; font-weight: 700; color: var(--muted); line-height: 1.3; }
+.mobil-grid input { min-height: 34px; padding: 5px 8px; font-size: 14px; }
+@media (max-width: 420px) { .mobil-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mobil-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.mobil-pills a { padding: 8px 12px; border: 1px solid #cfc8bb; border-radius: 10px; text-decoration: none; color: var(--ink); background: var(--white); font-size: 14px; }
+.mobil-pills a:hover { border-color: var(--deep); }
+.mobil-pills a.on { background: var(--deep); border-color: var(--deep); color: var(--white); }
+.mobil-pills .full { color: var(--err-ink); font-weight: 700; }
+.mobil-pills a.on .full { color: var(--sun); }
+.isi-form { border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.isi-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.isi-head .kursi { font-weight: 700; color: var(--deep); }
+.isi-head .kursi.over { color: var(--err-ink); }
+.isi-grup { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.isi-grup .grup { margin: 0; padding: 8px 10px; background: var(--paper); border-radius: 10px; }
+.isi-grup legend { padding: 0; margin-bottom: 4px; font-size: 14px; }
+.isi-grup .orang { padding: 3px 0; line-height: 1.35; }
+.isi-grup .orang.lain { opacity: .55; }
+.isi-grup .check input { width: 18px; height: 18px; margin-top: 1px; }

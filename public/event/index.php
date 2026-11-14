@@ -122,7 +122,7 @@ $routes = [
     ['POST', '/admin/shuttle/kendaraan', 'admin_kendaraan_simpan'],
     ['POST', '/admin/shuttle/kendaraan/(\d+)/hapus', 'admin_kendaraan_hapus'],
     ['POST', '/admin/shuttle/bagi', 'admin_shuttle_bagi'],
-    ['POST', '/admin/shuttle/penempatan', 'admin_shuttle_penempatan'],
+    ['POST', '/admin/shuttle/isi', 'admin_shuttle_isi'],
     ['POST', '/admin/shuttle/publikasi', 'admin_shuttle_publikasi'],
     ['GET', '/admin/shuttle/manifest\.csv', 'admin_shuttle_csv'],
     ['GET', '/admin/konten', 'admin_konten'],
