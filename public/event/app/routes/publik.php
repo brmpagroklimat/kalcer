@@ -57,7 +57,7 @@ function clean_peserta(array $p, string $label): array
     if ($d['nip'] !== '' && !valid_nip($d['nip'])) {
         throw new UserError("$label: NIP harus 18 digit angka (kosongkan bila tidak punya NIP).");
     }
-    $d['bagikan_kontak'] = !empty($p['bagikan_kontak']) ? 1 : 0;
+    $d['bagikan_kontak'] = !empty($p['bagikan_kontak']) && $d['menginap'] ? 1 : 0;
     $d['menginap'] = $d['menginap'] === 'ya' ? 1 : 0;
     return $d;
 }

@@ -9,8 +9,8 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
   <p class="note">Perubahan peserta bisa dilakukan sampai <b><?= h(tgl_jam(setting('batas_ganti'))) ?></b>. Gunakan <b>Ganti peserta</b> kalau orangnya berganti; nama lama tetap tercatat di riwayat.</p>
 <?php endif; ?>
 
-<details class="panel" <?= (setting('info_hotel') !== '' || setting('info_shuttle') !== '') ? 'open' : '' ?>>
-  <summary>Panduan kegiatan, hotel & shuttle</summary>
+<details class="panel" <?= info_items() ? 'open' : '' ?>>
+  <summary>Panduan & info kegiatan</summary>
   <?= view('_panduan', ['tanggal' => instansi_tanggal((int) $inst['id'])]) ?>
 </details>
 

@@ -170,6 +170,38 @@
     [picNama, picHp].forEach(function (el) { el.addEventListener('input', sync); });
   });
 
+  // Izin berbagi kontak hanya relevan bila peserta menginap.
+  document.querySelectorAll('.share-contact').forEach(function (box) {
+    var scope = box.closest('.person, form');
+    var radios = scope.querySelectorAll('input[type=radio][name$="[menginap]"], input[type=radio][name="menginap"]');
+    function sync() {
+      var ya = Array.prototype.some.call(radios, function (r) { return r.checked && r.value === 'ya'; });
+      box.hidden = !ya;
+      if (!ya) box.querySelector('input').checked = false;
+    }
+    radios.forEach(function (r) { r.addEventListener('change', sync); });
+  });
+
+  // Centang "pilih semua" (mis. publikasi kamar).
+  document.querySelectorAll('[data-check-all]').forEach(function (all) {
+    var boxes = function () { return all.form.querySelectorAll('input[type=checkbox][name="' + all.dataset.checkAll + '"]:not(:disabled)'); };
+    var refresh = function () { var b = boxes(); all.checked = b.length > 0 && Array.prototype.every.call(b, function (x) { return x.checked; }); };
+    all.addEventListener('change', function () { boxes().forEach(function (x) { x.checked = all.checked; }); });
+    all.form.addEventListener('change', function (e) { if (e.target !== all) refresh(); });
+    refresh();
+  });
+
+  // Tambah baris kosong (mis. Info untuk instansi di Pengaturan).
+  document.querySelectorAll('[data-add-row]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var wrap = document.querySelector(btn.dataset.addRow);
+      var row = wrap.lastElementChild.cloneNode(true);
+      row.querySelectorAll('input, textarea').forEach(function (el) { el.value = ''; });
+      wrap.appendChild(row);
+      row.querySelector('input').focus();
+    });
+  });
+
   var errs = document.getElementById('form-errors');
   if (errs) errs.focus();
 })();

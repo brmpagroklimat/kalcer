@@ -387,8 +387,6 @@ const SETTING_FIELDS = [
     'kuota_per_instansi' => 'Maks. peserta per instansi',
     'kuota_per_hari' => 'Kuota peserta per hari (0 = tanpa batas)',
     'kapasitas_kamar' => 'Kapasitas kamar (orang)',
-    'info_hotel' => 'Info hotel',
-    'info_shuttle' => 'Info shuttle',
     'kontak_panitia' => 'Nama kontak panitia',
     'wa_panitia' => 'No. WhatsApp panitia',
 ];
@@ -420,6 +418,18 @@ function admin_pengaturan(): void
             }
             set_setting($k, $v);
         }
+        // Info untuk instansi: daftar bebas judul + isi (baris kosong diabaikan).
+        $items = [];
+        foreach ((array) ($_POST['info_judul'] ?? []) as $i => $judul) {
+            $judul = trim((string) $judul);
+            $isi = trim((string) ($_POST['info_isi'][$i] ?? ''));
+            if ($judul !== '' && $isi !== '') {
+                $items[] = ['judul' => mb_substr($judul, 0, 80), 'isi' => mb_substr($isi, 0, 2000)];
+            } elseif ($judul !== '' || $isi !== '') {
+                throw new UserError('Info untuk instansi: isi judul dan keterangannya (baris "' . ($judul ?: mb_substr($isi, 0, 30)) . '").');
+            }
+        }
+        set_setting('info_tambahan', json_encode($items, JSON_UNESCAPED_UNICODE));
         flash('ok', 'Pengaturan disimpan.');
         redirect('/admin/pengaturan');
     }

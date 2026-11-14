@@ -14,9 +14,16 @@ $tanggal = $tanggal ?? null;
   <div class="panel">
     <h2>Menginap & transport</h2>
     <p>Hotel disediakan panitia untuk malam sebelum acara<?= $tanggal ? ': <b>malam ' . h(malam_menginap($tanggal)) . '</b>' : '' ?>. Peserta yang menginap diantar shuttle dari hotel ke lokasi.</p>
-    <?php if (setting('info_hotel') !== ''): ?><p class="prewrap"><b>Hotel:</b> <?= h(setting('info_hotel')) ?></p><?php endif; ?>
-    <?php if (setting('info_shuttle') !== ''): ?><p class="prewrap"><b>Shuttle:</b> <?= h(setting('info_shuttle')) ?></p><?php endif; ?>
-    <?php if (setting('info_hotel') === '' && setting('info_shuttle') === ''): ?><p class="small muted">Detail hotel dan jadwal shuttle akan diumumkan panitia di halaman ini.</p><?php endif; ?>
     <p class="small muted">Biaya perjalanan (BBM, tol, kendaraan umum) diganti at cost sesuai struk dan ditransfer ke satu rekening per instansi.</p>
   </div>
 </div>
+<?php if ($items = info_items()): ?>
+  <div class="panel">
+    <h2>Info penting</h2>
+    <dl class="info-list">
+      <?php foreach ($items as $it): ?><dt><?= h($it['judul']) ?></dt><dd class="prewrap"><?= h($it['isi']) ?></dd><?php endforeach; ?>
+    </dl>
+  </div>
+<?php else: ?>
+  <p class="small muted">Detail hotel, shuttle, dan info lain akan diumumkan panitia di halaman ini.</p>
+<?php endif; ?>

@@ -24,10 +24,16 @@ $dt = static fn (string $k) => setting($k) !== '' ? date('Y-m-d\TH:i', strtotime
     <label class="field"><span>Kapasitas kamar <small>(orang per kamar, untuk rekomendasi pembagian)</small></span><input type="number" min="1" max="10" name="kapasitas_kamar" value="<?= h(setting('kapasitas_kamar')) ?>"></label>
   </div>
   <h2 style="margin-top:22px">Info untuk instansi</h2>
-  <div class="fields two">
-    <label class="field"><span>Hotel</span><textarea name="info_hotel" placeholder="Nama hotel, alamat, jam check-in"><?= h(setting('info_hotel')) ?></textarea></label>
-    <label class="field"><span>Shuttle</span><textarea name="info_shuttle" placeholder="Jam keberangkatan shuttle dari hotel, titik kumpul"><?= h(setting('info_shuttle')) ?></textarea></label>
+  <p class="small muted">Tampil di halaman instansi (bagian Panduan) setelah registrasi, mis. hotel, shuttle, parkir, dress code. Kosongkan baris untuk menghapus.</p>
+  <div class="info-rows" id="info-rows">
+    <?php $items = info_items(); $items[] = ['judul' => '', 'isi' => '']; foreach ($items as $i => $it): ?>
+      <div class="info-row">
+        <label class="field"><span>Judul</span><input type="text" name="info_judul[]" value="<?= h($it['judul']) ?>" maxlength="80" placeholder="mis. Hotel"></label>
+        <label class="field"><span>Keterangan</span><textarea name="info_isi[]" rows="2" maxlength="2000" placeholder="mis. Hotel Santika, Jl. ..., check-in 14.00"><?= h($it['isi']) ?></textarea></label>
+      </div>
+    <?php endforeach; ?>
   </div>
+  <button type="button" class="btn small secondary" data-add-row="#info-rows">+ Tambah info</button>
   <div class="actions"><button class="btn deep">Simpan pengaturan</button></div>
 </form>
 

@@ -200,7 +200,7 @@ function admin_kamar_daftar(): void
         q('UPDATE kamar SET nomor = ?, kapasitas = ?, catatan = ? WHERE id = ?', [
             trim((string) ($nomor[$id] ?? $k['nomor'])) ?: null,
             max(1, (int) ($_POST['kapasitas'][$id] ?? $k['kapasitas'])),
-            trim((string) ($_POST['catatan'][$id] ?? $k['catatan'])) ?: null,
+            $k['catatan'],
             $id,
         ]);
     }
@@ -220,37 +220,40 @@ function admin_kamar_daftar(): void
  * Nomor yang belum ada otomatis menjadi kamar baru. Semua dicek dulu (kapasitas & jenis
  * kelamin); kalau ada yang salah, tidak ada yang disimpan dan isian dikembalikan.
  */
+/**
+ * Simpan tabel penempatan: tiap orang dipilihkan kamar dari dropdown (atau "Belum dapat kamar").
+ * Semua dicek dulu (kapasitas & jenis kelamin); kalau ada yang salah, tidak ada yang disimpan
+ * dan pilihan dikembalikan.
+ */
 function admin_kamar_penempatan(): void
 {
     require_admin();
     $tanggal = kamar_tanggal();
     $orang = penghuni_malam($tanggal);
     $rooms = kamar_list($tanggal, $orang);
-    $byLabel = [];
-    foreach ($rooms as $id => $k) {
-        $byLabel[mb_strtolower(kamar_label($k))] = $id;
-    }
     $input = array_map(static fn ($v) => trim((string) $v), (array) ($_POST['kamar'] ?? []));
-    $target = [];   // key orang => id kamar | 'baru:<nomor>' | null
-    foreach ($orang as $key => $o) {
-        $v = $input[$key] ?? (isset($rooms[$o['kamar_id']]) ? kamar_label($rooms[$o['kamar_id']]) : '');
-        $target[$key] = $v === '' ? null : ($byLabel[mb_strtolower($v)] ?? (str_starts_with($v, '#') ? false : 'baru:' . $v));
-    }
+    $target = [];
     $errors = [];
+    foreach ($orang as $key => $o) {
+        $v = $input[$key] ?? (string) ($o['kamar_id'] ?? '');
+        if ($v === '') {
+            $target[$key] = null;
+        } elseif (ctype_digit($v) && isset($rooms[(int) $v])) {
+            $target[$key] = (int) $v;
+        } else {
+            $errors[] = $o['nama'] . ': kamar tidak ditemukan.';
+        }
+    }
     $isi = [];
     foreach ($target as $key => $t) {
-        if ($t === false) {
-            $errors[] = $orang[$key]['nama'] . ': kamar "' . $input[$key] . '" tidak ditemukan.';
-        } elseif ($t !== null) {
+        if ($t !== null) {
             $isi[$t][] = $orang[$key];
         }
     }
-    $cap = max(1, (int) setting('kapasitas_kamar'));
     foreach ($isi as $t => $list) {
-        $label = is_int($t) ? kamar_label($rooms[$t]) : substr((string) $t, 5);
-        $max = is_int($t) ? (int) $rooms[$t]['kapasitas'] : $cap;
-        if (count($list) > $max) {
-            $errors[] = "Kamar $label kelebihan penghuni (" . count($list) . "/$max): " . implode(', ', array_column($list, 'nama')) . '.';
+        $label = kamar_label($rooms[$t]);
+        if (count($list) > (int) $rooms[$t]['kapasitas']) {
+            $errors[] = "Kamar $label kelebihan penghuni (" . count($list) . '/' . $rooms[$t]['kapasitas'] . '): ' . implode(', ', array_column($list, 'nama')) . '.';
         }
         if (count(array_unique(array_column($list, 'jk'))) > 1) {
             $errors[] = "Kamar $label mencampur laki-laki dan perempuan: " . implode(', ', array_column($list, 'nama')) . '.';
@@ -261,23 +264,14 @@ function admin_kamar_penempatan(): void
         return;
     }
     db()->beginTransaction();
-    $baruId = [];
     foreach ($target as $key => $t) {
-        if (is_string($t)) {
-            if (!isset($baruId[$t])) {
-                q('INSERT INTO kamar (tanggal, nomor, kapasitas) VALUES (?, ?, ?)', [$tanggal, substr($t, 5), $cap]);
-                $baruId[$t] = (int) db()->lastInsertId();
-            }
-            $t = $baruId[$t];
-        }
         set_kamar($orang[$key], $t);
     }
-    // Kamar tanpa nomor yang jadi kosong dibuang supaya daftar tetap rapi.
     q('DELETE k FROM kamar k WHERE k.tanggal = ? AND k.nomor IS NULL
          AND NOT EXISTS (SELECT 1 FROM peserta p WHERE p.kamar_id = k.id AND p.aktif = 1)
          AND NOT EXISTS (SELECT 1 FROM tamu t WHERE t.kamar_id = k.id)', [$tanggal]);
     db()->commit();
-    flash('ok', 'Penempatan kamar disimpan' . ($baruId ? ' (' . count($baruId) . ' kamar baru dibuat)' : '') . '.');
+    flash('ok', 'Penempatan kamar disimpan.');
     kamar_back($tanggal);
 }
 
@@ -303,12 +297,19 @@ function admin_kamar_reset(): void
     kamar_back($tanggal);
 }
 
+/** Publikasi per kamar: hanya kamar yang dicentang (dan bernomor) terlihat oleh penghuninya. */
 function admin_kamar_publikasi(): void
 {
     require_admin();
-    set_setting('kamar_dipublikasikan', post('publikasi') === '1' ? '1' : '0');
-    flash('ok', post('publikasi') === '1' ? 'Pembagian kamar sekarang terlihat oleh peserta.' : 'Pembagian kamar disembunyikan dari peserta.');
-    kamar_back(kamar_tanggal());
+    $tanggal = kamar_tanggal();
+    $pilih = array_map('intval', (array) ($_POST['publik'] ?? []));
+    $ids = array_column(rows('SELECT id FROM kamar WHERE tanggal = ?', [$tanggal]), 'id');
+    foreach ($ids as $id) {
+        q('UPDATE kamar SET publik = ? WHERE id = ?', [in_array((int) $id, $pilih, true) ? 1 : 0, $id]);
+    }
+    $n = count(array_intersect(array_map('intval', $ids), $pilih));
+    flash('ok', $n ? "$n kamar dipublikasikan ke peserta." : 'Tidak ada kamar yang dipublikasikan.');
+    redirect('/admin/kamar?tanggal=' . $tanggal . '#langkah-3');
 }
 
 function admin_tamu_tambah(): void
@@ -340,11 +341,11 @@ function admin_tamu_hapus(string $id): void
 /** Info kamar untuk peserta (halaman instansi), hanya bila sudah dipublikasikan dan bernomor. */
 function kamar_peserta(array $p): ?array
 {
-    if (setting('kamar_dipublikasikan') !== '1' || !$p['menginap'] || !$p['kamar_id']) {
+    if (!$p['menginap'] || !$p['kamar_id']) {
         return null;
     }
     $k = row('SELECT * FROM kamar WHERE id = ?', [$p['kamar_id']]);
-    if (!$k || !$k['nomor']) {
+    if (!$k || !$k['nomor'] || !$k['publik']) {
         return null;
     }
     $teman = [];

@@ -29,7 +29,7 @@ if ($inap === '1') { $inap = 'ya'; } elseif ($inap === '0') { $inap = 'tidak'; }
     </div>
   </div>
 </div>
-<label class="check small" style="margin-top:12px">
+<label class="check small share-contact" style="margin-top:12px" <?= $inap === 'ya' ? '' : 'hidden' ?>>
   <input type="checkbox" name="<?= h($n('bagikan_kontak')) ?>" value="1" <?= $v('bagikan_kontak') === '1' ? 'checked' : '' ?>>
-  <span>Jika menginap: boleh tampilkan No. HP/WA saya ke teman sekamar (untuk koordinasi check-in).</span>
+  <span>Boleh tampilkan No. HP/WA saya ke teman sekamar (untuk koordinasi check-in).</span>
 </label>

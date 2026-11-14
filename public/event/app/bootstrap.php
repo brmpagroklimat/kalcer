@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '4';
+const SCHEMA_VERSION = '5';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -114,10 +114,25 @@ function migrate(): void
     // Kolom tambahan pada tabel lama (MySQL 8 belum punya ADD COLUMN IF NOT EXISTS).
     ensure_column('peserta', 'kamar_id', 'INT UNSIGNED NULL');
     ensure_column('peserta', 'bagikan_kontak', 'TINYINT(1) NOT NULL DEFAULT 0');
+    // v5: publikasi per kamar. Pengaturan lama "semua dipublikasikan" dipindah ke tiap kamar.
+    if (ensure_column('kamar', 'publik', 'TINYINT(1) NOT NULL DEFAULT 0') && setting('kamar_dipublikasikan') === '1') {
+        db()->exec('UPDATE kamar SET publik = 1');
+    }
+    // v5: info untuk instansi jadi daftar bebas; isi hotel & shuttle lama ikut dipindah.
+    if (setting('info_tambahan') === '' && (setting('info_hotel') !== '' || setting('info_shuttle') !== '')) {
+        $items = [];
+        foreach (['Hotel' => 'info_hotel', 'Shuttle' => 'info_shuttle'] as $judul => $k) {
+            if (setting($k) !== '') {
+                $items[] = ['judul' => $judul, 'isi' => setting($k)];
+            }
+        }
+        set_setting('info_tambahan', json_encode($items, JSON_UNESCAPED_UNICODE));
+    }
     set_setting('schema_version', SCHEMA_VERSION);
 }
 
-function ensure_column(string $table, string $column, string $definition): void
+/** Tambah kolom bila belum ada. Mengembalikan true bila kolom baru saja dibuat. */
+function ensure_column(string $table, string $column, string $definition): bool
 {
     $exists = row(
         'SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
@@ -125,7 +140,9 @@ function ensure_column(string $table, string $column, string $definition): void
     );
     if (!$exists) {
         db()->exec("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
+        return true;
     }
+    return false;
 }
 
 // ---------- pengaturan ----------
@@ -147,6 +164,7 @@ const SETTING_DEFAULTS = [
     'wa_panitia' => '',
     'kapasitas_kamar' => '2',
     'kamar_dipublikasikan' => '0',
+    'info_tambahan' => '',
     'jadwal_link' => '',
     'jadwal_file' => '',
     'jadwal_ext' => '',
@@ -390,6 +408,13 @@ function kabkota_list(): array
 function valid_kabkota(string $v): bool
 {
     return in_array($v, kabkota_list(), true);
+}
+
+/** Info untuk instansi (judul + isi), diatur panitia di Pengaturan. Mis. Hotel, Shuttle, Parkir. */
+function info_items(): array
+{
+    $items = json_decode(setting('info_tambahan'), true);
+    return is_array($items) ? array_values(array_filter($items, static fn ($i) => is_array($i) && trim((string) ($i['judul'] ?? '')) !== '' && trim((string) ($i['isi'] ?? '')) !== '')) : [];
 }
 
 function jk_label(?string $jk): string

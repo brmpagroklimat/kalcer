@@ -4,7 +4,7 @@ $inst = $inst ?? null;
 $isAdmin = current_admin() !== null;
 $admin = !empty($admin);
 $flashes = take_flash();
-$v = '13';
+$v = '14';
 ?>
 <!doctype html>
 <html lang="id">
