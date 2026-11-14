@@ -50,7 +50,7 @@ $wa = static fn (?string $hp) => $hp ? '<a class="wa-link" href="https://wa.me/'
       <tr><td><b><?= h($p['nama']) ?></b></td>
         <td><?php if ($a['kamar']): ?><b>Kamar <?= h($a['kamar']['nomor']) ?></b><?= $a['kamar']['teman'] ? '<br><span class="small">Sekamar: ' . h(implode(', ', array_map(static fn ($t) => $t['nama'] . ' (' . $t['instansi'] . ')', $a['kamar']['teman']))) . '</span>' : '<br><span class="small muted">Sendiri</span>' ?>
           <?php else: ?><span class="muted">Menunggu pembagian panitia</span><?php endif; ?></td>
-        <td><?php if ($a['shuttle']): $k = $a['shuttle']; ?><b><?= h($k['nama']) ?></b><?= $k['jam'] ? ', ' . h(jam($k['jam'])) : '' ?><br><span class="small"><?= h($k['titik_jemput'] ?: '') ?></span>
+        <td><?php if ($a['shuttle']): $k = $a['shuttle']; ?><b><?= h($k['nama']) ?></b><?= $k['plat'] ? ' (' . h($k['plat']) . ')' : '' ?><?= $k['jam'] ? ', ' . h(jam($k['jam'])) : '' ?><br><span class="small"><?= h($k['titik_jemput'] ?: '') ?></span>
           <?php else: ?><span class="muted">Menunggu pembagian panitia</span><?php endif; ?></td></tr>
     <?php endforeach; ?>
     </tbody>
@@ -60,8 +60,8 @@ $wa = static fn (?string $hp) => $hp ? '<a class="wa-link" href="https://wa.me/'
       <?php foreach ($mobil as $k): ?>
         <div class="mini"><b><?= h($k['nama']) ?></b><?= $k['plat'] ? ' <span class="chip">' . h($k['plat']) . '</span>' : '' ?>
           <span class="small">Berangkat <?= $k['jam'] ? h(jam($k['jam'])) : '(jam menyusul)' ?><?= $k['titik_jemput'] ? ' dari ' . h($k['titik_jemput']) : '' ?></span>
-          <?php if ($k['supir_nama']): ?><span class="small">Supir: <?= h($k['supir_nama']) ?> <?= $wa($k['supir_hp']) ?></span><?php endif; ?>
-          <?php if ($k['pic_nama']): ?><span class="small">PIC Shuttle: <?= h($k['pic_nama']) ?> <?= $wa($k['pic_hp']) ?></span><?php endif; ?>
+          <?php if ($k['supir_nama'] || $k['supir_hp']): ?><span class="small">Supir: <?= h($k['supir_nama'] ?: '-') ?> <?= $wa($k['supir_hp']) ?></span><?php endif; ?>
+          <?php if ($k['pic_nama'] || $k['pic_hp']): ?><span class="small">PIC Shuttle: <?= h($k['pic_nama'] ?: '-') ?> <?= $wa($k['pic_hp']) ?></span><?php endif; ?>
         </div>
       <?php endforeach; ?>
     </div>

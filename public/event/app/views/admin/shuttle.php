@@ -57,7 +57,7 @@ $input = static function (string $k, $id, $val) use ($kolom): string {
         </div>
       <?php endforeach; ?>
     </div>
-    <p class="small muted">Isi kartu "+ Kendaraan baru" untuk menambah kendaraan. Supir & PIC Shuttle tampil ke peserta (dengan tombol WhatsApp) setelah dipublikasikan.</p>
+    <p class="small muted">Isi kartu "+ Kendaraan baru" untuk menambah kendaraan. Kontak cukup salah satu (supir atau PIC Shuttle); yang diisi tampil ke peserta beserta tombol WhatsApp setelah dipublikasikan.</p>
     <div class="actions"><button class="btn deep">Simpan kendaraan</button></div>
   </form>
 </section>

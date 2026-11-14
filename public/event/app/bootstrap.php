@@ -431,6 +431,22 @@ function info_items(): array
     return is_array($items) ? array_values(array_filter($items, static fn ($i) => is_array($i) && trim((string) ($i['judul'] ?? '')) !== '' && trim((string) ($i['isi'] ?? '')) !== '')) : [];
 }
 
+/** Info shuttle satu baris untuk peserta: kendaraan, plat, jam, titik jemput, kontak (yang diisi saja). */
+function shuttle_info_html(array $k): string
+{
+    $wa = static fn (?string $hp) => $hp ? ' <a class="wa-link" href="https://wa.me/' . h(wa_digits($hp)) . '" target="_blank" rel="noopener">WhatsApp</a>' : '';
+    $s = '<b>Shuttle: ' . h($k['nama']) . '</b>' . ($k['plat'] ? ' (' . h($k['plat']) . ')' : '')
+        . ($k['jam'] ? ', berangkat ' . h(jam($k['jam'])) : '') . ($k['titik_jemput'] ? ' dari ' . h($k['titik_jemput']) : '') . '.';
+    $kontak = [];
+    if ($k['supir_nama'] || $k['supir_hp']) {
+        $kontak[] = 'Supir' . ($k['supir_nama'] ? ': ' . h($k['supir_nama']) : '') . $wa($k['supir_hp']);
+    }
+    if ($k['pic_nama'] || $k['pic_hp']) {
+        $kontak[] = 'PIC Shuttle' . ($k['pic_nama'] ? ': ' . h($k['pic_nama']) : '') . $wa($k['pic_hp']);
+    }
+    return $s . ($kontak ? '<br>' . implode(' · ', $kontak) : '');
+}
+
 function jk_label(?string $jk): string
 {
     return $jk === 'L' ? 'Laki-laki' : ($jk === 'P' ? 'Perempuan' : '');

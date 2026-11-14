@@ -36,7 +36,7 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
                 <?php foreach ($km['teman'] as $ti => $t): ?><?= $ti ? ', ' : '' ?><?= h($t['nama']) ?> (<?= h($t['instansi']) ?>)<?php if ($t['wa']): ?> <a class="wa-link" href="https://wa.me/<?= h($t['wa']) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?><?php endforeach; ?>.
               <?php endif; ?><?php endif; ?></div>
             <?php $sh = shuttle_peserta($p); ?>
-            <div class="kamar-info"><?= $sh ? '<b>Shuttle: ' . h($sh['nama']) . '</b>' . ($sh['jam'] ? ', berangkat ' . h(jam($sh['jam'])) : '') . ($sh['titik_jemput'] ? ' dari ' . h($sh['titik_jemput']) : '') : 'Shuttle: menunggu pembagian panitia' ?></div>
+            <div class="kamar-info"><?= $sh ? shuttle_info_html($sh) : 'Shuttle: menunggu pembagian panitia' ?></div>
           <?php endif; ?>
           <?php if ($canEdit): ?>
             <div class="inline-actions">
