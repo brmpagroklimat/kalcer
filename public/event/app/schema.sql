@@ -123,3 +123,35 @@ CREATE TABLE IF NOT EXISTS galeri (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY album (album)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v3: jadwal acara, pembagian kamar, tamu menginap (panitia/pejabat yang tidak registrasi).
+CREATE TABLE IF NOT EXISTS jadwal (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  jam_mulai TIME NOT NULL,
+  jam_selesai TIME NULL,
+  acara VARCHAR(200) NOT NULL,
+  keterangan VARCHAR(255) NULL,
+  KEY tgl (tanggal, jam_mulai)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS kamar (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  nomor VARCHAR(30) NULL,
+  kapasitas TINYINT UNSIGNED NOT NULL DEFAULT 2,
+  catatan VARCHAR(120) NULL,
+  KEY tgl (tanggal)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS tamu (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  nama VARCHAR(150) NOT NULL,
+  jk ENUM('L','P') NOT NULL,
+  keterangan VARCHAR(150) NULL,
+  hp VARCHAR(30) NULL,
+  kamar_id INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY tgl (tanggal)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

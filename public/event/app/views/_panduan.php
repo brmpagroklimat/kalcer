@@ -4,6 +4,7 @@ $tanggal = $tanggal ?? null;
 <div class="grid2">
   <div class="panel">
     <h2>Alur kegiatan</h2>
+    <p class="small"><a href="<?= h(url('/jadwal')) ?>">Lihat jadwal acara</a></p>
     <ol class="steps">
       <li><b>Sebelum acara</b>, lewat link instansi Anda bisa mengubah atau mengganti peserta sampai <?= h(tgl_jam(setting('batas_ganti'))) ?>.</li>
       <li><b>Hari H</b>, unggah foto saat berangkat, tiba, kegiatan, pulang, dan tiba kembali di menu <i>Foto kegiatan</i>. Setiap foto wajib ber-watermark tanggal, jam, dan lokasi (pakai aplikasi kamera ber-watermark, mis. <i>Timestamp Camera</i>), maksimal 1 MB per foto.</li>

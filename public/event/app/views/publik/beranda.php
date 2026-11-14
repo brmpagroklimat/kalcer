@@ -1,4 +1,4 @@
-<?php /** @var array $dates @var bool $open @var int $nMateri @var int $nFoto */
+<?php /** @var array $dates @var bool $open @var int $nMateri @var int $nFoto @var array $jadwal */
 $lokasi = setting('lokasi');
 ?>
 <section class="hero">
@@ -20,6 +20,12 @@ $lokasi = setting('lokasi');
     <h2>Registrasi</h2>
     <p><?= $open ? 'Dibuka sampai ' . h(tgl_jam(setting('batas_daftar'))) . '. Setiap instansi memilih satu tanggal, maksimal ' . (int) setting('kuota_per_instansi') . ' peserta.' : 'Registrasi sudah ditutup.' ?></p>
     <span class="go"><?= $open ? 'Registrasi' : 'Lihat info' ?></span>
+  </a>
+  <a class="card" href="<?= h(url('/jadwal')) ?>">
+    <span class="shape" aria-hidden="true"><span style="left:0;top:0;width:40px;height:40px;background:var(--sand);border-radius:50%"></span><span style="left:0;top:0;width:20px;height:20px;background:var(--deep);border-radius:100% 0 0 0"></span></span>
+    <h2>Jadwal</h2>
+    <p><?= $jadwal ? array_sum(array_map('count', $jadwal)) . ' agenda selama ' . count($jadwal) . ' hari kegiatan.' : 'Jadwal acara akan diumumkan di sini.' ?></p>
+    <span class="go">Lihat jadwal</span>
   </a>
   <a class="card" href="<?= h(url('/materi')) ?>">
     <span class="shape" aria-hidden="true"><span style="left:0;bottom:0;width:40px;height:20px;background:var(--sand);border-radius:20px 20px 0 0"></span><span style="left:10px;top:0;width:20px;height:20px;background:var(--leaf);border-radius:100% 0 100% 0"></span></span>

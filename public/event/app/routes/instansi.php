@@ -106,7 +106,9 @@ function inst_ubah_peserta(string $id): void
     if (mb_strtolower($p['nama']) !== mb_strtolower($old['nama'])) {
         throw new UserError('Untuk mengganti orang, gunakan tombol "Ganti peserta". Ubah data hanya untuk memperbaiki penulisan.');
     }
-    q('UPDATE peserta SET nama = ?, nip = ?, jabatan = ?, hp = ?, jk = ?, menginap = ? WHERE id = ?', [
+    // Batal menginap atau jenis kelamin berubah: lepas dari kamar, panitia atur ulang.
+    $lepasKamar = !$p['menginap'] || $p['jk'] !== $old['jk'];
+    q('UPDATE peserta SET nama = ?, nip = ?, jabatan = ?, hp = ?, jk = ?, menginap = ?, kamar_id = ' . ($lepasKamar ? 'NULL' : 'kamar_id') . ' WHERE id = ?', [
         $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $old['id'],
     ]);
     $changes = [];

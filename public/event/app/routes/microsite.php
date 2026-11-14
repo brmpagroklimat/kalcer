@@ -13,8 +13,28 @@ function publik_beranda(): void
         'dates' => event_dates(),
         'open' => daftar_open(),
         'nMateri' => (int) row('SELECT COUNT(*) n FROM materi')['n'],
+        'jadwal' => jadwal_by_date(),
         'nFoto' => (int) row('SELECT COUNT(*) n FROM galeri')['n'],
     ], ['nav' => 'beranda']);
+}
+
+function jadwal_by_date(): array
+{
+    $out = [];
+    foreach (rows('SELECT * FROM jadwal ORDER BY tanggal, jam_mulai, id') as $j) {
+        $out[$j['tanggal']][] = $j;
+    }
+    return $out;
+}
+
+function jam(?string $t): string
+{
+    return $t ? str_replace(':', '.', substr($t, 0, 5)) : '';
+}
+
+function publik_jadwal(): void
+{
+    render('publik/jadwal', 'Jadwal acara', ['jadwal' => jadwal_by_date()], ['nav' => 'jadwal']);
 }
 
 function publik_materi(): void
@@ -87,10 +107,33 @@ function galeri_zip(): void
 function admin_konten(): void
 {
     require_admin();
-    render('admin/konten', 'Materi & galeri', [
+    render('admin/konten', 'Jadwal, materi & galeri', [
         'materi' => rows('SELECT * FROM materi ORDER BY id DESC'),
+        'jadwal' => jadwal_by_date(),
         'albums' => galeri_albums(),
     ], ['admin' => true, 'scripts' => ['upload.js']]);
+}
+
+function admin_jadwal_tambah(): void
+{
+    require_admin();
+    $tanggal = post('tanggal');
+    $mulai = post('jam_mulai');
+    if (!in_array($tanggal, event_dates(), true) || !preg_match('/^\d{2}:\d{2}$/', $mulai) || post('acara') === '') {
+        throw new UserError('Isi tanggal, jam mulai, dan nama acara.');
+    }
+    $selesai = preg_match('/^\d{2}:\d{2}$/', post('jam_selesai')) ? post('jam_selesai') : null;
+    q('INSERT INTO jadwal (tanggal, jam_mulai, jam_selesai, acara, keterangan) VALUES (?, ?, ?, ?, ?)', [$tanggal, $mulai, $selesai, post('acara'), post('keterangan') ?: null]);
+    flash('ok', 'Acara "' . post('acara') . '" ditambahkan ke jadwal.');
+    redirect('/admin/konten#jadwal');
+}
+
+function admin_jadwal_hapus(string $id): void
+{
+    require_admin();
+    q('DELETE FROM jadwal WHERE id = ?', [(int) $id]);
+    flash('ok', 'Acara dihapus dari jadwal.');
+    redirect('/admin/konten#jadwal');
 }
 
 function admin_materi_tambah(): void

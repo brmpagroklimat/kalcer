@@ -26,7 +26,18 @@ function admin_rekap(string $jenis = 'peserta'): void
     $tglSql = $tanggal !== '' ? ' AND p.tanggal = ?' : '';
     $tglArg = $tanggal !== '' ? [$tanggal] : [];
 
-    if ($jenis === 'peserta' || $jenis === 'menginap') {
+    if ($jenis === 'menginap') {
+        $vars['rows'] = [];
+        foreach ($tanggal !== '' ? [$tanggal] : event_dates() as $d) {
+            $orang = penghuni_malam($d);
+            $rooms = kamar_list($d, $orang);
+            foreach ($orang as $o) {
+                $k = $rooms[$o['kamar_id']] ?? null;
+                $vars['rows'][] = $o + ['tanggal' => $d, 'kamar' => $k ? ($k['nomor'] ?: 'tanpa nomor') : null];
+            }
+        }
+        usort($vars['rows'], static fn ($a, $b) => [$a['tanggal'], $a['kamar'] === null, $a['kamar'], $a['jk']] <=> [$b['tanggal'], $b['kamar'] === null, $b['kamar'], $b['jk']]);
+    } elseif ($jenis === 'peserta') {
         $vars['rows'] = rows(
             'SELECT p.*, i.nama instansi, i.kabkota FROM peserta p JOIN instansi i ON i.id = p.instansi_id
              WHERE p.aktif = 1' . ($jenis === 'menginap' ? ' AND p.menginap = 1' : '') . $tglSql .

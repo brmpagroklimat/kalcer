@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '2';
+const SCHEMA_VERSION = '3';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -111,7 +111,20 @@ function migrate(): void
     foreach (array_filter(array_map('trim', explode(';', preg_replace('/^--.*$/m', '', $sql)))) as $stmt) {
         db()->exec($stmt);
     }
+    // Kolom tambahan pada tabel lama (MySQL 8 belum punya ADD COLUMN IF NOT EXISTS).
+    ensure_column('peserta', 'kamar_id', 'INT UNSIGNED NULL');
     set_setting('schema_version', SCHEMA_VERSION);
+}
+
+function ensure_column(string $table, string $column, string $definition): void
+{
+    $exists = row(
+        'SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+        [$table, $column]
+    );
+    if (!$exists) {
+        db()->exec("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
+    }
 }
 
 // ---------- pengaturan ----------
@@ -131,6 +144,8 @@ const SETTING_DEFAULTS = [
     'info_shuttle' => '',
     'kontak_panitia' => '',
     'wa_panitia' => '',
+    'kapasitas_kamar' => '2',
+    'kamar_dipublikasikan' => '0',
 ];
 
 function setting(string $k): string

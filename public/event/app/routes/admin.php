@@ -342,17 +342,22 @@ function admin_ekspor(string $jenis): void
     $tanggal = (string) ($_GET['tanggal'] ?? '');
     $filterTgl = in_array($tanggal, event_dates(), true);
     $data = [];
-    if ($jenis === 'peserta' || $jenis === 'menginap') {
-        $data[] = $jenis === 'peserta'
-            ? ['Tanggal', 'Kode', 'Instansi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'JK', 'Menginap', 'PIC instansi', 'HP PIC']
-            : ['Malam', 'Tanggal acara', 'Kode', 'Instansi', 'Nama', 'JK', 'HP'];
+    if ($jenis === 'menginap') {
+        $data[] = ['Malam', 'Tanggal acara', 'Kamar', 'Nama', 'JK', 'Instansi / keterangan', 'Jenis', 'HP'];
+        foreach ($filterTgl ? [$tanggal] : event_dates() as $d) {
+            $orang = penghuni_malam($d);
+            $rooms = kamar_list($d, $orang);
+            foreach ($orang as $o) {
+                $k = $rooms[$o['kamar_id']] ?? null;
+                $data[] = [malam_menginap($d), $d, $k ? ($k['nomor'] ?: 'tanpa nomor') : '', $o['nama'], $o['jk'], $o['instansi'], $o['tipe'] === 'tamu' ? 'Tamu panitia' : 'Peserta', $o['hp']];
+            }
+        }
+    } elseif ($jenis === 'peserta') {
+        $data[] = ['Tanggal', 'Kode', 'Instansi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'JK', 'Menginap', 'PIC instansi', 'HP PIC'];
         $sql = 'SELECT p.*, i.nama instansi, i.kabkota, i.koordinator, i.hp hp_koor FROM peserta p JOIN instansi i ON i.id = p.instansi_id
-                WHERE p.aktif = 1' . ($jenis === 'menginap' ? ' AND p.menginap = 1' : '') . ($filterTgl ? ' AND p.tanggal = ?' : '') .
-               ' ORDER BY p.tanggal, ' . ($jenis === 'menginap' ? 'p.jk, ' : '') . 'i.nama, p.id';
+                WHERE p.aktif = 1' . ($filterTgl ? ' AND p.tanggal = ?' : '') . ' ORDER BY p.tanggal, i.nama, p.id';
         foreach (rows($sql, $filterTgl ? [$tanggal] : []) as $p) {
-            $data[] = $jenis === 'peserta'
-                ? [$p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['kabkota'], $p['nama'], $p['nip'], $p['jabatan'], $p['hp'], $p['jk'], $p['menginap'] ? 'Ya' : 'Tidak', $p['koordinator'], $p['hp_koor']]
-                : [malam_menginap($p['tanggal']), $p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['nama'], $p['jk'], $p['hp']];
+            $data[] = [$p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['kabkota'], $p['nama'], $p['nip'], $p['jabatan'], $p['hp'], $p['jk'], $p['menginap'] ? 'Ya' : 'Tidak', $p['koordinator'], $p['hp_koor']];
         }
     } else {
         $data[] = ['Kode', 'Instansi', 'Kab/Kota', 'PIC instansi', 'HP PIC', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];
@@ -381,6 +386,7 @@ const SETTING_FIELDS = [
     'batas_upload' => 'Batas upload foto & bukti biaya',
     'kuota_per_instansi' => 'Maks. peserta per instansi',
     'kuota_per_hari' => 'Kuota peserta per hari (0 = tanpa batas)',
+    'kapasitas_kamar' => 'Kapasitas kamar (orang)',
     'info_hotel' => 'Info hotel',
     'info_shuttle' => 'Info shuttle',
     'kontak_panitia' => 'Nama kontak panitia',
@@ -409,8 +415,8 @@ function admin_pengaturan(): void
                 }
                 $v = implode(',', $ds);
             }
-            if (in_array($k, ['kuota_per_instansi', 'kuota_per_hari'], true)) {
-                $v = (string) max(0, (int) $v);
+            if (in_array($k, ['kuota_per_instansi', 'kuota_per_hari', 'kapasitas_kamar'], true)) {
+                $v = (string) max($k === 'kapasitas_kamar' ? 1 : 0, (int) $v);
             }
             set_setting($k, $v);
         }

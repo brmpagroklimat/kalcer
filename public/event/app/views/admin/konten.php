@@ -1,6 +1,34 @@
-<?php /** @var array $materi @var array $albums */ ?>
-<h1>Materi & galeri</h1>
+<?php /** @var array $materi @var array $albums @var array $jadwal */ ?>
+<h1>Jadwal, materi & galeri</h1>
 <p class="lead">Konten ini tampil publik di menu <a href="<?= h(url('/materi')) ?>">Materi</a> dan <a href="<?= h(url('/galeri')) ?>">Galeri</a>.</p>
+
+<section class="panel" id="jadwal">
+  <h2>Jadwal acara</h2>
+  <?php foreach ($jadwal as $d => $list): ?>
+    <h3 style="margin-top:14px"><?= h(tgl($d, true)) ?></h3>
+    <ol class="agenda">
+      <?php foreach ($list as $j): ?>
+        <li><span class="agenda-time"><?= h(jam($j['jam_mulai'])) ?><?= $j['jam_selesai'] ? '–' . h(jam($j['jam_selesai'])) : '' ?></span>
+          <span><b><?= h($j['acara']) ?></b><?= $j['keterangan'] ? ' <span class="small muted">' . h($j['keterangan']) . '</span>' : '' ?>
+            <form method="post" action="<?= h(url('/admin/jadwal/' . $j['id'] . '/hapus')) ?>" data-confirm="Hapus acara ini dari jadwal?" style="display:inline"><?= csrf_field() ?> <button class="linkbtn danger-link small">Hapus</button></form></span></li>
+      <?php endforeach; ?>
+    </ol>
+  <?php endforeach; ?>
+  <?php if (!$jadwal): ?><p class="muted">Belum ada jadwal.</p><?php endif; ?>
+  <h3 style="margin-top:20px">Tambah acara</h3>
+  <form method="post" action="<?= h(url('/admin/jadwal')) ?>"><?= csrf_field() ?>
+    <div class="fields three">
+      <label class="field"><span>Tanggal</span><select name="tanggal" required><?php foreach (event_dates() as $d): ?><option value="<?= h($d) ?>"><?= h(tgl($d, true)) ?></option><?php endforeach; ?></select></label>
+      <label class="field"><span>Jam mulai</span><input type="time" name="jam_mulai" required></label>
+      <label class="field"><span>Jam selesai <small>(opsional)</small></span><input type="time" name="jam_selesai"></label>
+    </div>
+    <div class="fields two" style="margin-top:14px">
+      <label class="field"><span>Acara</span><input type="text" name="acara" maxlength="200" required placeholder="Registrasi ulang peserta"></label>
+      <label class="field"><span>Keterangan <small>(opsional)</small></span><input type="text" name="keterangan" maxlength="255" placeholder="Lobi utama"></label>
+    </div>
+    <div class="actions"><button class="btn small deep">Tambah ke jadwal</button></div>
+  </form>
+</section>
 
 <section class="panel" id="materi">
   <h2>Materi</h2>

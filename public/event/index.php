@@ -11,6 +11,7 @@ require __DIR__ . '/app/routes/instansi.php';
 require __DIR__ . '/app/routes/admin.php';
 require __DIR__ . '/app/routes/microsite.php';
 require __DIR__ . '/app/routes/rekap.php';
+require __DIR__ . '/app/routes/kamar.php';
 
 config();
 
@@ -60,6 +61,7 @@ $routes = [
     ['GET', '/', 'publik_beranda'],
     ['GET', '/daftar', 'publik_home'],
     ['POST', '/daftar', 'publik_daftar'],
+    ['GET', '/jadwal', 'publik_jadwal'],
     ['GET', '/materi', 'publik_materi'],
     ['GET', '/galeri', 'publik_galeri'],
     ['GET', '/galeri/unduh', 'galeri_zip'],
@@ -101,7 +103,19 @@ $routes = [
     ['POST', '/admin/biaya/(\d+)', 'admin_biaya'],
     ['GET', '/admin/rekap', 'admin_rekap'],
     ['GET', '/admin/rekap/(peserta|menginap|foto|reimburse)', 'admin_rekap'],
+    ['GET', '/admin/kamar', 'admin_kamar'],
+    ['POST', '/admin/kamar/rekomendasi', 'admin_kamar_rekomendasi'],
+    ['POST', '/admin/kamar/tambah', 'admin_kamar_tambah'],
+    ['POST', '/admin/kamar/tempatkan', 'admin_kamar_tempatkan'],
+    ['POST', '/admin/kamar/reset', 'admin_kamar_reset'],
+    ['POST', '/admin/kamar/publikasi', 'admin_kamar_publikasi'],
+    ['POST', '/admin/kamar/(\d+)', 'admin_kamar_ubah'],
+    ['POST', '/admin/kamar/(\d+)/hapus', 'admin_kamar_hapus'],
+    ['POST', '/admin/tamu', 'admin_tamu_tambah'],
+    ['POST', '/admin/tamu/(\d+)/hapus', 'admin_tamu_hapus'],
     ['GET', '/admin/konten', 'admin_konten'],
+    ['POST', '/admin/jadwal', 'admin_jadwal_tambah'],
+    ['POST', '/admin/jadwal/(\d+)/hapus', 'admin_jadwal_hapus'],
     ['POST', '/admin/materi', 'admin_materi_tambah'],
     ['POST', '/admin/materi/(\d+)/hapus', 'admin_materi_hapus'],
     ['POST', '/admin/galeri', 'admin_galeri_tambah'],

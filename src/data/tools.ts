@@ -50,8 +50,8 @@ export const tools: Tool[] = [
   },
   {
     id: 'tanya-kalcer',
-    title: 'Tanya KALCER',
-    description: 'Tanya jawab langsung lewat chat.',
+    title: 'Tanya Gita',
+    description: 'Gerbang Informasi Teknologi Agroklimat. Tanya jawab langsung lewat chat.',
     icon: 'chat',
     href: null,
   },

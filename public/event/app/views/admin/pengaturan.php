@@ -21,6 +21,7 @@ $dt = static fn (string $k) => setting($k) !== '' ? date('Y-m-d\TH:i', strtotime
     <label class="field"><span>Batas upload foto & bukti biaya</span><input type="datetime-local" name="batas_upload" value="<?= h($dt('batas_upload')) ?>"></label>
     <label class="field"><span>Maks. peserta per instansi</span><input type="number" min="1" name="kuota_per_instansi" value="<?= h(setting('kuota_per_instansi')) ?>"></label>
     <label class="field"><span>Kuota peserta per hari <small>(0 = tanpa batas)</small></span><input type="number" min="0" name="kuota_per_hari" value="<?= h(setting('kuota_per_hari')) ?>"></label>
+    <label class="field"><span>Kapasitas kamar <small>(orang per kamar, untuk rekomendasi pembagian)</small></span><input type="number" min="1" max="10" name="kapasitas_kamar" value="<?= h(setting('kapasitas_kamar')) ?>"></label>
   </div>
   <h2 style="margin-top:22px">Info untuk instansi</h2>
   <div class="fields two">

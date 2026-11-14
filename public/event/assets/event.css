@@ -171,7 +171,7 @@ details.edit[open] { background: var(--paper); border-radius: 10px; padding: 4px
 .inline-actions details.edit[open] { flex-basis: 100%; order: 2; }
 .inline-actions > form { display: contents; }
 .inline-actions details.edit > summary, .inline-actions .linkbtn { font-size: 14px; font-weight: 700; line-height: 1.4; padding: 6px 0; }
-.inline-actions .danger-link { color: var(--err-ink); }
+.danger-link, .inline-actions .danger-link { color: var(--err-ink); }
 .wa-link { font-weight: 700; color: var(--leaf); text-decoration: underline; text-underline-offset: 3px; }
 .wa-link:hover { color: var(--deep); }
 
@@ -256,3 +256,27 @@ a.card:hover h2 { color: var(--deep); }
 details.panel > summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 18px; }
 details.panel[open] > summary { margin-bottom: 14px; }
 .field > span small, .field-label small, legend small { font-weight: 400; }
+/* pembagian kamar */
+.inline-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.inline-form select, .inline-form input { min-height: 36px; padding: 6px 10px; width: auto; }
+.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.room { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--paper); }
+.room.warn { border-color: #e3b3a7; background: var(--err-bg); }
+.room-head { display: grid; grid-template-columns: 1fr 64px; gap: 6px; }
+.room-head input { min-height: 36px; padding: 6px 10px; }
+.room-head input[name=nomor] { font-weight: 700; }
+.room-head input[name=catatan] { grid-column: 1 / -1; }
+.room-head .btn { grid-column: 1 / -1; justify-self: start; }
+.room-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 10px 0 4px; }
+.room .people > li { padding: 8px 0; }
+.room .inline-form { margin-top: 6px; flex-wrap: nowrap; }
+.room .inline-form select { flex: 1 1 auto; min-width: 0; font-size: 14px; }
+.room .inline-form .btn { flex: none; }
+.room-head .btn { min-height: 32px; }
+.kamar-info { margin-top: 6px; font-size: 14px; background: #e2f2f5; color: var(--deep); border-radius: 8px; padding: 6px 10px; display: inline-block; }
+/* jadwal */
+.agenda { list-style: none; margin: 0; padding: 0; }
+.agenda li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 4px 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.agenda li:first-child { border-top: 0; }
+.agenda-time { font-weight: 700; color: var(--deep); font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .agenda li { grid-template-columns: 1fr; } }

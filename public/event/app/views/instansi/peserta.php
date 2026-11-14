@@ -32,6 +32,9 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
             <?= $p['menginap'] ? '<span class="badge inap">Menginap</span>' : '<span class="badge muted">Tidak menginap</span>' ?>
           </div>
           <div class="meta"><?= h(implode(' · ', array_filter([$p['jabatan'], $p['nip'] ? 'NIP ' . $p['nip'] : null, $p['jk'] === 'L' ? 'Laki-laki' : 'Perempuan', $p['hp']]))) ?></div>
+          <?php if ($p['menginap']): $km = kamar_peserta($p); ?>
+            <div class="kamar-info"><?= $km ? '<b>Kamar ' . h($km['nomor']) . '</b>' . ($km['catatan'] ? ', ' . h($km['catatan']) : '') . ($km['teman'] ? '. Sekamar dengan ' . h(implode(', ', $km['teman'])) : '. Sendiri') : 'Kamar: menunggu pembagian panitia' ?></div>
+          <?php endif; ?>
           <?php if ($canEdit): ?>
             <div class="inline-actions">
               <details class="edit"><summary>Ubah data</summary>
