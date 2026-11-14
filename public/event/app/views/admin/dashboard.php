@@ -7,7 +7,8 @@
     <div class="panel-head"><h2><?= h(tgl($d, true)) ?></h2>
       <div class="inline-actions small" style="margin:0">
         <a href="<?= h(url('/admin/rekap/peserta?tanggal=' . $d)) ?>">Rekap peserta</a>
-        <a href="<?= h(url('/admin/rekap/menginap?tanggal=' . $d)) ?>">Rekap menginap & shuttle</a>
+        <a href="<?= h(url('/admin/rekap/menginap?tanggal=' . $d)) ?>">Rekap menginap</a>
+        <a href="<?= h(url('/admin/shuttle?tanggal=' . $d)) ?>">Shuttle</a>
         <a href="<?= h(url('/admin/rekap/foto?tanggal=' . $d)) ?>">Rekap foto</a>
       </div>
     </div>

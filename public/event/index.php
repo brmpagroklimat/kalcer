@@ -12,6 +12,7 @@ require __DIR__ . '/app/routes/admin.php';
 require __DIR__ . '/app/routes/microsite.php';
 require __DIR__ . '/app/routes/rekap.php';
 require __DIR__ . '/app/routes/kamar.php';
+require __DIR__ . '/app/routes/shuttle.php';
 
 config();
 
@@ -72,7 +73,8 @@ $routes = [
     ['GET', '/i/([A-Za-z0-9_-]{6,})', 'publik_masuk_token'],
     ['POST', '/keluar', 'publik_keluar'],
 
-    ['GET', '/saya', 'inst_peserta'],
+    ['GET', '/saya', 'inst_ringkasan'],
+    ['GET', '/saya/peserta', 'inst_peserta'],
     ['POST', '/saya/instansi', 'inst_update_instansi'],
     ['POST', '/saya/peserta', 'inst_tambah_peserta'],
     ['POST', '/saya/peserta/(\d+)', 'inst_ubah_peserta'],
@@ -116,6 +118,13 @@ $routes = [
     ['POST', '/admin/kamar/(\d+)/hapus', 'admin_kamar_hapus'],
     ['POST', '/admin/tamu', 'admin_tamu_tambah'],
     ['POST', '/admin/tamu/(\d+)/hapus', 'admin_tamu_hapus'],
+    ['GET', '/admin/shuttle', 'admin_shuttle'],
+    ['POST', '/admin/shuttle/kendaraan', 'admin_kendaraan_simpan'],
+    ['POST', '/admin/shuttle/kendaraan/(\d+)/hapus', 'admin_kendaraan_hapus'],
+    ['POST', '/admin/shuttle/bagi', 'admin_shuttle_bagi'],
+    ['POST', '/admin/shuttle/penempatan', 'admin_shuttle_penempatan'],
+    ['POST', '/admin/shuttle/publikasi', 'admin_shuttle_publikasi'],
+    ['GET', '/admin/shuttle/manifest\.csv', 'admin_shuttle_csv'],
     ['GET', '/admin/konten', 'admin_konten'],
     ['POST', '/admin/jadwal', 'admin_jadwal_simpan'],
     ['POST', '/admin/materi', 'admin_materi_tambah'],

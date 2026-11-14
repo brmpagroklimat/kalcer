@@ -14,7 +14,7 @@ function kamar_tanggal(): string
 function penghuni_malam(string $tanggal): array
 {
     $out = [];
-    foreach (rows('SELECT p.id, p.nama, p.jk, p.hp, p.kamar_id, p.instansi_id, p.bagikan_kontak, i.nama instansi
+    foreach (rows('SELECT p.id, p.nama, p.jk, p.hp, p.kamar_id, p.shuttle_id, p.instansi_id, p.bagikan_kontak, i.nama instansi
                    FROM peserta p JOIN instansi i ON i.id = p.instansi_id
                    WHERE p.aktif = 1 AND p.menginap = 1 AND p.tanggal = ? ORDER BY i.nama, p.id', [$tanggal]) as $p) {
         $out['p' . $p['id']] = $p + ['key' => 'p' . $p['id'], 'tipe' => 'peserta', 'grup' => 'i' . $p['instansi_id']];

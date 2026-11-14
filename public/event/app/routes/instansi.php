@@ -54,8 +54,32 @@ function inst_peserta(): void
         'inst' => $inst,
         'byDate' => peserta_by_date((int) $inst['id']),
         'canEdit' => can_edit_peserta(),
-        'riwayat' => rows('SELECT * FROM riwayat WHERE instansi_id = ? ORDER BY id DESC LIMIT 100', [$inst['id']]),
     ], ['inst' => $inst, 'tab' => 'peserta']);
+}
+
+/** Ringkasan instansi: alur instansi + status tiap langkah, akomodasi, info, riwayat. */
+function inst_ringkasan(): void
+{
+    $inst = require_instansi();
+    $id = (int) $inst['id'];
+    $tanggal = instansi_tanggal($id);
+    $peserta = rows('SELECT * FROM peserta WHERE instansi_id = ? AND aktif = 1 ORDER BY id', [$id]);
+    $inap = array_values(array_filter($peserta, static fn ($p) => $p['menginap']));
+    $akomodasi = [];
+    foreach ($inap as $p) {
+        $akomodasi[$p['id']] = ['kamar' => kamar_peserta($p), 'shuttle' => shuttle_peserta($p)];
+    }
+    $tahapAda = $tanggal ? array_column(rows('SELECT DISTINCT tahap FROM evidence WHERE instansi_id = ? AND tanggal = ?', [$id, $tanggal]), 'tahap') : [];
+    render('instansi/ringkasan', 'Ringkasan', [
+        'inst' => $inst,
+        'tanggal' => $tanggal,
+        'peserta' => $peserta,
+        'inap' => $inap,
+        'akomodasi' => $akomodasi,
+        'tahapAda' => array_intersect(array_keys(TAHAP), $tahapAda),
+        'reimburse' => reimburse_totals($id),
+        'riwayat' => rows('SELECT * FROM riwayat WHERE instansi_id = ? ORDER BY id DESC LIMIT 100', [$id]),
+    ], ['inst' => $inst, 'tab' => 'ringkasan']);
 }
 
 function inst_update_instansi(): void
@@ -76,7 +100,7 @@ function inst_update_instansi(): void
     q('UPDATE instansi SET koordinator = ?, hp = ?, email = ? WHERE id = ?', [$d['koordinator'], $d['hp'], $d['email'] ?: null, $inst['id']]);
     log_riwayat((int) $inst['id'], 'ubah_instansi', 'Mengubah data PIC instansi: ' . $d['koordinator'] . ' (' . $d['hp'] . ')');
     flash('ok', 'Data PIC instansi disimpan.');
-    redirect('/saya');
+    redirect('/saya/peserta');
 }
 
 function inst_tambah_peserta(): void
@@ -95,7 +119,7 @@ function inst_tambah_peserta(): void
     ]);
     log_riwayat((int) $inst['id'], 'tambah', 'Menambah peserta ' . $p['nama'] . ' (' . tgl($tanggal) . ')');
     flash('ok', $p['nama'] . ' ditambahkan.');
-    redirect('/saya');
+    redirect('/saya/peserta');
 }
 
 function inst_ubah_peserta(string $id): void
@@ -109,7 +133,7 @@ function inst_ubah_peserta(string $id): void
     }
     // Batal menginap atau jenis kelamin berubah: lepas dari kamar, panitia atur ulang.
     $lepasKamar = !$p['menginap'] || $p['jk'] !== $old['jk'];
-    q('UPDATE peserta SET nama = ?, nip = ?, jabatan = ?, hp = ?, jk = ?, menginap = ?, bagikan_kontak = ?, kamar_id = ' . ($lepasKamar ? 'NULL' : 'kamar_id') . ' WHERE id = ?', [
+    q('UPDATE peserta SET nama = ?, nip = ?, jabatan = ?, hp = ?, jk = ?, menginap = ?, bagikan_kontak = ?, kamar_id = ' . ($lepasKamar ? 'NULL' : 'kamar_id') . ', shuttle_id = ' . ($p['menginap'] ? 'shuttle_id' : 'NULL') . ' WHERE id = ?', [
         $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'], $old['id'],
     ]);
     $changes = [];
@@ -122,7 +146,7 @@ function inst_ubah_peserta(string $id): void
         log_riwayat((int) $inst['id'], 'ubah', 'Mengubah data ' . $p['nama'] . ': ' . implode(', ', $changes));
     }
     flash('ok', 'Data ' . $p['nama'] . ' disimpan.');
-    redirect('/saya');
+    redirect('/saya/peserta');
 }
 
 function inst_ganti_peserta(string $id): void
@@ -140,7 +164,7 @@ function inst_ganti_peserta(string $id): void
     log_riwayat((int) $inst['id'], 'ganti', $old['nama'] . ' diganti oleh ' . $p['nama'] . ' (' . tgl($old['tanggal']) . ')');
     db()->commit();
     flash('ok', $old['nama'] . ' diganti oleh ' . $p['nama'] . '.');
-    redirect('/saya');
+    redirect('/saya/peserta');
 }
 
 function inst_hapus_peserta(string $id): void
@@ -151,7 +175,7 @@ function inst_hapus_peserta(string $id): void
     q('UPDATE peserta SET aktif = 0 WHERE id = ?', [$old['id']]);
     log_riwayat((int) $inst['id'], 'batal', $old['nama'] . ' batal ikut (' . tgl($old['tanggal']) . ')');
     flash('ok', $old['nama'] . ' dibatalkan.');
-    redirect('/saya');
+    redirect('/saya/peserta');
 }
 
 // ---------- foto evidence ----------

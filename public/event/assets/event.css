@@ -384,3 +384,25 @@ input[readonly] { background: #f3f1ec; color: var(--muted); }
   .lane-p::before { color: var(--deep); }
   .lane:has(.lane-kosong) { display: none; }
 }
+/* ringkasan instansi */
+.kamar-info { display: table; }
+.kamar-info + .kamar-info { margin-top: 4px; }
+.inst-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.inst-steps li { display: flex; gap: 12px; padding: 10px 0; position: relative; }
+.inst-steps li:not(:last-child)::before { content: ''; position: absolute; left: 14px; top: 40px; bottom: -2px; width: 2px; background: var(--line); }
+.inst-steps .num { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: var(--paper); border: 1px solid var(--line); position: relative; z-index: 1; }
+.inst-steps .done .num { background: var(--leaf); border-color: var(--leaf); color: var(--white); }
+.inst-steps .now .num { background: var(--sun); border-color: var(--sun); }
+.inst-steps .isi { display: flex; flex-direction: column; gap: 2px; }
+.inst-steps .isi .small { color: var(--body); }
+.inst-steps .isi a.small { font-weight: 700; }
+.cards-mini { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin-top: 14px; }
+.mini { background: var(--paper); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+/* tabel kendaraan */
+.mobil-table input { min-height: 36px; padding: 6px 8px; font-size: 14px; width: 100%; min-width: 96px; }
+.mobil-table input[name^="kapasitas"] { min-width: 64px; width: 64px; }
+.mobil-table input[name^="nama"] { min-width: 120px; font-weight: 700; }
+.inst-steps .isi .badge { align-self: flex-start; }
+.mobil-table input[type=tel] { min-width: 132px; }
+.mobil-table input[type=time] { min-width: 118px; }
+@media (min-width: 1100px) { .top-inner .topnav a, .top-inner .topnav .linkbtn { padding: 8px 9px; } }

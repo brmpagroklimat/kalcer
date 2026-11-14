@@ -1,4 +1,4 @@
-<?php /** @var array $inst @var array $byDate @var bool $canEdit @var array $riwayat */
+<?php /** @var array $inst @var array $byDate @var bool $canEdit */
 $kuota = (int) setting('kuota_per_instansi');
 $names = [];
 foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama']; } }
@@ -9,10 +9,7 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
   <p class="note">Perubahan peserta bisa dilakukan sampai <b><?= h(tgl_jam(setting('batas_ganti'))) ?></b>. Gunakan <b>Ganti peserta</b> kalau orangnya berganti; nama lama tetap tercatat di riwayat.</p>
 <?php endif; ?>
 
-<details class="panel" <?= info_items() ? 'open' : '' ?>>
-  <summary>Panduan & info kegiatan</summary>
-  <?= view('_panduan', ['tanggal' => instansi_tanggal((int) $inst['id'])]) ?>
-</details>
+
 
 <?php foreach ($byDate as $d => $list):
     $aktif = array_values(array_filter($list, static fn ($p) => (int) $p['aktif'] === 1));
@@ -38,6 +35,8 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
               <?php if (!$km['teman']): ?>Sendiri.<?php else: ?>Sekamar dengan
                 <?php foreach ($km['teman'] as $ti => $t): ?><?= $ti ? ', ' : '' ?><?= h($t['nama']) ?> (<?= h($t['instansi']) ?>)<?php if ($t['wa']): ?> <a class="wa-link" href="https://wa.me/<?= h($t['wa']) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?><?php endforeach; ?>.
               <?php endif; ?><?php endif; ?></div>
+            <?php $sh = shuttle_peserta($p); ?>
+            <div class="kamar-info"><?= $sh ? '<b>Shuttle: ' . h($sh['nama']) . '</b>' . ($sh['jam'] ? ', berangkat ' . h(jam($sh['jam'])) : '') . ($sh['titik_jemput'] ? ' dari ' . h($sh['titik_jemput']) : '') : 'Shuttle: menunggu pembagian panitia' ?></div>
           <?php endif; ?>
           <?php if ($canEdit): ?>
             <div class="inline-actions">
@@ -92,13 +91,5 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
     </form>
     <p class="small muted" style="margin-top:12px">Nama instansi: <?= h($inst['nama']) ?>, <?= h($inst['kabkota']) ?>. Untuk mengubahnya, <?= hubungi_panitia('Halo panitia, kami ingin mengubah nama instansi ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ').', 'hubungi panitia via WhatsApp') ?>.</p>
   </section>
-  <section class="panel">
-    <h2>Riwayat perubahan</h2>
-    <?php if (!$riwayat): ?><p class="muted">Belum ada.</p><?php endif; ?>
-    <?php if ($riwayat): ?><ul class="activity" tabindex="0" aria-label="Riwayat perubahan, gulir untuk melihat lebih banyak">
-      <?php foreach ($riwayat as $r): ?>
-        <li><?= h($r['keterangan']) ?><span class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></span></li>
-      <?php endforeach; ?>
-    </ul><?php endif; ?>
-  </section>
+
 </div>

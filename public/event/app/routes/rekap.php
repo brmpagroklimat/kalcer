@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 const REKAP_TABS = [
     'peserta' => 'Peserta',
-    'menginap' => 'Menginap & shuttle',
+    'menginap' => 'Menginap',
     'foto' => 'Foto dokumentasi',
     'reimburse' => 'Reimburse',
 ];

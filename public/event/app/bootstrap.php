@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '6';
+const SCHEMA_VERSION = '7';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -115,6 +115,9 @@ function migrate(): void
     // Kolom tambahan pada tabel lama (MySQL 8 belum punya ADD COLUMN IF NOT EXISTS).
     ensure_column('peserta', 'kamar_id', 'INT UNSIGNED NULL');
     ensure_column('peserta', 'bagikan_kontak', 'TINYINT(1) NOT NULL DEFAULT 0');
+    // v7: satu orang hanya di satu kendaraan shuttle (per hari).
+    ensure_column('peserta', 'shuttle_id', 'INT UNSIGNED NULL');
+    ensure_column('tamu', 'shuttle_id', 'INT UNSIGNED NULL');
     // v6: status "Dibayar sebagian" (pembayaran dicicil).
     db()->exec("ALTER TABLE instansi MODIFY reimburse_status ENUM('draft','diajukan','diverifikasi','sebagian','dibayar') NOT NULL DEFAULT 'draft'");
     // v5: publikasi per kamar. Pengaturan lama "semua dipublikasikan" dipindah ke tiap kamar.
@@ -373,6 +376,12 @@ function tgl_jam(?string $dt): string
         return '-';
     }
     return tgl($dt) . ', ' . date('H.i', strtotime($dt));
+}
+
+/** Jam "HH:MM:SS" → "HH.MM". */
+function jam(?string $t): string
+{
+    return $t ? str_replace(':', '.', substr($t, 0, 5)) : '';
 }
 
 function tgl_pendek(string $date): string

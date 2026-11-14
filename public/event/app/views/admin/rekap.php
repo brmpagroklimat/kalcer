@@ -41,7 +41,7 @@
   $perMalam = [];
   foreach ($rows as $p) { $perMalam[$p['tanggal']][] = $p; }
 ?>
-  <div class="panel-head"><p class="muted" style="margin:0"><?= count($rows) ?> orang menginap (termasuk tamu panitia). Semua yang menginap ikut shuttle hotel → lokasi pada pagi hari acara. Atur kamar di menu <a href="<?= h(url('/admin/kamar')) ?>">Kamar</a>.</p>
+  <div class="panel-head"><p class="muted" style="margin:0"><?= count($rows) ?> orang menginap (termasuk tamu panitia). Atur kamar di menu <a href="<?= h(url('/admin/kamar')) ?>">Kamar</a> dan antar-jemput di menu <a href="<?= h(url('/admin/shuttle')) ?>">Shuttle</a>.</p>
     <a class="btn small secondary" href="<?= h(url('/admin/ekspor/menginap.csv') . ($tanggal ? '?tanggal=' . $tanggal : '')) ?>">Unduh CSV</a></div>
   <?php if (!$rows): ?><p class="muted">Belum ada peserta yang menginap.</p><?php endif; ?>
   <?php foreach ($perMalam as $d => $list): $l = count(array_filter($list, static fn ($p) => $p['jk'] === 'L')); ?>

@@ -170,3 +170,20 @@ CREATE TABLE IF NOT EXISTS pembayaran (
   KEY inst (instansi_id),
   CONSTRAINT fk_pembayaran_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- v7: shuttle hotel -> lokasi acara (kendaraan per hari; penumpang = yang menginap).
+CREATE TABLE IF NOT EXISTS kendaraan (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  nama VARCHAR(80) NOT NULL,
+  plat VARCHAR(20) NULL,
+  kapasitas TINYINT UNSIGNED NOT NULL DEFAULT 10,
+  jam TIME NULL,
+  titik_jemput VARCHAR(150) NULL,
+  supir_nama VARCHAR(100) NULL,
+  supir_hp VARCHAR(20) NULL,
+  pic_nama VARCHAR(100) NULL,
+  pic_hp VARCHAR(20) NULL,
+  publik TINYINT(1) NOT NULL DEFAULT 0,
+  KEY tgl (tanggal)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

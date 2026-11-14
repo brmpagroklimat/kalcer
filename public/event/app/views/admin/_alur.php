@@ -20,7 +20,7 @@ $fase = [
         'kapan' => 'Sampai batas registrasi',
         'instansi' => [
             ['Registrasi: pilih 1 tanggal, maks. 3 peserta, pilih menginap', null],
-            ['Simpan link instansi (dikirim ke WA/email)', null],
+            ['Simpan link instansi; buka tab Ringkasan untuk langkah berikutnya', null],
         ],
         'panitia' => [
             ['Pantau pendaftar dan kuota', '/admin/rekap/peserta'],
@@ -33,21 +33,27 @@ $fase = [
         'kapan' => 'Sampai batas ganti peserta',
         'instansi' => [
             ['Ubah, ganti, atau batalkan peserta', null],
+            ['Lihat kamar & shuttle di tab Ringkasan', null],
         ],
         'panitia' => [
             ['Kamar 1: masukkan nomor kamar dari hotel', '/admin/kamar'],
             ['Kamar 2: tambah tamu panitia/pejabat bila ada → Bagi otomatis → periksa', '/admin/kamar', 'Ubah lewat dropdown; ditolak bila penuh/beda jenis kelamin'],
             ['Kamar 3: publikasikan kamar yang sudah final', '/admin/kamar'],
-            ['Kirim daftar menginap & shuttle ke hotel', '/admin/rekap/menginap'],
+            ['Kirim daftar menginap ke hotel', '/admin/rekap/menginap'],
+            ['Shuttle 1: tambah kendaraan (kapasitas, jam, supir & PIC teknis)', '/admin/shuttle'],
+            ['Shuttle 2: bagi penumpang otomatis → periksa', '/admin/shuttle', 'Satu orang hanya di satu kendaraan; ditolak bila melebihi kapasitas'],
+            ['Shuttle 3: publikasikan; kirim manifest ke supir & PIC teknis', '/admin/shuttle'],
         ],
     ],
     [
         'judul' => 'Hari H',
         'kapan' => '2 & 3 Desember',
         'instansi' => [
+            ['Naik shuttle sesuai jadwal (yang menginap)', null],
             ['Unggah foto ber-watermark (tanggal, jam, lokasi) untuk 5 tahap: berangkat → tiba kembali', null],
         ],
         'panitia' => [
+            ['Cek penumpang naik sesuai manifest shuttle', '/admin/shuttle'],
             ['Pantau foto per tahap; ingatkan instansi yang belum lengkap via WhatsApp', '/admin/rekap/foto'],
             ['Unggah dokumentasi ke galeri', '/admin/konten'],
         ],
