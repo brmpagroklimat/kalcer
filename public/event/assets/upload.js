@@ -49,9 +49,9 @@
     });
   }
 
-  function render(file, lines) {
+  function render(file, lines, side, quality) {
     return loadImage(file).then(function (img) {
-      var w = img.width, h = img.height, s = Math.min(1, MAX_SIDE / Math.max(w, h));
+      var w = img.width, h = img.height, s = Math.min(1, (side || MAX_SIDE) / Math.max(w, h));
       w = Math.round(w * s); h = Math.round(h * s);
       var c = document.createElement('canvas');
       c.width = w; c.height = h;
@@ -68,9 +68,22 @@
         ctx.textBaseline = 'top';
         lines.forEach(function (t, i) { ctx.fillText(t, Math.round(fs * 0.8), h - bandH + padY + i * lh, w - fs * 1.6); });
       }
-      return new Promise(function (resolve) { c.toBlob(resolve, 'image/jpeg', 0.85); });
+      return new Promise(function (resolve) { c.toBlob(resolve, 'image/jpeg', quality || 0.85); });
     });
   }
+
+  // Render + watermark, turunkan kualitas/resolusi sampai hasilnya <= max byte.
+  function renderFit(file, lines, max) {
+    var tries = [[2000, 0.85], [2000, 0.75], [1600, 0.75], [1280, 0.7], [1024, 0.65]];
+    function attempt(i) {
+      return render(file, lines, tries[i][0], tries[i][1]).then(function (blob) {
+        return blob.size <= max || i === tries.length - 1 ? blob : attempt(i + 1);
+      });
+    }
+    return attempt(0);
+  }
+
+  function mb(n) { return (n / 1048576).toFixed(1).replace('.', ','); }
 
   function send(form, fields, blob, filename, status) {
     return new Promise(function (resolve, reject) {
@@ -127,8 +140,19 @@
   document.querySelectorAll('form.js-photo').forEach(function (form) {
     form.addEventListener('change', function (e) {
       if (e.target.type !== 'file' || !e.target.files.length) return;
-      var files = Array.prototype.slice.call(e.target.files);
+      var max = +form.dataset.max || 1048576;
+      var all = Array.prototype.slice.call(e.target.files);
+      // Foto asli > batas ditolak: peserta diminta mengecilkan sendiri.
+      var big = all.filter(function (f) { return f.size > max; });
+      var files = all.filter(function (f) { return f.size <= max; });
+      var tooBig = big.length ? big.map(function (f) { return f.name + ' (' + mb(f.size) + ' MB)'; }).join(', ') +
+        ' melebihi ' + mb(max) + ' MB. Kecilkan foto dulu lalu unggah lagi.' : '';
       var st = statusUi(form);
+      if (!files.length) {
+        st.set(tooBig, true);
+        e.target.value = '';
+        return;
+      }
       st.lock(true);
       var done = 0, noExif = 0;
       files.reduce(function (p, file, i) {
@@ -147,7 +171,7 @@
             fields.taken_at = meta.taken ? fmt(meta.taken) : '';
             fields.lat = meta.lat !== null ? meta.lat.toFixed(6) : '';
             fields.lon = meta.lon !== null ? meta.lon.toFixed(6) : '';
-            return render(file, lines)
+            return renderFit(file, lines, max)
               .then(function (blob) { return [blob, 'foto.jpg']; }, function () { return [file, file.name]; })
               .then(function (b) {
                 st.set('Mengunggah foto ' + (i + 1) + ' dari ' + files.length + '…');
@@ -158,6 +182,13 @@
         });
       }, Promise.resolve())
         .then(function () {
+          if (tooBig) {
+            st.set(done + ' foto terunggah. ' + tooBig, true);
+            st.lock(false);
+            e.target.value = '';
+            setTimeout(function () { location.reload(); }, 6000);
+            return;
+          }
           st.set(done + ' foto terunggah' + (noExif ? ' (' + noExif + ' tanpa timestamp kamera)' : '') + '. Memuat ulang…');
           location.reload();
         })

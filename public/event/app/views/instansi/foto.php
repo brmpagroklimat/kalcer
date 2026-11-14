@@ -1,7 +1,10 @@
 <?php /** @var array $inst @var array $dates @var array $foto @var bool $canUpload */ ?>
 <h1>Foto kegiatan</h1>
 <p class="lead">Foto ini menjadi bukti sah perjalanan dan kehadiran di laporan kegiatan. Unggah minimal satu foto untuk setiap tahap.</p>
-<p class="note">Ambil foto langsung dengan kamera HP agar <b>waktu dan lokasi foto</b> terbaca otomatis. Foto dari WhatsApp atau hasil screenshot biasanya tidak menyimpan waktu kamera, sehingga ditandai "tanpa timestamp kamera".</p>
+<div class="note">
+  <p><b>Ukuran foto maksimal 1 MB.</b> Foto langsung dari kamera HP biasanya lebih besar, jadi kecilkan dulu sebelum diunggah.</p>
+  <p style="margin:0">Agar <b>waktu dan lokasi foto</b> tetap terbaca, cara paling aman adalah mengatur resolusi kamera HP ke ukuran kecil (mis. 2–3 MP) sebelum memotret. Foto yang dikirim lewat WhatsApp atau dikompres dengan aplikasi lain biasanya kehilangan data waktu kamera, sehingga ditandai "tanpa timestamp kamera".</p>
+</div>
 <?php if (!$canUpload): ?><p class="note warn">Batas upload sudah lewat (<?= h(tgl_jam(setting('batas_upload'))) ?>).</p><?php endif; ?>
 <?php if (!$dates): ?><p class="muted">Belum ada peserta aktif, jadi belum ada tanggal kegiatan.</p><?php endif; ?>
 
@@ -37,7 +40,7 @@
           <?php endif; ?>
           <?php if ($canUpload): ?>
             <form class="uploader js-photo" method="post" enctype="multipart/form-data" action="<?= h(url('/saya/foto')) ?>"
-                  data-instansi="<?= h($inst['nama']) ?>" data-tahap="<?= h($label) ?>" data-tanggal="<?= h(tgl($d)) ?>" style="margin-top:<?= $list ? '12px' : '0' ?>">
+                  data-instansi="<?= h($inst['nama']) ?>" data-max="<?= MAX_EVIDENCE ?>" data-tahap="<?= h($label) ?>" data-tanggal="<?= h(tgl($d)) ?>" style="margin-top:<?= $list ? '12px' : '0' ?>">
               <?= csrf_field() ?>
               <input type="hidden" name="tanggal" value="<?= h($d) ?>">
               <input type="hidden" name="tahap" value="<?= h($key) ?>">

@@ -201,6 +201,9 @@ function inst_upload_foto(): void
         throw new UserError('Pilih tanggal dan tahap foto.');
     }
     $file = $_FILES['foto'] ?? [];
+    if ((int) ($file['size'] ?? 0) > MAX_EVIDENCE) {
+        throw new UserError('Foto maksimal 1 MB (file ini ' . ukuran($file['size']) . '). Kecilkan foto dulu lalu unggah lagi.');
+    }
     // Browser mengirim metadata EXIF yang dibaca sebelum foto dikompres.
     $meta = [
         'taken_at' => parse_client_datetime(post('taken_at')),

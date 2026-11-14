@@ -6,6 +6,8 @@ const MAX_UPLOAD = 15 * 1024 * 1024;
 const MAX_SIDE = 2400;
 /** Batas per file untuk materi & galeri (konten publik). */
 const MAX_KONTEN = 2 * 1024 * 1024;
+/** Batas foto dokumentasi peserta; peserta mengecilkan sendiri foto yang lebih besar. */
+const MAX_EVIDENCE = 1024 * 1024;
 
 function upload_root(): string
 {
