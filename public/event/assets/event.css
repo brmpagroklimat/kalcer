@@ -433,3 +433,12 @@ input[readonly] { background: #f3f1ec; color: var(--muted); }
 .isi-grup .orang { padding: 3px 0; line-height: 1.35; }
 .isi-grup .orang.lain { opacity: .55; }
 .isi-grup .check input { width: 18px; height: 18px; margin-top: 1px; }
+/* langkah instansi: mendatar di layar lebar */
+@media (min-width: 860px) {
+  .inst-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+  .inst-steps li { flex-direction: column; gap: 8px; padding: 0; }
+  .inst-steps li:not(:last-child)::before { left: 38px; right: -10px; top: 14px; bottom: auto; width: auto; height: 2px; }
+  .inst-steps .isi { gap: 3px; }
+  .inst-steps .isi b { font-size: 15px; }
+  .inst-steps .isi .small { font-size: 13px; line-height: 1.4; }
+}

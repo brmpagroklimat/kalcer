@@ -7,7 +7,7 @@ $curPath = '/' . trim((string) preg_replace('#^/event#', '', (string) parse_url(
 $adminNav = ['/admin' => 'Dashboard', '/admin/instansi' => 'Instansi', '/admin/rekap' => 'Rekap', '/admin/kamar' => 'Kamar', '/admin/shuttle' => 'Shuttle', '/admin/konten' => 'Jadwal & konten', '/admin/pengaturan' => 'Pengaturan'];
 $adminAktif = static fn (string $href) => $href === '/admin' ? $curPath === '/admin' : str_starts_with($curPath, $href);
 $flashes = take_flash();
-$v = '23';
+$v = '24';
 ?>
 <!doctype html>
 <html lang="id">
