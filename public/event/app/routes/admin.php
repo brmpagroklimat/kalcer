@@ -87,10 +87,7 @@ function admin_reset(): void
             $error = $e->getMessage();
         }
     }
-    render('admin/reset', 'Reset akun panitia', [
-        'error' => $error,
-        'usernames' => array_column(rows('SELECT username FROM admin ORDER BY id'), 'username'),
-    ], ['narrow' => true]);
+    render('admin/reset', 'Reset akun panitia', ['error' => $error], ['narrow' => true]);
 }
 
 function admin_login(): void
