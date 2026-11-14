@@ -10,8 +10,13 @@ $dt = static fn (string $k) => setting($k) !== '' ? date('Y-m-d\TH:i', strtotime
     <label class="field"><span>Tanggal acara</span><input type="text" name="tanggal_acara" value="<?= h(setting('tanggal_acara')) ?>"><small>Format YYYY-MM-DD, dipisah koma. Hati-hati mengubahnya setelah ada pendaftar.</small></label>
     <label class="field" style="grid-column:1/-1"><span>Deskripsi kegiatan <small>(tampil di beranda)</small></span><textarea name="deskripsi" placeholder="Ringkasan kegiatan untuk calon peserta"><?= h(setting('deskripsi')) ?></textarea></label>
     <?php $kp = kontak_panitia(); ?>
-    <label class="field"><span>Nama kontak panitia</span><input type="text" name="kontak_panitia" value="<?= h($kp['nama']) ?>" placeholder="Amelia"></label>
-    <label class="field"><span>No. WhatsApp panitia <small>(tidak ditampilkan; dipakai tombol "Hubungi panitia")</small></span><input type="tel" name="wa_panitia" value="<?= h(setting('wa_panitia') !== '' ? setting('wa_panitia') : $kp['wa']) ?>" placeholder="0812xxxxxxx"></label>
+    <div class="field" style="grid-column:1/-1"><span class="field-label">Kontak panitia <small>(nomor tidak ditampilkan; dipakai tombol "Hubungi panitia via WhatsApp"; kontak 2 opsional)</small></span>
+      <div class="kontak-grid">
+        <input type="text" name="kontak_panitia" value="<?= h($kp['nama']) ?>" placeholder="Nama kontak 1" aria-label="Nama kontak panitia 1">
+        <input type="tel" name="wa_panitia" value="<?= h(setting('wa_panitia') !== '' ? setting('wa_panitia') : $kp['wa']) ?>" inputmode="numeric" placeholder="No. WhatsApp kontak 1" aria-label="No. WhatsApp panitia 1" data-validate="hp">
+        <input type="text" name="kontak2_nama" value="<?= h(setting('kontak2_nama')) ?>" placeholder="Nama kontak 2" aria-label="Nama kontak panitia 2">
+        <input type="tel" name="kontak2_wa" value="<?= h(setting('kontak2_wa')) ?>" inputmode="numeric" placeholder="No. WhatsApp kontak 2" aria-label="No. WhatsApp panitia 2" data-validate="hp">
+      </div></div>
   </div>
   <h2 style="margin-top:22px">Registrasi & batas waktu</h2>
   <label class="check" style="margin-bottom:14px"><input type="checkbox" name="daftar_dibuka" value="1" <?= setting('daftar_dibuka') === '1' ? 'checked' : '' ?>> Registrasi dibuka</label>

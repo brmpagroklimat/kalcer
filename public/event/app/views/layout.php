@@ -3,8 +3,11 @@
 $inst = $inst ?? null;
 $isAdmin = current_admin() !== null;
 $admin = !empty($admin);
+$curPath = '/' . trim((string) preg_replace('#^/event#', '', (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH)), '/');
+$adminNav = ['/admin' => 'Dashboard', '/admin/instansi' => 'Instansi', '/admin/rekap' => 'Rekap', '/admin/kamar' => 'Kamar', '/admin/konten' => 'Jadwal & konten', '/admin/pengaturan' => 'Pengaturan'];
+$adminAktif = static fn (string $href) => $href === '/admin' ? $curPath === '/admin' : str_starts_with($curPath, $href);
 $flashes = take_flash();
-$v = '14';
+$v = '15';
 ?>
 <!doctype html>
 <html lang="id">
@@ -26,12 +29,9 @@ $v = '14';
     </a>
     <?php if (!empty($admin)): ?>
       <nav class="topnav" aria-label="Menu panitia">
-        <a href="<?= h(url('/admin')) ?>">Dashboard</a>
-        <a href="<?= h(url('/admin/instansi')) ?>">Instansi</a>
-        <a href="<?= h(url('/admin/rekap')) ?>">Rekap</a>
-        <a href="<?= h(url('/admin/kamar')) ?>">Kamar</a>
-        <a href="<?= h(url('/admin/konten')) ?>">Jadwal & konten</a>
-        <a href="<?= h(url('/admin/pengaturan')) ?>">Pengaturan</a>
+        <?php foreach ($adminNav as $href => $label): ?>
+          <a href="<?= h(url($href)) ?>" <?= $adminAktif($href) ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>
+        <?php endforeach; ?>
         <a href="<?= h(url('/')) ?>">Lihat situs</a>
         <form method="post" action="<?= h(url('/admin/keluar')) ?>"><?= csrf_field() ?><button class="linkbtn">Keluar</button></form>
       </nav>

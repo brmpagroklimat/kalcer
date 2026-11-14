@@ -4,11 +4,11 @@
 
 <section class="panel" id="jadwal">
   <h2>Jadwal acara</h2>
-  <p class="small muted">Isi link (mis. Google Docs yang sudah dibagikan "Siapa saja yang memiliki link"), unggah file PDF/gambar jadwal, atau keduanya. Tampil di menu <a href="<?= h(url('/jadwal')) ?>">Jadwal</a>.</p>
+  <p class="small muted">Isi link jadwal (mis. Google Docs yang dibagikan "Siapa saja yang memiliki link"). File PDF/gambar boleh ditambahkan sebagai unduhan. Tampil di menu <a href="<?= h(url('/jadwal')) ?>">Jadwal</a>.</p>
   <form method="post" enctype="multipart/form-data" action="<?= h(url('/admin/jadwal')) ?>"><?= csrf_field() ?>
     <div class="fields two">
-      <label class="field"><span>Link jadwal <small>(opsional)</small></span><input type="url" name="jadwal_link" value="<?= h($jadwal['link']) ?>" placeholder="https://docs.google.com/document/d/…"></label>
-      <label class="field"><span>File jadwal <small>(PDF/JPG/PNG, maks. 2 MB)</small></span><input type="file" name="jadwal_file" accept=".pdf,.jpg,.jpeg,.png" data-max="<?= MAX_KONTEN ?>">
+      <label class="field"><span>Link jadwal</span><input type="url" required name="jadwal_link" value="<?= h($jadwal['link']) ?>" placeholder="https://docs.google.com/document/d/…"></label>
+      <label class="field"><span>File jadwal <small>(opsional; PDF/JPG/PNG, maks. 2 MB)</small></span><input type="file" name="jadwal_file" accept=".pdf,.jpg,.jpeg,.png" data-max="<?= MAX_KONTEN ?>">
         <?php if ($jadwal['file']): ?><small>Sekarang: <a href="<?= h(url('/media/jadwal')) ?>" target="_blank" rel="noopener"><?= h($jadwal['nama']) ?></a>. Pilih file baru untuk mengganti.</small><?php endif; ?></label>
     </div>
     <?php if ($jadwal['file']): ?><label class="check small" style="margin-top:10px"><input type="checkbox" name="hapus_file" value="1"> Hapus file jadwal</label><?php endif; ?>

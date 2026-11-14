@@ -162,6 +162,8 @@ const SETTING_DEFAULTS = [
     'info_shuttle' => '',
     'kontak_panitia' => '',
     'wa_panitia' => '',
+    'kontak2_nama' => '',
+    'kontak2_wa' => '',
     'kapasitas_kamar' => '2',
     'kamar_dipublikasikan' => '0',
     'info_tambahan' => '',
@@ -441,12 +443,18 @@ function json_ok(array $data = []): void
     exit;
 }
 
+function wa_digits(string $wa): string
+{
+    $d = preg_replace('/\D/', '', $wa);
+    return str_starts_with($d, '0') ? '62' . substr($d, 1) : $d;
+}
+
 /**
- * Kontak panitia: nama (setting kontak_panitia) + nomor WhatsApp (setting wa_panitia).
- * Kompatibel dengan isian lama "Nama, 0812-xxx" di kontak_panitia.
- * @return array{nama:string,wa:string}
+ * Kontak panitia (maks. 2 orang): nama + nomor WhatsApp. Kompatibel dengan isian lama
+ * "Nama, 0812-xxx" di kontak_panitia.
+ * @return array<int, array{nama:string,wa:string}>
  */
-function kontak_panitia(): array
+function kontak_list(): array
 {
     $nama = setting('kontak_panitia');
     $wa = setting('wa_panitia');
@@ -454,23 +462,34 @@ function kontak_panitia(): array
         $wa = $m[0];
         $nama = trim(str_replace($m[0], '', $nama), " ,;-");
     }
-    $digits = preg_replace('/\D/', '', $wa);
-    if (str_starts_with($digits, '0')) {
-        $digits = '62' . substr($digits, 1);
+    $out = [];
+    foreach ([[$nama, $wa], [setting('kontak2_nama'), setting('kontak2_wa')]] as [$n, $w]) {
+        if (wa_digits($w) !== '') {
+            $out[] = ['nama' => trim($n), 'wa' => wa_digits($w)];
+        }
     }
-    return ['nama' => $nama, 'wa' => $digits];
+    return $out;
 }
 
-/** Tautan "Hubungi panitia" ke WhatsApp (nomor tidak ditampilkan). */
+/** Kontak pertama (untuk isian Pengaturan). */
+function kontak_panitia(): array
+{
+    return kontak_list()[0] ?? ['nama' => setting('kontak_panitia'), 'wa' => ''];
+}
+
+/** Tautan "Hubungi panitia" ke WhatsApp (nomor tidak ditampilkan); dua kontak bila diisi. */
 function hubungi_panitia(string $pesan = '', string $label = 'Hubungi panitia via WhatsApp'): string
 {
-    $k = kontak_panitia();
-    if ($k['wa'] === '') {
+    $list = kontak_list();
+    if (!$list) {
         return 'hubungi panitia';
     }
     $pesan = $pesan !== '' ? $pesan : 'Halo panitia ' . setting('nama_kegiatan') . ', saya ingin bertanya.';
-    return '<a class="wa-link" href="https://wa.me/' . h($k['wa']) . '?text=' . h(rawurlencode($pesan)) . '" target="_blank" rel="noopener">'
-        . h($label) . ($k['nama'] !== '' ? ' (' . h($k['nama']) . ')' : '') . '</a>';
+    $link = static fn (array $k, string $teks) => '<a class="wa-link" href="https://wa.me/' . h($k['wa']) . '?text=' . h(rawurlencode($pesan)) . '" target="_blank" rel="noopener">' . h($teks) . '</a>';
+    if (count($list) === 1) {
+        return $link($list[0], $label . ($list[0]['nama'] !== '' ? ' (' . $list[0]['nama'] . ')' : ''));
+    }
+    return h($label) . ': ' . implode(' atau ', array_map(static fn ($k, $i) => $link($k, $k['nama'] !== '' ? $k['nama'] : 'Panitia ' . ($i + 1)), $list, array_keys($list)));
 }
 
 function wa_link(string $text): string

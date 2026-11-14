@@ -131,8 +131,8 @@ function admin_jadwal_simpan(): void
 {
     require_admin();
     $link = post('jadwal_link');
-    if ($link !== '' && !preg_match('#^https://#i', $link)) {
-        throw new UserError('Link jadwal harus diawali https:// (mis. link Google Docs yang sudah dibagikan).');
+    if (!preg_match('#^https://\S+$#i', $link)) {
+        throw new UserError('Isi link jadwal yang diawali https:// (mis. link Google Docs yang sudah dibagikan).');
     }
     set_setting('jadwal_link', $link);
     if (!empty($_FILES['jadwal_file']['name'])) {

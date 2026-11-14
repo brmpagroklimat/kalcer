@@ -387,8 +387,10 @@ const SETTING_FIELDS = [
     'kuota_per_instansi' => 'Maks. peserta per instansi',
     'kuota_per_hari' => 'Kuota peserta per hari (0 = tanpa batas)',
     'kapasitas_kamar' => 'Kapasitas kamar (orang)',
-    'kontak_panitia' => 'Nama kontak panitia',
-    'wa_panitia' => 'No. WhatsApp panitia',
+    'kontak_panitia' => 'Nama kontak panitia 1',
+    'wa_panitia' => 'No. WhatsApp panitia 1',
+    'kontak2_nama' => 'Nama kontak panitia 2',
+    'kontak2_wa' => 'No. WhatsApp panitia 2',
 ];
 
 function admin_pengaturan(): void
@@ -412,6 +414,12 @@ function admin_pengaturan(): void
                     }
                 }
                 $v = implode(',', $ds);
+            }
+            if (in_array($k, ['wa_panitia', 'kontak2_wa'], true) && $v !== '') {
+                if (valid_hp($v) === null) {
+                    throw new UserError(SETTING_FIELDS[$k] . ': hanya angka, 10–15 digit, diawali 0 atau 62.');
+                }
+                $v = valid_hp($v);
             }
             if (in_array($k, ['kuota_per_instansi', 'kuota_per_hari', 'kapasitas_kamar'], true)) {
                 $v = (string) max($k === 'kapasitas_kamar' ? 1 : 0, (int) $v);
