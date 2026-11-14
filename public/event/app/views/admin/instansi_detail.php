@@ -101,7 +101,7 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
     <?php if ($st === 'draft'): ?>
       <p class="muted" style="margin:0"><b>Belum diajukan.</b> Menunggu instansi menekan <i>Ajukan reimburse</i>. Struk bisa diperiksa lebih dulu.</p>
     <?php elseif ($st === 'diajukan'): ?>
-      <p style="margin:0 0 10px"><b>Diajukan instansi.</b> Periksa setiap struk di atas, lalu verifikasi. Bila ada yang perlu diperbaiki instansi, kembalikan dengan alasan.</p>
+      <p style="margin:0 0 10px"><b><?= $bayar ? 'Bukti tambahan diajukan instansi.' : 'Diajukan instansi.' ?></b> Periksa setiap struk berstatus Menunggu di atas, lalu verifikasi<?= $bayar ? '; pembayaran sebelumnya tetap dihitung dan sisanya bisa ditransfer' : '' ?>. Bila ada yang perlu diperbaiki instansi, kembalikan dengan alasan.</p>
       <div class="actions" style="margin-top:0">
         <form method="post" action="<?= h($aksi) ?>"><?= csrf_field() ?><input type="hidden" name="aksi" value="verifikasi"><button class="btn small deep">Tandai diverifikasi (<?= h(rupiah($tot['disetujui'])) ?>)</button></form>
       </div>
@@ -145,7 +145,7 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
     <label class="field"><span>Catatan panitia <small>(tampil di halaman instansi; wajib saat mengembalikan)</small></span><input type="text" name="catatan" value="<?= h($inst['catatan_panitia']) ?>" maxlength="255"></label>
     <div class="actions">
       <button class="btn small secondary" name="aksi" value="catatan">Simpan catatan</button>
-      <?php if (in_array($st, ['diajukan', 'diverifikasi'], true) && !$bayar): ?>
+      <?php if ($st === 'diajukan' || ($st === 'diverifikasi' && !$bayar)): ?>
         <button class="btn small danger" name="aksi" value="kembalikan" onclick="return confirm('Kembalikan reimburse ke instansi untuk diperbaiki?')">Kembalikan ke instansi</button>
       <?php endif; ?>
       <?php if ($st === 'diverifikasi' && !$bayar): ?>
@@ -169,8 +169,9 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
   </section>
   <section class="panel">
     <h2>Riwayat</h2>
-    <ul class="people small">
-      <?php foreach ($riwayat as $r): ?><li><?= h($r['keterangan']) ?><div class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></div></li><?php endforeach; ?>
+    <?php if (!$riwayat): ?><p class="muted">Belum ada.</p><?php endif; ?>
+    <ul class="activity" tabindex="0" aria-label="Riwayat, gulir untuk melihat lebih banyak">
+      <?php foreach ($riwayat as $r): ?><li><?= h($r['keterangan']) ?><span class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></span></li><?php endforeach; ?>
     </ul>
   </section>
 </div>

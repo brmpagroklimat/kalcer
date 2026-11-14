@@ -95,10 +95,10 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
   <section class="panel">
     <h2>Riwayat perubahan</h2>
     <?php if (!$riwayat): ?><p class="muted">Belum ada.</p><?php endif; ?>
-    <ul class="people small">
+    <?php if ($riwayat): ?><ul class="activity" tabindex="0" aria-label="Riwayat perubahan, gulir untuk melihat lebih banyak">
       <?php foreach ($riwayat as $r): ?>
-        <li><?= h($r['keterangan']) ?><div class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></div></li>
+        <li><?= h($r['keterangan']) ?><span class="meta"><?= h(tgl_jam($r['created_at'])) ?> · <?= h($r['oleh']) ?></span></li>
       <?php endforeach; ?>
-    </ul>
+    </ul><?php endif; ?>
   </section>
 </div>

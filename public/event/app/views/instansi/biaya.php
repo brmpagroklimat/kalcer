@@ -1,4 +1,4 @@
-<?php /** @var array $inst @var array $items @var array $dates @var bool $editable */
+<?php /** @var array $inst @var array $items @var array $dates @var bool $editable @var bool $rekeningEditable @var int $belumDiajukan */
 $tot = reimburse_totals((int) $inst['id']);
 $total = $tot['diajukan'];
 $disetujui = $tot['disetujui'];
@@ -18,7 +18,7 @@ $st = $inst['reimburse_status'];
 <?php elseif ($st === 'sebagian'): ?>
   <p class="note">Sudah ditransfer <b><?= h(rupiah($tot['dibayar'])) ?></b> dari <?= h(rupiah($disetujui)) ?>. Sisa <b><?= h(rupiah($tot['sisa'])) ?></b> akan ditransfer menyusul.</p>
 <?php elseif ($st === 'dibayar'): ?>
-  <p class="note">Lunas: <b><?= h(rupiah($tot['dibayar'])) ?></b> sudah ditransfer ke rekening instansi.</p>
+  <p class="note">Lunas: <b><?= h(rupiah($tot['dibayar'])) ?></b> sudah ditransfer ke rekening instansi.<?= $editable ? ' Ada struk yang terlewat? Tambahkan di bawah, lalu ajukan sebagai bukti tambahan.' : '' ?></p>
 <?php endif; ?>
 <?php if ($inst['catatan_panitia']): ?><p class="note warn"><b>Catatan panitia:</b> <?= h($inst['catatan_panitia']) ?></p><?php endif; ?>
 <?php if (!can_upload() && $st === 'draft'): ?><p class="note warn">Batas pengajuan sudah lewat (<?= h(tgl_jam(setting('batas_upload'))) ?>). <?= hubungi_panitia('Halo panitia, kami dari ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ') ingin bertanya soal reimburse.', 'Hubungi panitia via WhatsApp') ?>.</p><?php endif; ?>
@@ -37,7 +37,7 @@ $st = $inst['reimburse_status'];
         <td><?= h(JENIS_BIAYA[$b['jenis']]) ?><?= $b['keterangan'] ? '<br><span class="muted small">' . h($b['keterangan']) . '</span>' : '' ?></td>
         <td class="num"><?= h(rupiah($b['nominal'])) ?><?php if ($b['status'] === 'disetujui' && $b['nominal_disetujui'] !== null && (int) $b['nominal_disetujui'] !== (int) $b['nominal']): ?><br><span class="small">disetujui <?= h(rupiah($b['nominal_disetujui'])) ?></span><?php endif; ?></td>
         <td><a href="<?= h(url('/file/b/' . $b['id'])) ?>" target="_blank" rel="noopener">Lihat</a></td>
-        <td><span class="badge <?= h($b['status']) ?>"><?= h(ucfirst($b['status'])) ?></span><?= $b['catatan'] ? '<br><span class="small">' . h($b['catatan']) . '</span>' : '' ?></td>
+        <td><?php $baru = $b['status'] === 'menunggu' && $st !== 'diajukan'; ?><span class="badge <?= $baru ? 'draft' : h($b['status']) ?>"><?= $baru ? 'Belum diajukan' : h(ucfirst($b['status'])) ?></span><?= $b['catatan'] ? '<br><span class="small">' . h($b['catatan']) . '</span>' : '' ?></td>
         <td><?php if ($editable && $b['status'] === 'menunggu'): ?>
           <form method="post" action="<?= h(url('/saya/biaya/' . $b['id'] . '/hapus')) ?>" data-confirm="Hapus bukti ini?"><?= csrf_field() ?><button class="linkbtn" style="color:var(--err-ink)">Hapus</button></form>
         <?php endif; ?></td>
@@ -88,7 +88,7 @@ $st = $inst['reimburse_status'];
 
 <section class="panel">
   <h2>Rekening tujuan transfer</h2>
-  <?php if ($editable): ?>
+  <?php if ($rekeningEditable): ?>
     <form method="post" action="<?= h(url('/saya/rekening')) ?>"><?= csrf_field() ?>
       <div class="fields three">
         <label class="field"><span>Nama pemilik rekening</span><input type="text" name="atas_nama" value="<?= h($inst['atas_nama']) ?>" required></label>
@@ -102,13 +102,15 @@ $st = $inst['reimburse_status'];
   <?php endif; ?>
 </section>
 
-<?php if ($st === 'draft' && $editable): ?>
+<?php if ($editable && $st !== 'diajukan' && ($st === 'draft' || $belumDiajukan > 0)):
+  $baruTotal = array_sum(array_map(static fn ($b) => $b['status'] === 'menunggu' ? (int) $b['nominal'] : 0, $items));
+  $pertama = $st === 'draft'; ?>
   <section class="panel">
-    <h2>Ajukan reimburse</h2>
-    <p>Pastikan semua struk sudah diunggah dan rekening sudah benar. Setelah diajukan, panitia memeriksa setiap bukti; status dan catatan panitia tampil di halaman ini.</p>
-    <form method="post" action="<?= h(url('/saya/ajukan')) ?>" data-confirm="Ajukan reimburse sebesar <?= h(rupiah($total)) ?>?"><?= csrf_field() ?>
-      <button class="btn" <?= (!$items || !$inst['no_rek']) ? 'disabled' : '' ?>>Ajukan reimburse <?= h(rupiah($total)) ?></button>
-      <?php if (!$items || !$inst['no_rek']): ?><p class="hint" style="margin-top:8px">Tambahkan minimal satu bukti dan isi rekening terlebih dahulu.</p><?php endif; ?>
+    <h2><?= $pertama ? 'Ajukan reimburse' : 'Ajukan bukti tambahan' ?></h2>
+    <p><?= $pertama ? 'Pastikan semua struk sudah diunggah dan rekening sudah benar. Setelah diajukan, panitia memeriksa setiap bukti; status dan catatan panitia tampil di halaman ini.' : 'Ada ' . $belumDiajukan . ' bukti baru yang belum diajukan. Setelah diajukan, panitia memeriksanya dan mentransfer kekurangannya ke rekening yang sama.' ?></p>
+    <form method="post" action="<?= h(url('/saya/ajukan')) ?>" data-confirm="<?= $pertama ? 'Ajukan reimburse sebesar ' . h(rupiah($total)) : 'Ajukan bukti tambahan sebesar ' . h(rupiah($baruTotal)) ?>?"><?= csrf_field() ?>
+      <button class="btn" <?= (!$belumDiajukan || !$inst['no_rek']) ? 'disabled' : '' ?>><?= $pertama ? 'Ajukan reimburse ' . h(rupiah($total)) : 'Ajukan bukti tambahan ' . h(rupiah($baruTotal)) ?></button>
+      <?php if (!$belumDiajukan || !$inst['no_rek']): ?><p class="hint" style="margin-top:8px">Tambahkan minimal satu bukti dan isi rekening terlebih dahulu.</p><?php endif; ?>
     </form>
   </section>
 <?php endif; ?>

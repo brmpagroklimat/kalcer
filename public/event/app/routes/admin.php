@@ -244,14 +244,15 @@ function admin_instansi_reimburse(string $id): void
             throw new UserError("Masih ada $pending struk yang belum diperiksa.");
         }
         q("UPDATE instansi SET reimburse_status = 'diverifikasi' WHERE id = ?", [$inst['id']]);
+        reimburse_recalc((int) $inst['id']);   // bila sudah ada pembayaran sebelumnya → Dibayar sebagian / Dibayar
         $t = reimburse_totals((int) $inst['id']);
         log_riwayat((int) $inst['id'], 'status', 'Reimburse diverifikasi, total disetujui ' . rupiah($t['disetujui']));
-        flash('ok', 'Reimburse diverifikasi. Total yang akan dibayar: ' . rupiah($t['disetujui']) . '.');
+        flash('ok', 'Reimburse diverifikasi. Total disetujui ' . rupiah($t['disetujui']) . ($t['dibayar'] > 0 ? ', sudah dibayar ' . rupiah($t['dibayar']) . ', sisa ' . rupiah($t['sisa']) : '') . '.');
     } elseif ($aksi === 'kembalikan') {
         if (!in_array($st, ['diajukan', 'diverifikasi'], true)) {
             throw new UserError('Reimburse ini tidak bisa dikembalikan.');
         }
-        if ((int) row('SELECT COUNT(*) n FROM pembayaran WHERE instansi_id = ?', [$inst['id']])['n'] > 0) {
+        if ($st === 'diverifikasi' && (int) row('SELECT COUNT(*) n FROM pembayaran WHERE instansi_id = ?', [$inst['id']])['n'] > 0) {
             throw new UserError('Sudah ada pembayaran; hapus pembayaran dulu bila memang perlu dikembalikan.');
         }
         if ($catatan === '') {

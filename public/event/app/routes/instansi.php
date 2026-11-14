@@ -54,7 +54,7 @@ function inst_peserta(): void
         'inst' => $inst,
         'byDate' => peserta_by_date((int) $inst['id']),
         'canEdit' => can_edit_peserta(),
-        'riwayat' => rows('SELECT * FROM riwayat WHERE instansi_id = ? ORDER BY id DESC LIMIT 30', [$inst['id']]),
+        'riwayat' => rows('SELECT * FROM riwayat WHERE instansi_id = ? ORDER BY id DESC LIMIT 100', [$inst['id']]),
     ], ['inst' => $inst, 'tab' => 'peserta']);
 }
 
@@ -256,9 +256,25 @@ function reimburse_recalc(int $instansiId): void
     ]);
 }
 
+/** Struk boleh ditambah kapan saja sebelum batas upload; setelah diverifikasi/dibayar diajukan sebagai bukti tambahan. */
 function biaya_editable(array $inst): bool
 {
+    return can_upload();
+}
+
+/** Rekening hanya bisa diubah sebelum diverifikasi (setelah itu dipakai untuk transfer). */
+function rekening_editable(array $inst): bool
+{
     return can_upload() && in_array($inst['reimburse_status'], ['draft', 'diajukan'], true);
+}
+
+/** Struk yang belum diajukan: semua struk menunggu saat draft, atau struk baru setelah verifikasi. */
+function biaya_belum_diajukan(array $inst): int
+{
+    if ($inst['reimburse_status'] === 'diajukan') {
+        return 0;
+    }
+    return (int) row("SELECT COUNT(*) n FROM biaya WHERE instansi_id = ? AND status = 'menunggu'", [$inst['id']])['n'];
 }
 
 function inst_biaya(): void
@@ -270,13 +286,15 @@ function inst_biaya(): void
         'items' => $items,
         'dates' => inst_dates((int) $inst['id']),
         'editable' => biaya_editable($inst),
+        'rekeningEditable' => rekening_editable($inst),
+        'belumDiajukan' => biaya_belum_diajukan($inst),
     ], ['inst' => $inst, 'tab' => 'biaya', 'scripts' => ['upload.js']]);
 }
 
 function inst_rekening(): void
 {
     $inst = require_instansi();
-    if (!biaya_editable($inst)) {
+    if (!rekening_editable($inst)) {
         throw new UserError('Reimburse sudah diverifikasi; rekening tidak bisa diubah. Hubungi panitia.');
     }
     $d = ['bank' => post('bank'), 'no_rek' => preg_replace('/[^0-9]/', '', post('no_rek')), 'atas_nama' => post('atas_nama')];
@@ -293,7 +311,7 @@ function inst_tambah_biaya(): void
 {
     $inst = require_instansi();
     if (!biaya_editable($inst)) {
-        throw new UserError('Bukti biaya tidak bisa ditambah lagi.');
+        throw new UserError('Batas upload bukti biaya sudah lewat.');
     }
     $tanggal = post('tanggal');
     $jenis = post('jenis');
@@ -333,21 +351,24 @@ function inst_hapus_biaya(string $id): void
     redirect('/saya/biaya');
 }
 
+/** Ajukan reimburse: pertama kali (draft), atau bukti tambahan setelah diverifikasi/dibayar. */
 function inst_ajukan(): void
 {
     $inst = require_instansi();
-    if ($inst['reimburse_status'] !== 'draft') {
-        throw new UserError('Reimburse sudah diajukan.');
+    $st = $inst['reimburse_status'];
+    if ($st === 'diajukan') {
+        throw new UserError('Reimburse sedang diperiksa panitia. Bukti baru otomatis ikut diperiksa.');
     }
     if (!$inst['bank'] || !$inst['no_rek']) {
         throw new UserError('Isi rekening tujuan transfer terlebih dahulu.');
     }
-    $n = (int) row('SELECT COUNT(*) n FROM biaya WHERE instansi_id = ?', [$inst['id']])['n'];
+    $n = biaya_belum_diajukan($inst);
     if ($n === 0) {
-        throw new UserError('Tambahkan minimal satu bukti biaya.');
+        throw new UserError($st === 'draft' ? 'Tambahkan minimal satu bukti biaya.' : 'Tidak ada bukti baru untuk diajukan.');
     }
     q("UPDATE instansi SET reimburse_status = 'diajukan', diajukan_at = NOW() WHERE id = ?", [$inst['id']]);
-    log_riwayat((int) $inst['id'], 'ajukan', "Mengajukan reimburse ($n bukti)");
-    flash('ok', 'Reimburse diajukan. Panitia akan memverifikasi bukti Anda.');
+    $tambahan = $st !== 'draft';
+    log_riwayat((int) $inst['id'], 'ajukan', ($tambahan ? 'Mengajukan bukti tambahan' : 'Mengajukan reimburse') . " ($n bukti)");
+    flash('ok', ($tambahan ? 'Bukti tambahan diajukan.' : 'Reimburse diajukan.') . ' Panitia akan memverifikasi bukti Anda.');
     redirect('/saya/biaya');
 }
