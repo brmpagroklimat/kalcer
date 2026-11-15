@@ -210,7 +210,7 @@ function admin_instansi_link(string $id): void
 {
     $inst = admin_find_instansi($id);
     [$token, $hash] = new_token($inst['nama']);
-    q('UPDATE instansi SET token_hash = ? WHERE id = ?', [$hash, $inst['id']]);
+    q('UPDATE instansi SET token_hash = ?, token_enc = ? WHERE id = ?', [$hash, token_encrypt($token), $inst['id']]);
     log_riwayat((int) $inst['id'], 'link_baru', 'Link instansi diterbitkan ulang; link lama tidak berlaku.');
     $mailed = mail_link_instansi($inst, $token);
     $_SESSION['admin_new_link'][$inst['id']] = ['link' => instansi_link($token), 'mailed' => $mailed];

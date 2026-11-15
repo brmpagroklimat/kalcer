@@ -24,7 +24,7 @@ $fase = [
         ],
         'panitia' => [
             ['Pantau pendaftar dan kuota', '/admin/rekap/peserta'],
-            ['Link instansi hilang → Terbitkan link baru', '/admin/instansi', 'Link lama otomatis tidak berlaku'],
+            ['Link instansi hilang → salin link di detail instansi, kirim ke WA PIC', '/admin/instansi', 'Link bocor → Terbitkan link baru (link lama tidak berlaku)'],
             ['Perlu ubah data instansi → Buka sebagai instansi', '/admin/instansi'],
         ],
     ],

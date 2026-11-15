@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '7';
+const SCHEMA_VERSION = '8';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -118,6 +118,8 @@ function migrate(): void
     // v7: satu orang hanya di satu kendaraan shuttle (per hari).
     ensure_column('peserta', 'shuttle_id', 'INT UNSIGNED NULL');
     ensure_column('tamu', 'shuttle_id', 'INT UNSIGNED NULL');
+    // v8: link instansi tersimpan terenkripsi agar panitia bisa mengirim ulang link yang sama.
+    ensure_column('instansi', 'token_enc', 'VARCHAR(255) NULL');
     // v6: status "Dibayar sebagian" (pembayaran dicicil).
     db()->exec("ALTER TABLE instansi MODIFY reimburse_status ENUM('draft','diajukan','diverifikasi','sebagian','dibayar') NOT NULL DEFAULT 'draft'");
     // v5: publikasi per kamar. Pengaturan lama "semua dipublikasikan" dipindah ke tiap kamar.
@@ -275,6 +277,36 @@ function new_token(string $namaInstansi = ''): array
     }
     $slug = trim(substr(strtolower(trim((string) preg_replace('/[^A-Za-z0-9]+/', '-', $namaInstansi), '-')), 0, 40), '-');
     return [($slug !== '' ? $slug . '-' : '') . $secret, hash('sha256', $secret)];
+}
+
+/**
+ * Enkripsi token link instansi (AES-256-GCM). Kuncinya diturunkan dari setup_key di
+ * event-config.php (di luar database), jadi isi database saja tidak cukup untuk membaca link.
+ */
+function link_key(): string
+{
+    return hash('sha256', 'kalcer-link|' . (string) config('setup_key'), true);
+}
+
+function token_encrypt(string $token): string
+{
+    $iv = random_bytes(12);
+    $ct = openssl_encrypt($token, 'aes-256-gcm', link_key(), OPENSSL_RAW_DATA, $iv, $tag);
+    return base64_encode($iv . $tag . $ct);
+}
+
+/** Link instansi untuk panitia; null bila belum tersimpan (instansi lama) atau tidak bisa dibuka. */
+function instansi_link_tersimpan(array $inst): ?string
+{
+    if (empty($inst['token_enc'])) {
+        return null;
+    }
+    $raw = base64_decode((string) $inst['token_enc'], true);
+    if ($raw === false || strlen($raw) < 29) {
+        return null;
+    }
+    $token = openssl_decrypt(substr($raw, 28), 'aes-256-gcm', link_key(), OPENSSL_RAW_DATA, substr($raw, 0, 12), substr($raw, 12, 16));
+    return $token === false ? null : instansi_link($token);
 }
 
 /** Cari instansi dari token di URL (format baru "slug-rahasia" maupun format lama). */

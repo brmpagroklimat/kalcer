@@ -166,8 +166,16 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
 <div class="grid2">
   <section class="panel">
     <h2>Link instansi</h2>
-    <p>Link lama tidak bisa ditampilkan ulang karena hanya disimpan dalam bentuk acak (hash). Kalau instansi kehilangan link, terbitkan link baru; link lama otomatis tidak berlaku.</p>
-    <form method="post" action="<?= h(url('/admin/instansi/' . $inst['id'] . '/link')) ?>" data-confirm="Terbitkan link baru? Link lama tidak akan berlaku lagi."><?= csrf_field() ?><button class="btn small secondary">Terbitkan link baru</button></form>
+    <?php $linkSimpan = instansi_link_tersimpan($inst); ?>
+    <?php if ($linkSimpan): ?>
+      <p class="small muted">Instansi kehilangan link? Kirim ulang link yang sama; link di WhatsApp rombongan tetap berlaku.</p>
+      <div class="linkbox"><input id="link-simpan" type="text" readonly value="<?= h($linkSimpan) ?>" aria-label="Link instansi"><button class="btn small deep" type="button" data-copy="#link-simpan">Salin</button></div>
+      <a class="btn small secondary" href="https://wa.me/<?= h($waHp) ?>?text=<?= h(rawurlencode('Link instansi ' . $inst['nama'] . ' untuk ' . setting('nama_kegiatan') . ': ' . $linkSimpan)) ?>" target="_blank" rel="noopener">Kirim ke WA PIC instansi</a>
+      <p class="small muted" style="margin:14px 0 6px">Terbitkan link baru <b>hanya bila link bocor</b> ke pihak lain; link lama langsung tidak berlaku.</p>
+    <?php else: ?>
+      <p class="small muted">Link instansi ini terdaftar sebelum fitur simpan link ada, jadi belum bisa ditampilkan. Terbitkan link baru sekali; setelah itu link selalu bisa dilihat dan dikirim ulang di sini.</p>
+    <?php endif; ?>
+    <form method="post" action="<?= h(url('/admin/instansi/' . $inst['id'] . '/link')) ?>" data-confirm="Terbitkan link baru? Link lama tidak akan berlaku lagi."><?= csrf_field() ?><button class="btn small <?= $linkSimpan ? 'danger' : 'secondary' ?>">Terbitkan link baru</button></form>
     <h3 style="margin-top:22px">Hapus instansi</h3>
     <p class="small muted">Menghapus instansi beserta peserta, foto, dan bukti biayanya. Tidak bisa dibatalkan.</p>
     <form method="post" action="<?= h(url('/admin/instansi/' . $inst['id'] . '/hapus')) ?>" class="actions"><?= csrf_field() ?>

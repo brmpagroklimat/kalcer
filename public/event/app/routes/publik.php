@@ -140,8 +140,8 @@ function publik_daftar(): void
 
         [$token, $hash] = new_token($inst['nama']);
         db()->beginTransaction();
-        q('INSERT INTO instansi (nama, kabkota, koordinator, hp, email, token_hash) VALUES (?, ?, ?, ?, ?, ?)', [
-            $inst['nama'], $inst['kabkota'], $inst['koordinator'], $inst['hp'], $inst['email'] ?: null, $hash,
+        q('INSERT INTO instansi (nama, kabkota, koordinator, hp, email, token_hash, token_enc) VALUES (?, ?, ?, ?, ?, ?, ?)', [
+            $inst['nama'], $inst['kabkota'], $inst['koordinator'], $inst['hp'], $inst['email'] ?: null, $hash, token_encrypt($token),
         ]);
         $id = (int) db()->lastInsertId();
         foreach ($semua as $p) {
