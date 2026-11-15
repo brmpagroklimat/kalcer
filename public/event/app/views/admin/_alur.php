@@ -20,11 +20,11 @@ $fase = [
         'kapan' => 'Sampai batas registrasi',
         'instansi' => [
             ['Registrasi: pilih 1 tanggal, maks. 3 peserta, pilih menginap', null],
-            ['Simpan link instansi; buka tab Ringkasan untuk langkah berikutnya', null],
+            ['Simpan link instansi; buka tab Ringkasan untuk langkah berikutnya', null, 'Link hilang → minta panitia via WhatsApp, panitia kirim ulang link yang sama'],
         ],
         'panitia' => [
             ['Pantau pendaftar dan kuota', '/admin/rekap/peserta'],
-            ['Link instansi hilang → salin link di detail instansi, kirim ke WA PIC', '/admin/instansi', 'Link bocor → Terbitkan link baru (link lama tidak berlaku)'],
+            ['Instansi minta link → buka detail instansi → Salin / Kirim ke WA PIC (link sama, tidak perlu reset)', '/admin/instansi', 'Hanya bila link bocor → Terbitkan link baru (link lama tidak berlaku)'],
             ['Perlu ubah data instansi → Buka sebagai instansi', '/admin/instansi'],
         ],
     ],

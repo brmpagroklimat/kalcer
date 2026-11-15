@@ -6,7 +6,7 @@ $wa = 'Link instansi ' . $inst['nama'] . ' untuk ' . setting('nama_kegiatan') . 
 
 <div class="panel" style="max-width:760px">
   <h2>Simpan link instansi ini</h2>
-  <p>Link ini adalah satu-satunya cara masuk untuk mengubah peserta, mengunggah foto kegiatan, dan mengajukan reimburse. Bagikan hanya ke rombongan instansi Anda.</p>
+  <p>Link ini adalah satu-satunya cara masuk untuk mengubah peserta, mengunggah foto kegiatan, dan mengajukan reimburse. Bagikan hanya ke rombongan instansi Anda. Bila link hilang, panitia bisa mengirim ulang link yang sama.</p>
   <div class="linkbox">
     <label class="sr-only" for="link">Link instansi</label>
     <input id="link" type="text" readonly value="<?= h($link) ?>">
