@@ -32,7 +32,7 @@ $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
           <option value="">Pilih nama instansi…</option>
           <?php foreach ($undangan as $u): ?>
             <option value="<?= (int) $u['id'] ?>" data-tanggal="<?= h($u['tanggal']) ?>" data-label="<?= h(tgl($u['tanggal'], true)) ?>" data-malam="<?= h(malam_menginap($u['tanggal'])) ?>"
-              <?= $u['instansi_id'] ? 'disabled' : ($pilihU === (string) $u['id'] ? 'selected' : '') ?>><?= h($u['nama']) ?> (<?= h($u['kabkota']) ?>)<?= $u['instansi_id'] ? ', sudah registrasi' : '' ?></option>
+              <?= $u['instansi_id'] ? 'disabled' : ($pilihU === (string) $u['id'] ? 'selected' : '') ?>><?= h($u['nama']) ?> (<?= h($u['provinsi']) ?>)<?= $u['instansi_id'] ? ', sudah registrasi' : '' ?></option>
           <?php endforeach; ?>
         </select>
         <small class="hint">Instansi Anda tidak ada di daftar, atau tanggalnya tidak sesuai? <?= hubungi_panitia('Halo panitia ' . setting('nama_kegiatan') . ', instansi kami belum ada di daftar registrasi. Nama instansi: ', 'hubungi panitia via WhatsApp') ?>.</small></div>

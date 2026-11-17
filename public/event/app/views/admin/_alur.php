@@ -11,7 +11,7 @@ $fase = [
         'instansi' => [],
         'panitia' => [
             ['Isi nama & tanggal kegiatan, batas waktu, 2 kontak WhatsApp, info instansi (hotel, shuttle, dll.), kapasitas kamar', '/admin/pengaturan'],
-            ['Isi daftar undangan: instansi + tanggalnya (satu per satu atau tempel dari Excel)', '/admin/undangan', 'Daftar kosong → instansi memilih tanggal sendiri'],
+            ['Isi daftar undangan: nama instansi + provinsi + tanggal (satu per satu atau tempel dari Excel)', '/admin/undangan', 'Daftar kosong → instansi memilih tanggal sendiri'],
             ['Isi link jadwal; unggah materi bila sudah ada', '/admin/konten'],
             ['Bagikan alamat kalcer.agroklimat.id/event ke instansi', null],
         ],

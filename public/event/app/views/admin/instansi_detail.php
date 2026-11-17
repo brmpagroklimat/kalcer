@@ -15,7 +15,7 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
     <a class="btn small secondary" href="<?= h(url('/admin/instansi/' . $inst['id'] . '/evidence.zip')) ?>">Unduh ZIP bukti</a>
   </div>
 </div>
-<p class="muted"><?= h($inst['kabkota']) ?>. PIC <?= h($inst['koordinator']) ?>, <a href="https://wa.me/<?= h($waHp) ?>" target="_blank" rel="noopener"><?= h($inst['hp']) ?></a><?= $inst['email'] ? ', ' . h($inst['email']) : '' ?>. Registrasi <?= h(tgl_jam($inst['created_at'])) ?>.</p>
+<p class="muted"><?= h(wilayah($inst)) ?>. PIC <?= h($inst['koordinator']) ?>, <a href="https://wa.me/<?= h($waHp) ?>" target="_blank" rel="noopener"><?= h($inst['hp']) ?></a><?= $inst['email'] ? ', ' . h($inst['email']) : '' ?>. Registrasi <?= h(tgl_jam($inst['created_at'])) ?>.</p>
 
 <?php if ($newLink): ?>
   <div class="panel" style="border-color:var(--deep)">

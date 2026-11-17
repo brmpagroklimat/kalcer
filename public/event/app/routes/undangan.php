@@ -3,35 +3,56 @@
 // Saat daftar terisi, formulir registrasi berubah jadi pilihan nama instansi (tanggal ikut otomatis).
 declare(strict_types=1);
 
+/** Singkatan provinsi yang lazim dipakai. */
+const PROVINSI_ALIAS = [
+    'nad' => 'Aceh', 'sumut' => 'Sumatera Utara', 'sumbar' => 'Sumatera Barat', 'sumsel' => 'Sumatera Selatan',
+    'kepri' => 'Kepulauan Riau', 'babel' => 'Kepulauan Bangka Belitung', 'bangka belitung' => 'Kepulauan Bangka Belitung',
+    'dki' => 'DKI Jakarta', 'jabar' => 'Jawa Barat', 'jateng' => 'Jawa Tengah', 'jatim' => 'Jawa Timur',
+    'diy' => 'Daerah Istimewa Yogyakarta', 'di yogyakarta' => 'Daerah Istimewa Yogyakarta', 'jogja' => 'Daerah Istimewa Yogyakarta', 'jogjakarta' => 'Daerah Istimewa Yogyakarta',
+    'ntb' => 'Nusa Tenggara Barat', 'ntt' => 'Nusa Tenggara Timur',
+    'kalbar' => 'Kalimantan Barat', 'kalsel' => 'Kalimantan Selatan', 'kalteng' => 'Kalimantan Tengah', 'kaltim' => 'Kalimantan Timur', 'kaltara' => 'Kalimantan Utara',
+    'sulbar' => 'Sulawesi Barat', 'sulsel' => 'Sulawesi Selatan', 'sulteng' => 'Sulawesi Tengah', 'sultra' => 'Sulawesi Tenggara', 'sulut' => 'Sulawesi Utara',
+    'malut' => 'Maluku Utara', 'pabar' => 'Papua Barat',
+];
+
 /**
- * Cocokkan teks kab/kota bebas ke daftar resmi, mis. "kabupaten bogor" → "Kab. Bogor, Jawa Barat".
- * Mengembalikan null bila tidak ketemu atau ambigu (mis. "Bogor": Kab. atau Kota?).
+ * Cocokkan teks bebas ke nama provinsi resmi. Menerima nama provinsi ("sumatera utara", "Prov. Jawa Barat"),
+ * singkatan ("Sumut", "DIY"), atau nama kab/kota ("Banda Aceh" → Aceh, "Medan" → Sumatera Utara).
+ * Mengembalikan null bila tidak ketemu atau ambigu.
  */
-function cari_kabkota(string $v): ?string
+function cari_provinsi(string $v): ?string
 {
-    $v = trim(preg_replace('/\s+/', ' ', $v));
-    if ($v === '') {
+    $q = mb_strtolower(trim(preg_replace('/\s+/', ' ', $v)));
+    $q = trim(preg_replace('/^(provinsi|prov\.?)\s*/u', '', $q));
+    if ($q === '') {
         return null;
     }
-    $norm = static function (string $s): string {
-        $s = mb_strtolower($s);
-        $s = preg_replace('/^kabupaten\s+/u', 'kab. ', $s);
-        $s = preg_replace('/^kab\s+/u', 'kab. ', $s);
-        return trim(preg_replace('/\s*,\s*/', ', ', $s));
-    };
-    $cari = $norm($v);
-    $hasil = [];
-    foreach (kabkota_list() as $k) {
-        $nk = $norm($k);
-        if ($nk === $cari) {
-            return $k;
+    if (isset(PROVINSI_ALIAS[$q])) {
+        return PROVINSI_ALIAS[$q];
+    }
+    $sub = [];
+    foreach (provinsi_list() as $p) {
+        $lp = mb_strtolower($p);
+        if ($lp === $q) {
+            return $p;
         }
-        // Tanpa provinsi: "Kab. Bogor" cocok dengan "Kab. Bogor, Jawa Barat".
-        if (str_starts_with($nk, $cari . ', ')) {
-            $hasil[] = $k;
+        if (mb_strlen($q) >= 4 && str_contains($lp, $q)) {
+            $sub[] = $p;
         }
     }
-    return count($hasil) === 1 ? $hasil[0] : null;
+    if (count($sub) === 1) {
+        return $sub[0];   // mis. "jakarta" → DKI Jakarta
+    }
+    // Nama kab/kota → provinsinya (Kab. dan Kota bernama sama selalu satu provinsi).
+    $nama = trim(preg_replace('/^(kabupaten|kab\.?|kota)\s+/u', '', $q));
+    $hasil = [];
+    foreach (kabkota_list() as $k) {
+        [$kk, $prov] = explode(', ', $k, 2) + [1 => ''];
+        if (mb_strtolower(trim(preg_replace('/^(Kab\.|Kota)\s+/u', '', $kk))) === $nama) {
+            $hasil[$prov] = true;
+        }
+    }
+    return count($hasil) === 1 ? array_key_first($hasil) : null;
 }
 
 function admin_undangan(): void
@@ -41,14 +62,14 @@ function admin_undangan(): void
         'SELECT u.*, i.id inst_id,
             (SELECT COUNT(*) FROM peserta p WHERE p.instansi_id = u.instansi_id AND p.aktif = 1) peserta,
             (SELECT COUNT(*) FROM evidence e WHERE e.instansi_id = u.instansi_id) foto
-         FROM undangan u LEFT JOIN instansi i ON i.id = u.instansi_id ORDER BY u.tanggal, u.nama'
+         FROM undangan u LEFT JOIN instansi i ON i.id = u.instansi_id ORDER BY u.tanggal, u.nama, u.provinsi'
     );
     $perTanggal = array_fill_keys(event_dates(), []);
     foreach ($list as $u) {
         $perTanggal[$u['tanggal']][] = $u;
     }
     // Instansi yang registrasi sebelum daftar undangan dipakai (tidak terhubung ke undangan).
-    $lepas = rows('SELECT i.id, i.nama, i.kabkota FROM instansi i LEFT JOIN undangan u ON u.instansi_id = i.id WHERE u.id IS NULL ORDER BY i.nama');
+    $lepas = rows('SELECT i.id, i.nama, i.kabkota, i.provinsi FROM instansi i LEFT JOIN undangan u ON u.instansi_id = i.id WHERE u.id IS NULL ORDER BY i.nama');
     render('admin/undangan', 'Undangan & tanggal', compact('perTanggal', 'lepas'), ['admin' => true]);
 }
 
@@ -59,18 +80,28 @@ function admin_undangan_tambah(): void
     if (!in_array($tanggal, event_dates(), true)) {
         throw new UserError('Pilih tanggal.');
     }
-    // Satu per satu (nama + kab/kota) atau banyak sekaligus (tempel dari Excel: Nama [Tab atau ;] Kab/kota).
+    // Satu per satu (nama + provinsi) atau banyak sekaligus (tempel dari Excel: Nama [Tab, ; atau ,] Provinsi).
     $baris = [];
     if (post('banyak') !== '') {
         foreach (preg_split('/\R/', post('banyak')) as $n => $line) {
             if (trim($line) === '') {
                 continue;
             }
-            $kol = array_map('trim', preg_split('/\t|;/', $line));
+            if (preg_match('/\t|;/', $line)) {
+                $kol = array_map('trim', preg_split('/\t|;/', $line));
+            } else {
+                // Pemisah koma: koma terakhir memisahkan provinsi (nama instansi boleh berisi koma).
+                $i = strrpos($line, ',');
+                $kol = $i === false ? [trim($line), ''] : [trim(substr($line, 0, $i)), trim(substr($line, $i + 1))];
+            }
+            $kol = array_values(array_filter($kol, static fn ($k) => $k !== ''));
+            if ($n === 0 && preg_match('/^nama\b/i', $kol[0] ?? '')) {
+                continue;   // baris judul kolom dari Excel
+            }
             $baris[] = [$n + 1, $kol[0] ?? '', $kol[1] ?? '', $line];
         }
     } else {
-        $baris[] = [0, post('nama'), post('kabkota'), ''];
+        $baris[] = [0, post('nama'), post('provinsi'), ''];
     }
     if (!$baris) {
         throw new UserError('Isi nama instansi.');
@@ -78,32 +109,34 @@ function admin_undangan_tambah(): void
     $masuk = 0;
     $gagal = [];
     $sisa = [];
-    foreach ($baris as [$no, $nama, $kab, $asli]) {
+    foreach ($baris as [$no, $nama, $prov, $asli]) {
         $label = $no ? "Baris $no ($nama)" : $nama;
-        $kabResmi = cari_kabkota($kab);
         if ($nama === '' || mb_strlen($nama) > 200) {
             $gagal[] = ($no ? "Baris $no" : 'Nama') . ': nama instansi kosong atau terlalu panjang.';
             $sisa[] = $asli;
             continue;
         }
-        if ($kabResmi === null) {
-            $gagal[] = "$label: kabupaten/kota \"$kab\" tidak dikenali" . ($kab !== '' ? ' atau ambigu (tulis mis. "Kab. Bogor" atau "Kota Bogor")' : '') . '.';
+        $provResmi = cari_provinsi($prov);
+        if ($provResmi === null) {
+            $gagal[] = $prov === ''
+                ? "$label: provinsi belum diisi. Tulis Nama instansi; Provinsi, mis. BRMP Aceh; Aceh."
+                : "$label: provinsi \"$prov\" tidak dikenali. Tulis nama provinsi, mis. Sumatera Utara.";
             $sisa[] = $asli;
             continue;
         }
-        if ($ada = row('SELECT tanggal FROM undangan WHERE nama = ? AND kabkota = ?', [$nama, $kabResmi])) {
+        if ($ada = row('SELECT tanggal FROM undangan WHERE nama = ? AND provinsi = ?', [$nama, $provResmi])) {
             $gagal[] = "$label: sudah ada di daftar (" . tgl($ada['tanggal']) . ').';
             $sisa[] = $asli;
             continue;
         }
-        // Instansi yang sudah registrasi sebelumnya dengan nama yang sama langsung dihubungkan.
-        $inst = row('SELECT i.id FROM instansi i LEFT JOIN undangan u ON u.instansi_id = i.id WHERE u.id IS NULL AND i.nama = ? AND i.kabkota = ?', [$nama, $kabResmi]);
+        // Instansi yang sudah registrasi sebelumnya dengan nama & provinsi sama langsung dihubungkan.
+        $inst = row('SELECT i.id FROM instansi i LEFT JOIN undangan u ON u.instansi_id = i.id WHERE u.id IS NULL AND i.nama = ? AND i.provinsi = ?', [$nama, $provResmi]);
         if ($inst && ($t = instansi_tanggal((int) $inst['id'])) && $t !== $tanggal) {
             $gagal[] = "$label: sudah registrasi untuk " . tgl($t) . '. Pilih tanggal itu, atau pindahkan setelah masuk daftar.';
             $sisa[] = $asli;
             continue;
         }
-        q('INSERT INTO undangan (nama, kabkota, tanggal, instansi_id) VALUES (?, ?, ?, ?)', [$nama, $kabResmi, $tanggal, $inst['id'] ?? null]);
+        q('INSERT INTO undangan (nama, provinsi, tanggal, instansi_id) VALUES (?, ?, ?, ?)', [$nama, $provResmi, $tanggal, $inst['id'] ?? null]);
         $masuk++;
     }
     if ($masuk) {

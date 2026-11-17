@@ -89,7 +89,7 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
       </div>
       <div class="actions"><button class="btn small secondary">Simpan PIC</button></div>
     </form>
-    <p class="small muted" style="margin-top:12px">Nama instansi: <?= h($inst['nama']) ?>, <?= h($inst['kabkota']) ?>. Untuk mengubahnya, <?= hubungi_panitia('Halo panitia, kami ingin mengubah nama instansi ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ').', 'hubungi panitia via WhatsApp') ?>.</p>
+    <p class="small muted" style="margin-top:12px">Nama instansi: <?= h($inst['nama']) ?>, <?= h(wilayah($inst)) ?>. Untuk mengubahnya, <?= hubungi_panitia('Halo panitia, kami ingin mengubah nama instansi ' . $inst['nama'] . ' (' . kode_instansi((int) $inst['id']) . ').', 'hubungi panitia via WhatsApp') ?>.</p>
   </section>
 
 </div>

@@ -28,7 +28,7 @@
     <tbody>
     <?php foreach ($rows as $n => $p): ?>
       <tr><td class="num"><?= $n + 1 ?></td><td><?= h(tgl_pendek($p['tanggal'])) ?></td>
-        <td><a href="<?= h(url('/admin/instansi/' . $p['instansi_id'])) ?>"><?= h($p['instansi']) ?></a><br><span class="muted small"><?= h(kode_instansi((int) $p['instansi_id'])) ?>, <?= h($p['kabkota']) ?></span></td>
+        <td><a href="<?= h(url('/admin/instansi/' . $p['instansi_id'])) ?>"><?= h($p['instansi']) ?></a><br><span class="muted small"><?= h(kode_instansi((int) $p['instansi_id'])) ?>, <?= h(wilayah($p)) ?></span></td>
         <td><b><?= h($p['nama']) ?></b><?= $p['nip'] ? '<br><span class="muted small">NIP ' . h($p['nip']) . '</span>' : '' ?></td>
         <td><?= h($p['jabatan']) ?></td><td><?= h(jk_label($p['jk'])) ?></td><td><?= h($p['hp']) ?></td>
         <td><?= $p['menginap'] ? '<span class="badge inap">Ya</span>' : '<span class="muted">Tidak</span>' ?></td></tr>

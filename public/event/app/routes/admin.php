@@ -154,8 +154,8 @@ function admin_instansi_list(): void
     $params = [];
     $cari = trim((string) ($_GET['q'] ?? ''));
     if ($cari !== '') {
-        $where[] = '(i.nama LIKE ? OR i.kabkota LIKE ? OR i.koordinator LIKE ? OR i.id = ?)';
-        array_push($params, "%$cari%", "%$cari%", "%$cari%", (int) preg_replace('/\D/', '', $cari));
+        $where[] = '(i.nama LIKE ? OR i.kabkota LIKE ? OR i.provinsi LIKE ? OR i.koordinator LIKE ? OR i.id = ?)';
+        array_push($params, "%$cari%", "%$cari%", "%$cari%", "%$cari%", (int) preg_replace('/\D/', '', $cari));
     }
     $tanggal = (string) ($_GET['tanggal'] ?? '');
     if (in_array($tanggal, event_dates(), true)) {
@@ -446,21 +446,21 @@ function admin_ekspor(string $jenis): void
             }
         }
     } elseif ($jenis === 'peserta') {
-        $data[] = ['Tanggal', 'Kode', 'Instansi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'Jenis kelamin', 'Menginap', 'PIC instansi', 'HP PIC'];
-        $sql = 'SELECT p.*, i.nama instansi, i.kabkota, i.koordinator, i.hp hp_koor FROM peserta p JOIN instansi i ON i.id = p.instansi_id
+        $data[] = ['Tanggal', 'Kode', 'Instansi', 'Provinsi', 'Kab/Kota', 'Nama', 'NIP', 'Jabatan', 'HP', 'Jenis kelamin', 'Menginap', 'PIC instansi', 'HP PIC'];
+        $sql = 'SELECT p.*, i.nama instansi, i.kabkota, i.provinsi, i.koordinator, i.hp hp_koor FROM peserta p JOIN instansi i ON i.id = p.instansi_id
                 WHERE p.aktif = 1' . ($filterTgl ? ' AND p.tanggal = ?' : '') . ' ORDER BY p.tanggal, i.nama, p.id';
         foreach (rows($sql, $filterTgl ? [$tanggal] : []) as $p) {
-            $data[] = [$p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['kabkota'], $p['nama'], $p['nip'], $p['jabatan'], $p['hp'], jk_label($p['jk']), $p['menginap'] ? 'Ya' : 'Tidak', $p['koordinator'], $p['hp_koor']];
+            $data[] = [$p['tanggal'], kode_instansi((int) $p['instansi_id']), $p['instansi'], $p['provinsi'], (string) $p['kabkota'], $p['nama'], $p['nip'], $p['jabatan'], $p['hp'], jk_label($p['jk']), $p['menginap'] ? 'Ya' : 'Tidak', $p['koordinator'], $p['hp_koor']];
         }
     } else {
-        $data[] = ['Kode', 'Instansi', 'Kab/Kota', 'PIC instansi', 'HP PIC', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Sudah dibayar', 'Sisa', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];
+        $data[] = ['Kode', 'Instansi', 'Provinsi', 'Kab/Kota', 'PIC instansi', 'HP PIC', 'Status', 'Jumlah bukti', 'Total diajukan', 'Total disetujui', 'Sudah dibayar', 'Sisa', 'Bank', 'No. rekening', 'Atas nama', 'Diajukan', 'Dibayar', 'Catatan panitia'];
         foreach (rows(
             "SELECT i.*, COUNT(b.id) n, COALESCE(SUM(b.nominal), 0) total,
                     COALESCE(SUM(CASE WHEN b.status = 'disetujui' THEN COALESCE(b.nominal_disetujui, b.nominal) ELSE 0 END), 0) disetujui,
                     (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran WHERE instansi_id = i.id) dibayar
              FROM instansi i LEFT JOIN biaya b ON b.instansi_id = i.id GROUP BY i.id ORDER BY i.nama"
         ) as $i) {
-            $data[] = [kode_instansi((int) $i['id']), $i['nama'], $i['kabkota'], $i['koordinator'], $i['hp'], STATUS_REIMBURSE[$i['reimburse_status']], $i['n'], $i['total'], $i['disetujui'], $i['dibayar'], max(0, $i['disetujui'] - $i['dibayar']), $i['bank'], $i['no_rek'] ? "'" . $i['no_rek'] : '', $i['atas_nama'], $i['diajukan_at'], $i['dibayar_at'], $i['catatan_panitia']];
+            $data[] = [kode_instansi((int) $i['id']), $i['nama'], $i['provinsi'], (string) $i['kabkota'], $i['koordinator'], $i['hp'], STATUS_REIMBURSE[$i['reimburse_status']], $i['n'], $i['total'], $i['disetujui'], $i['dibayar'], max(0, $i['disetujui'] - $i['dibayar']), $i['bank'], $i['no_rek'] ? "'" . $i['no_rek'] : '', $i['atas_nama'], $i['diajukan_at'], $i['dibayar_at'], $i['catatan_panitia']];
         }
     }
     $name = "kalcer-$jenis" . ($filterTgl ? "-$tanggal" : '') . '.csv';

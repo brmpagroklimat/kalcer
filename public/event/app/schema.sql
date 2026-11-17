@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS login_gagal (
 CREATE TABLE IF NOT EXISTS instansi (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   nama VARCHAR(200) NOT NULL,
-  kabkota VARCHAR(120) NOT NULL,
+  kabkota VARCHAR(120) NULL,
+  provinsi VARCHAR(60) NOT NULL DEFAULT '',
   koordinator VARCHAR(150) NOT NULL,
   hp VARCHAR(30) NOT NULL,
   email VARCHAR(190) NULL,
@@ -39,15 +40,15 @@ CREATE TABLE IF NOT EXISTS instansi (
   KEY nama (nama)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Daftar undangan: panitia menetapkan tanggal tiap instansi sebelum registrasi.
+-- Daftar undangan: panitia menetapkan tanggal tiap instansi sebelum registrasi (nama + provinsi; SBM per provinsi).
 CREATE TABLE IF NOT EXISTS undangan (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   nama VARCHAR(200) NOT NULL,
-  kabkota VARCHAR(120) NOT NULL,
+  provinsi VARCHAR(60) NOT NULL,
   tanggal DATE NOT NULL,
   instansi_id INT UNSIGNED NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY nama_kab (nama, kabkota),
+  UNIQUE KEY nama_prov (nama, provinsi),
   UNIQUE KEY inst (instansi_id),
   KEY tgl (tanggal),
   CONSTRAINT fk_undangan_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE SET NULL

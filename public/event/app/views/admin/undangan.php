@@ -28,11 +28,9 @@ $pilihTanggal = static function (string $name, string $pilih, string $idp): stri
     <?= csrf_field() ?>
     <h2>Tambah satu instansi</h2>
     <div class="fields">
-      <label class="field"><span>Nama instansi</span><input type="text" name="nama" maxlength="200" required placeholder="mis. Dinas Pertanian Kabupaten Bogor"></label>
-      <div class="field combo"><label for="u-kabkota"><span>Kabupaten/kota</span></label>
-        <input id="u-kabkota" type="text" name="kabkota" maxlength="120" required autocomplete="off" data-kabkota="<?= h(url('/assets/kabkota.json')) ?>"
-               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="u-kabkota-list" placeholder="Ketik minimal 3 huruf, mis. bog">
-        <ul id="u-kabkota-list" class="combo-list" role="listbox" hidden></ul></div>
+      <label class="field"><span>Nama instansi</span><input type="text" name="nama" maxlength="200" required placeholder="mis. BRMP Aceh"></label>
+      <label class="field"><span>Provinsi</span><select name="provinsi" required autocomplete="off"><option value="">Pilih provinsi…</option>
+        <?php foreach (provinsi_list() as $pv): ?><option><?= h($pv) ?></option><?php endforeach; ?></select></label>
       <div class="field"><span>Tanggal</span><?= $pilihTanggal('tanggal', $tglDefault, 'u1') ?></div>
     </div>
     <div class="actions"><button class="btn">Tambah</button></div>
@@ -41,16 +39,16 @@ $pilihTanggal = static function (string $name, string $pilih, string $idp): stri
   <form class="panel" method="post" action="<?= h(url('/admin/undangan')) ?>" autocomplete="off">
     <?= csrf_field() ?>
     <h2>Tempel banyak dari Excel</h2>
-    <p class="small muted">Satu instansi per baris: <b>Nama instansi</b> lalu <b>Kabupaten/kota</b>. Salin dua kolom dari Excel langsung, atau pisahkan dengan titik koma (<code>;</code>). Baris yang gagal dikembalikan ke kotak ini untuk diperbaiki.</p>
+    <p class="small muted">Satu instansi per baris: <b>Nama instansi</b> lalu <b>Provinsi</b>. Salin dua kolom dari Excel langsung, atau pisahkan dengan titik koma atau koma. Singkatan (Sumut, DIY, NTB) dan nama kota (Medan → Sumatera Utara) dikenali. Baris yang gagal dikembalikan ke kotak ini untuk diperbaiki.</p>
     <label class="field"><span class="sr-only">Daftar instansi</span>
-      <textarea name="banyak" rows="6" required placeholder="Dinas Pertanian Kabupaten Bogor; Kab. Bogor&#10;BPP Cibinong; Kab. Bogor&#10;Dinas Pertanian Kota Depok; Kota Depok"><?= h($sisa['teks'] ?? '') ?></textarea></label>
+      <textarea name="banyak" rows="6" required placeholder="BRMP Aceh; Aceh&#10;BRMP Sumatera Utara; Sumatera Utara&#10;Dinas Pertanian Kabupaten Bogor; Jawa Barat"><?= h($sisa['teks'] ?? '') ?></textarea></label>
     <div class="field" style="margin-top:10px"><span>Semua baris ikut tanggal</span><?= $pilihTanggal('tanggal', $tglDefault, 'u2') ?></div>
     <div class="actions"><button class="btn">Tambahkan semua</button></div>
   </form>
 </div>
 
 <?php if ($total): ?>
-<label class="field" style="max-width:420px;margin:8px 0 16px"><span>Cari di daftar</span><input type="search" data-filter="#daftar-undangan" placeholder="Nama instansi atau kab/kota"></label>
+<label class="field" style="max-width:420px;margin:8px 0 16px"><span>Cari di daftar</span><input type="search" data-filter="#daftar-undangan" placeholder="Nama instansi atau provinsi"></label>
 <?php endif; ?>
 <div id="daftar-undangan">
 <?php foreach ($perTanggal as $d => $list): ?>
@@ -62,7 +60,7 @@ $pilihTanggal = static function (string $name, string $pilih, string $idp): stri
       <tbody>
       <?php foreach ($list as $u): ?>
         <tr data-row>
-          <td><b><?= h($u['nama']) ?></b><br><span class="small muted"><?= h($u['kabkota']) ?></span></td>
+          <td><b><?= h($u['nama']) ?></b><br><span class="small muted"><?= h($u['provinsi']) ?></span></td>
           <td><?php if ($u['instansi_id']): ?><span class="badge dibayar">Sudah registrasi</span><br><a class="small" href="<?= h(url('/admin/instansi/' . $u['instansi_id'])) ?>"><?= h(kode_instansi((int) $u['instansi_id'])) ?>, <?= (int) $u['peserta'] ?> peserta</a>
             <?php else: ?><span class="badge draft">Belum registrasi</span><?php endif; ?></td>
           <td><form class="inline-form" method="post" action="<?= h(url('/admin/undangan/' . $u['id'])) ?>" autocomplete="off"
@@ -87,10 +85,10 @@ $pilihTanggal = static function (string $name, string $pilih, string $idp): stri
   <div class="table-wrap"><table>
     <tbody>
     <?php foreach ($lepas as $i): $t = instansi_tanggal((int) $i['id']); ?>
-      <tr><td><a href="<?= h(url('/admin/instansi/' . $i['id'])) ?>"><b><?= h($i['nama']) ?></b></a> <span class="kode"><?= h(kode_instansi((int) $i['id'])) ?></span><br><span class="small muted"><?= h($i['kabkota']) ?><?= $t ? ', ' . h(tgl($t)) : '' ?></span></td>
-        <td style="text-align:right"><?php if ($t): ?><form method="post" action="<?= h(url('/admin/undangan')) ?>"><?= csrf_field() ?>
-          <input type="hidden" name="nama" value="<?= h($i['nama']) ?>"><input type="hidden" name="kabkota" value="<?= h($i['kabkota']) ?>"><input type="hidden" name="tanggal" value="<?= h($t) ?>">
-          <button class="btn secondary small">Masukkan ke daftar (<?= h(tgl_pendek($t)) ?>)</button></form><?php else: ?><span class="small muted">Belum punya peserta</span><?php endif; ?></td></tr>
+      <tr><td><a href="<?= h(url('/admin/instansi/' . $i['id'])) ?>"><b><?= h($i['nama']) ?></b></a> <span class="kode"><?= h(kode_instansi((int) $i['id'])) ?></span><br><span class="small muted"><?= h(wilayah($i)) ?><?= $t ? ', ' . h(tgl($t)) : '' ?></span></td>
+        <td style="text-align:right"><?php if ($t && $i['provinsi'] !== ''): ?><form method="post" action="<?= h(url('/admin/undangan')) ?>"><?= csrf_field() ?>
+          <input type="hidden" name="nama" value="<?= h($i['nama']) ?>"><input type="hidden" name="provinsi" value="<?= h($i['provinsi']) ?>"><input type="hidden" name="tanggal" value="<?= h($t) ?>">
+          <button class="btn secondary small">Masukkan ke daftar (<?= h(tgl_pendek($t)) ?>)</button></form><?php else: ?><span class="small muted"><?= $t ? 'Provinsi belum diketahui' : 'Belum punya peserta' ?></span><?php endif; ?></td></tr>
     <?php endforeach; ?>
     </tbody>
   </table></div>

@@ -15,7 +15,7 @@
   <?php foreach ($list as $i): ?>
     <tr>
       <td><a href="<?= h(url('/admin/instansi/' . $i['id'])) ?>"><?= h(kode_instansi((int) $i['id'])) ?></a></td>
-      <td><a href="<?= h(url('/admin/instansi/' . $i['id'])) ?>"><b><?= h($i['nama']) ?></b></a><br><span class="muted"><?= h($i['kabkota']) ?></span></td>
+      <td><a href="<?= h(url('/admin/instansi/' . $i['id'])) ?>"><b><?= h($i['nama']) ?></b></a><br><span class="muted"><?= h(wilayah($i)) ?></span></td>
       <td><?= h($i['koordinator']) ?><br><a class="small" href="https://wa.me/<?= h(preg_replace('/^0/', '62', ltrim($i['hp'], '+'))) ?>" target="_blank" rel="noopener"><?= h($i['hp']) ?></a></td>
       <td><?php foreach (array_filter(explode(',', (string) $i['hari'])) as $hc): [$d, $c] = explode(':', $hc); ?><span class="chip"><?= h(tgl_pendek($d)) ?>: <?= (int) $c ?></span> <?php endforeach; ?></td>
       <td class="num"><?= (int) $i['menginap'] ?></td>

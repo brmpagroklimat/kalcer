@@ -39,7 +39,7 @@ function admin_rekap(string $jenis = 'peserta'): void
         usort($vars['rows'], static fn ($a, $b) => [$a['tanggal'], $a['kamar'] === null, $a['kamar'], $a['jk']] <=> [$b['tanggal'], $b['kamar'] === null, $b['kamar'], $b['jk']]);
     } elseif ($jenis === 'peserta') {
         $vars['rows'] = rows(
-            'SELECT p.*, i.nama instansi, i.kabkota FROM peserta p JOIN instansi i ON i.id = p.instansi_id
+            'SELECT p.*, i.nama instansi, i.kabkota, i.provinsi FROM peserta p JOIN instansi i ON i.id = p.instansi_id
              WHERE p.aktif = 1' . ($jenis === 'menginap' ? ' AND p.menginap = 1' : '') . $tglSql .
             ' ORDER BY p.tanggal, ' . ($jenis === 'menginap' ? 'p.jk, ' : '') . 'i.nama, p.id',
             $tglArg

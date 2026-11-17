@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '9';
+const SCHEMA_VERSION = '10';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -120,6 +120,17 @@ function migrate(): void
     ensure_column('tamu', 'shuttle_id', 'INT UNSIGNED NULL');
     // v8: link instansi tersimpan terenkripsi agar panitia bisa mengirim ulang link yang sama.
     ensure_column('instansi', 'token_enc', 'VARCHAR(255) NULL');
+    // v10: instansi punya provinsi (SBM per provinsi); kab/kota boleh kosong (instansi dari daftar undangan).
+    if (ensure_column('instansi', 'provinsi', "VARCHAR(60) NOT NULL DEFAULT ''")) {
+        db()->exec("UPDATE instansi SET provinsi = SUBSTRING_INDEX(kabkota, ', ', -1) WHERE kabkota LIKE '%, %'");
+    }
+    db()->exec('ALTER TABLE instansi MODIFY kabkota VARCHAR(120) NULL');
+    // v10: undangan memakai provinsi, bukan kab/kota.
+    if (row("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'undangan' AND COLUMN_NAME = 'kabkota'")) {
+        ensure_column('undangan', 'provinsi', "VARCHAR(60) NOT NULL DEFAULT ''");
+        db()->exec("UPDATE undangan SET provinsi = SUBSTRING_INDEX(kabkota, ', ', -1)");
+        db()->exec('ALTER TABLE undangan DROP INDEX nama_kab, DROP COLUMN kabkota, ADD UNIQUE KEY nama_prov (nama, provinsi)');
+    }
     // v6: status "Dibayar sebagian" (pembayaran dicicil).
     db()->exec("ALTER TABLE instansi MODIFY reimburse_status ENUM('draft','diajukan','diverifikasi','sebagian','dibayar') NOT NULL DEFAULT 'draft'");
     // v5: publikasi per kamar. Pengaturan lama "semua dipublikasikan" dipindah ke tiap kamar.
@@ -460,6 +471,30 @@ function kabkota_list(): array
 function valid_kabkota(string $v): bool
 {
     return in_array($v, kabkota_list(), true);
+}
+
+/** 38 provinsi, diambil dari daftar kab/kota resmi. */
+function provinsi_list(): array
+{
+    static $list = null;
+    if ($list === null) {
+        $list = array_values(array_unique(array_map(static fn ($k) => substr($k, strrpos($k, ', ') + 2), kabkota_list())));
+        sort($list);
+    }
+    return $list;
+}
+
+/** Provinsi dari "Kab. Bogor, Jawa Barat" → "Jawa Barat". */
+function provinsi_dari_kabkota(string $kabkota): string
+{
+    $i = strrpos($kabkota, ', ');
+    return $i === false ? '' : substr($kabkota, $i + 2);
+}
+
+/** Wilayah untuk ditampilkan: kab/kota bila ada (sudah memuat provinsi), selain itu provinsi. */
+function wilayah(array $inst): string
+{
+    return (string) (($inst['kabkota'] ?? '') ?: ($inst['provinsi'] ?? ''));
 }
 
 /** Info untuk instansi (judul + isi), diatur panitia di Pengaturan. Mis. Hotel, Shuttle, Parkir. */
