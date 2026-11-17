@@ -53,7 +53,7 @@ export const tools: Tool[] = [
     title: 'Tanya Gita',
     description: 'Gerbang Informasi Teknologi Agroklimat. Tanya jawab langsung lewat chat.',
     icon: 'chat',
-    href: null,
+    href: 'https://gita.agroklimat.id/',
   },
 ];
 
