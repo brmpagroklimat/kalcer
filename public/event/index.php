@@ -13,6 +13,7 @@ require __DIR__ . '/app/routes/microsite.php';
 require __DIR__ . '/app/routes/rekap.php';
 require __DIR__ . '/app/routes/kamar.php';
 require __DIR__ . '/app/routes/shuttle.php';
+require __DIR__ . '/app/routes/undangan.php';
 
 config();
 
@@ -96,6 +97,10 @@ $routes = [
     ['POST', '/admin/login', 'admin_login'],
     ['POST', '/admin/keluar', 'admin_keluar'],
     ['GET', '/admin', 'admin_dashboard'],
+    ['GET', '/admin/undangan', 'admin_undangan'],
+    ['POST', '/admin/undangan', 'admin_undangan_tambah'],
+    ['POST', '/admin/undangan/(\d+)', 'admin_undangan_ubah'],
+    ['POST', '/admin/undangan/(\d+)/hapus', 'admin_undangan_hapus'],
     ['GET', '/admin/instansi', 'admin_instansi_list'],
     ['GET', '/admin/instansi/(\d+)', 'admin_instansi_detail'],
     ['POST', '/admin/instansi/(\d+)/link', 'admin_instansi_link'],

@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '8';
+const SCHEMA_VERSION = '9';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -420,6 +420,12 @@ function tgl_pendek(string $date): string
 {
     $t = strtotime($date);
     return (int) date('j', $t) . ' ' . substr(BULAN[(int) date('n', $t)], 0, 3);
+}
+
+/** Mode undangan aktif bila panitia sudah mengisi daftar undangan (instansi + tanggal). */
+function mode_undangan(): bool
+{
+    return (int) row('SELECT COUNT(*) n FROM undangan')['n'] > 0;
 }
 
 function malam_menginap(string $tanggal): string

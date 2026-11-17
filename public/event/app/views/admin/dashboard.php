@@ -14,6 +14,7 @@
     </div>
     <div class="stats" style="margin:0">
       <div class="stat"><b><?= (int) $s['instansi'] ?></b><span>instansi</span></div>
+      <?php if ($s['undangan']): ?><a class="stat" href="<?= h(url('/admin/undangan')) ?>"><b><?= (int) $s['undangan_reg'] ?> / <?= (int) $s['undangan'] ?></b><span>undangan sudah registrasi</span></a><?php endif; ?>
       <div class="stat"><b><?= (int) $s['peserta'] ?></b><span>peserta</span></div>
       <div class="stat"><b><?= (int) $s['menginap'] ?></b><span>menginap malam <?= h(malam_menginap($d)) ?></span></div>
       <div class="stat"><b><?= (int) $s['menginap_l'] ?> / <?= (int) $s['menginap_p'] ?></b><span>menginap laki-laki / perempuan</span></div>

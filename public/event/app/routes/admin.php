@@ -130,6 +130,7 @@ function admin_dashboard(): void
              FROM peserta WHERE tanggal = ? AND aktif = 1",
             [$d]
         );
+        $perHari[$d] += row('SELECT COUNT(*) undangan, COUNT(instansi_id) undangan_reg FROM undangan WHERE tanggal = ?', [$d]);
     }
     $reimburse = [];
     foreach (STATUS_REIMBURSE as $k => $label) {

@@ -39,6 +39,20 @@ CREATE TABLE IF NOT EXISTS instansi (
   KEY nama (nama)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Daftar undangan: panitia menetapkan tanggal tiap instansi sebelum registrasi.
+CREATE TABLE IF NOT EXISTS undangan (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nama VARCHAR(200) NOT NULL,
+  kabkota VARCHAR(120) NOT NULL,
+  tanggal DATE NOT NULL,
+  instansi_id INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY nama_kab (nama, kabkota),
+  UNIQUE KEY inst (instansi_id),
+  KEY tgl (tanggal),
+  CONSTRAINT fk_undangan_inst FOREIGN KEY (instansi_id) REFERENCES instansi(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS peserta (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   instansi_id INT UNSIGNED NOT NULL,

@@ -26,6 +26,8 @@ function publik_home(array $old = [], array $errors = []): void
         'open' => setting('daftar_dibuka') === '1' && before('batas_daftar'),
         'kuota' => (int) setting('kuota_per_instansi'),
         'stamp' => form_stamp(),
+        // Mode undangan: panitia sudah menetapkan tanggal tiap instansi.
+        'undangan' => rows('SELECT id, nama, kabkota, tanggal, instansi_id FROM undangan ORDER BY nama, kabkota'),
     ], ['nav' => 'daftar']);
 }
 
@@ -91,9 +93,19 @@ function publik_daftar(): void
         if (post('website') !== '' || !form_stamp_ok(post('_stamp'))) {
             throw new UserError('Formulir tidak valid. Muat ulang halaman lalu coba lagi.');
         }
+        $undangan = null;
+        if (mode_undangan()) {
+            $undangan = row('SELECT * FROM undangan WHERE id = ?', [(int) post('undangan')]);
+            if (!$undangan) {
+                throw new UserError('Pilih nama instansi dari daftar. Instansi Anda tidak ada di daftar? Hubungi panitia.');
+            }
+            if ($undangan['instansi_id']) {
+                throw new UserError($undangan['nama'] . ' sudah teregistrasi. Gunakan link instansi yang sudah diterima, atau hubungi panitia agar link dikirim ulang.');
+            }
+        }
         $inst = [
-            'nama' => post('nama'),
-            'kabkota' => post('kabkota'),
+            'nama' => $undangan ? $undangan['nama'] : post('nama'),
+            'kabkota' => $undangan ? $undangan['kabkota'] : post('kabkota'),
             'koordinator' => post('koordinator'),
             'hp' => normalize_hp(post('hp')),
             'email' => post('email'),
@@ -114,11 +126,11 @@ function publik_daftar(): void
             throw new UserError('Format email PIC instansi tidak valid.');
         }
         if (row('SELECT id FROM instansi WHERE LOWER(nama) = LOWER(?) AND LOWER(kabkota) = LOWER(?)', [$inst['nama'], $inst['kabkota']])) {
-            throw new UserError('Instansi ini sudah teregistrasi. Gunakan link instansi yang sudah dikirim, atau hubungi panitia untuk meminta link baru.');
+            throw new UserError('Instansi ini sudah teregistrasi. Gunakan link instansi yang sudah dikirim, atau hubungi panitia agar link dikirim ulang.');
         }
 
         // Satu instansi hanya ikut satu tanggal.
-        $tanggal = post('ikut');
+        $tanggal = $undangan ? $undangan['tanggal'] : post('ikut');
         if (!in_array($tanggal, event_dates(), true)) {
             throw new UserError('Pilih tanggal kegiatan.');
         }
@@ -144,6 +156,9 @@ function publik_daftar(): void
             $inst['nama'], $inst['kabkota'], $inst['koordinator'], $inst['hp'], $inst['email'] ?: null, $hash, token_encrypt($token),
         ]);
         $id = (int) db()->lastInsertId();
+        if ($undangan && q('UPDATE undangan SET instansi_id = ? WHERE id = ? AND instansi_id IS NULL', [$id, $undangan['id']])->rowCount() !== 1) {
+            throw new UserError($undangan['nama'] . ' baru saja diregistrasi dari perangkat lain. Hubungi panitia agar link dikirim ulang.');
+        }
         foreach ($semua as $p) {
             q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap, bagikan_kontak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
                 $id, $p['tanggal'], $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'],

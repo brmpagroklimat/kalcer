@@ -20,7 +20,7 @@ $lokasi = setting('lokasi');
   <a class="card" href="<?= h(url('/daftar')) ?>">
     <span class="shape" aria-hidden="true"><span style="left:0;top:0;width:26px;height:26px;background:var(--coral);border-radius:100% 0 0 0"></span><span style="right:0;bottom:0;width:22px;height:22px;background:var(--sky);border-radius:50%"></span><span style="left:4px;bottom:2px;width:12px;height:12px;background:var(--leaf);border-radius:0 100% 0 100%"></span></span>
     <h2>Registrasi</h2>
-    <p><?= $open ? 'Dibuka sampai ' . h(tgl_jam(setting('batas_daftar'))) . '. Setiap instansi memilih satu tanggal, maksimal ' . (int) setting('kuota_per_instansi') . ' peserta.' : 'Registrasi sudah ditutup.' ?></p>
+    <p><?= $open ? 'Dibuka sampai ' . h(tgl_jam(setting('batas_daftar'))) . '. ' . (mode_undangan() ? 'Pilih nama instansi Anda, tanggal sudah ditetapkan panitia. Maksimal ' : 'Setiap instansi memilih satu tanggal, maksimal ') . (int) setting('kuota_per_instansi') . ' peserta.' : 'Registrasi sudah ditutup.' ?></p>
     <span class="go"><?= $open ? 'Registrasi' : 'Lihat info' ?></span>
   </a>
   <a class="card" href="<?= h(url('/jadwal')) ?>">

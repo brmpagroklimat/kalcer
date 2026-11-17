@@ -26,6 +26,49 @@
   toggles.forEach(function (t) { t.addEventListener('change', sync); });
   if (toggles.length) sync();
 
+  // Menu panitia berkelompok: klik untuk buka/tutup (sentuh & keyboard), Esc atau klik di luar menutup.
+  var groups = document.querySelectorAll('.navgroup');
+  function closeGroups(except) {
+    groups.forEach(function (g) { if (g !== except) { g.classList.remove('open'); g.querySelector('.navbtn').setAttribute('aria-expanded', 'false'); } });
+  }
+  groups.forEach(function (g) {
+    var b = g.querySelector('.navbtn');
+    b.addEventListener('click', function () {
+      var open = !g.classList.contains('open');
+      closeGroups(g);
+      g.classList.toggle('open', open);
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    g.addEventListener('focusout', function (e) { if (!g.contains(e.relatedTarget)) closeGroups(); });
+  });
+  if (groups.length) {
+    document.addEventListener('click', function (e) { if (!e.target.closest('.navgroup')) closeGroups(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeGroups(); });
+  }
+
+  // Saring baris tabel sambil mengetik (mis. daftar undangan).
+  document.querySelectorAll('input[data-filter]').forEach(function (inp) {
+    var scope = document.querySelector(inp.dataset.filter);
+    inp.addEventListener('input', function () {
+      var q = inp.value.trim().toLowerCase();
+      scope.querySelectorAll('tr[data-row]').forEach(function (tr) { tr.hidden = q !== '' && tr.textContent.toLowerCase().indexOf(q) === -1; });
+    });
+  });
+
+  // Mode undangan: tanggal mengikuti nama instansi yang dipilih (ditetapkan panitia).
+  var pilihU = document.querySelector('[data-undangan]');
+  if (pilihU) {
+    var boxU = document.querySelector('[data-jadwal-u]');
+    var syncU = function () {
+      var o = pilihU.options[pilihU.selectedIndex], t = (o && o.dataset.tanggal) || '';
+      document.querySelectorAll('.day-block').forEach(function (b) { b.hidden = b.dataset.day !== t; });
+      boxU.hidden = !t;
+      if (t) boxU.querySelector('[data-jadwal-tgl]').textContent = o.dataset.label;
+    };
+    pilihU.addEventListener('change', syncU);
+    syncU();
+  }
+
   // Batas ukuran file di browser (mis. materi maks. 2 MB), sebelum upload dimulai.
   document.querySelectorAll('input[type=file][data-max]').forEach(function (input) {
     input.addEventListener('change', function () {

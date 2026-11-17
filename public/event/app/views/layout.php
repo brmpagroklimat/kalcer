@@ -4,10 +4,17 @@ $inst = $inst ?? null;
 $isAdmin = current_admin() !== null;
 $admin = !empty($admin);
 $curPath = '/' . trim((string) preg_replace('#^/event#', '', (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH)), '/');
-$adminNav = ['/admin' => 'Dashboard', '/admin/instansi' => 'Instansi', '/admin/rekap' => 'Rekap', '/admin/kamar' => 'Kamar', '/admin/shuttle' => 'Shuttle', '/admin/konten' => 'Jadwal & konten', '/admin/pengaturan' => 'Pengaturan'];
+// Menu panitia dikelompokkan; grup = dropdown. Tambah menu baru ke grup yang paling dekat fungsinya.
+$adminNav = [
+    '/admin' => 'Dashboard',
+    'Instansi' => ['/admin/undangan' => 'Undangan & tanggal', '/admin/instansi' => 'Daftar instansi', '/admin/rekap' => 'Rekap'],
+    'Akomodasi' => ['/admin/kamar' => 'Kamar', '/admin/shuttle' => 'Shuttle'],
+    'Situs' => ['/admin/konten' => 'Jadwal & konten', '/' => 'Lihat situs publik'],
+    '/admin/pengaturan' => 'Pengaturan',
+];
 $adminAktif = static fn (string $href) => $href === '/admin' ? $curPath === '/admin' : str_starts_with($curPath, $href);
 $flashes = take_flash();
-$v = '24';
+$v = '25';
 ?>
 <!doctype html>
 <html lang="id">
@@ -29,10 +36,20 @@ $v = '24';
     </a>
     <?php if (!empty($admin)): ?>
       <nav class="topnav" aria-label="Menu panitia">
-        <?php foreach ($adminNav as $href => $label): ?>
-          <a href="<?= h(url($href)) ?>" <?= $adminAktif($href) ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>
+        <?php foreach ($adminNav as $key => $item): ?>
+          <?php if (is_array($item)): $on = (bool) array_filter(array_keys($item), static fn ($hr) => $hr !== '/' && $adminAktif($hr)); ?>
+            <div class="navgroup<?= $on ? ' on' : '' ?>">
+              <button type="button" class="navbtn" aria-expanded="false"><?= h($key) ?><span class="caret" aria-hidden="true"></span></button>
+              <div class="navmenu">
+                <?php foreach ($item as $href => $label): ?>
+                  <a href="<?= h(url($href)) ?>" <?= $href !== '/' && $adminAktif($href) ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>
+                <?php endforeach; ?>
+              </div>
+            </div>
+          <?php else: ?>
+            <a href="<?= h(url($key)) ?>" <?= $adminAktif($key) ? 'aria-current="page"' : '' ?>><?= h($item) ?></a>
+          <?php endif; ?>
         <?php endforeach; ?>
-        <a href="<?= h(url('/')) ?>">Lihat situs</a>
         <form method="post" action="<?= h(url('/admin/keluar')) ?>"><?= csrf_field() ?><button class="linkbtn">Keluar</button></form>
       </nav>
     <?php else: $navItems = ['beranda' => ['/', 'Beranda'], 'daftar' => ['/daftar', 'Registrasi'], 'jadwal' => ['/jadwal', 'Jadwal'], 'materi' => ['/materi', 'Materi'], 'galeri' => ['/galeri', 'Galeri']]; ?>
