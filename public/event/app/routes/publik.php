@@ -27,13 +27,17 @@ function publik_home(array $old = [], array $errors = []): void
         'kuota' => (int) setting('kuota_per_instansi'),
         'stamp' => form_stamp(),
         // Mode undangan: panitia sudah menetapkan tanggal tiap instansi.
-        'undangan' => rows('SELECT id, nama, provinsi, tanggal, instansi_id FROM undangan ORDER BY nama, provinsi'),
+        'undangan' => rows('SELECT id, nama, provinsi, tanggal, pp, instansi_id FROM undangan ORDER BY nama, provinsi'),
     ], ['nav' => 'daftar']);
 }
 
 /** Validasi satu baris peserta. Mengembalikan data bersih atau melempar UserError. */
-function clean_peserta(array $p, string $label): array
+function clean_peserta(array $p, string $label, bool $pp = false): array
 {
+    if ($pp) {
+        // Instansi Jabodetabek: pulang-pergi, tidak ada pilihan menginap.
+        $p['menginap'] = 'tidak';
+    }
     $d = [];
     foreach (FIELD_PESERTA as $k) {
         $d[$k] = trim((string) ($p[$k] ?? ''));
@@ -59,7 +63,7 @@ function clean_peserta(array $p, string $label): array
     if ($d['nip'] !== '' && !valid_nip($d['nip'])) {
         throw new UserError("$label: NIP harus 18 digit angka (kosongkan bila tidak punya NIP).");
     }
-    $d['bagikan_kontak'] = !empty($p['bagikan_kontak']) && $d['menginap'] ? 1 : 0;
+    $d['bagikan_kontak'] = !empty($p['bagikan_kontak']) && $d['menginap'] === 'ya' ? 1 : 0;
     $d['menginap'] = $d['menginap'] === 'ya' ? 1 : 0;
     return $d;
 }
@@ -127,6 +131,7 @@ function publik_daftar(): void
         }
         // Provinsi: dari undangan, atau dari kab/kota yang dipilih ("Kab. Bogor, Jawa Barat" → Jawa Barat).
         $inst['provinsi'] = $undangan ? $undangan['provinsi'] : provinsi_dari_kabkota($inst['kabkota']);
+        $inst['pp'] = $undangan ? (int) $undangan['pp'] : (int) jabodetabek_kabkota($inst['kabkota']);
         if (!$undangan && row('SELECT id FROM instansi WHERE LOWER(nama) = LOWER(?) AND LOWER(kabkota) = LOWER(?)', [$inst['nama'], $inst['kabkota']])) {
             throw new UserError('Instansi ini sudah teregistrasi. Gunakan link instansi yang sudah dikirim, atau hubungi panitia agar link dikirim ulang.');
         }
@@ -145,7 +150,7 @@ function publik_daftar(): void
             }
             $i = 0;
             foreach ($baris as $p) {
-                $semua[] = ['tanggal' => $tgl] + clean_peserta($p, 'Peserta ' . (++$i) . ' (' . tgl_pendek($tgl) . ')');
+                $semua[] = ['tanggal' => $tgl] + clean_peserta($p, 'Peserta ' . (++$i) . ' (' . tgl_pendek($tgl) . ')', (bool) $inst['pp']);
             }
         }
         foreach ($ikut as $tgl) {
@@ -154,8 +159,8 @@ function publik_daftar(): void
 
         [$token, $hash] = new_token($inst['nama']);
         db()->beginTransaction();
-        q('INSERT INTO instansi (nama, kabkota, provinsi, koordinator, hp, email, token_hash, token_enc) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
-            $inst['nama'], $inst['kabkota'] ?: null, $inst['provinsi'], $inst['koordinator'], $inst['hp'], $inst['email'] ?: null, $hash, token_encrypt($token),
+        q('INSERT INTO instansi (nama, kabkota, provinsi, pp, koordinator, hp, email, token_hash, token_enc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+            $inst['nama'], $inst['kabkota'] ?: null, $inst['provinsi'], $inst['pp'], $inst['koordinator'], $inst['hp'], $inst['email'] ?: null, $hash, token_encrypt($token),
         ]);
         $id = (int) db()->lastInsertId();
         if ($undangan && q('UPDATE undangan SET instansi_id = ? WHERE id = ? AND instansi_id IS NULL', [$id, $undangan['id']])->rowCount() !== 1) {

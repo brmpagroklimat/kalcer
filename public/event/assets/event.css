@@ -152,7 +152,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--deep); outl
 .person.optional .person-title::after { content: ' (opsional)'; font-weight: 400; }
 
 /* tables / lists */
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+.table-wrap { position: relative; overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-size: 13px; color: var(--muted); font-weight: 700; background: #faf8f4; white-space: nowrap; }

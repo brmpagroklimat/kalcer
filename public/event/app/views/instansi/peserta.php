@@ -43,14 +43,14 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
               <details class="edit"><summary>Ubah data</summary>
                 <form method="post" action="<?= h(url('/saya/peserta/' . $p['id'])) ?>"><?= csrf_field() ?>
                   <p class="hint">Untuk memperbaiki penulisan. Mengganti orang lain? Pakai "Ganti peserta".</p>
-                  <?= view('_person_fields', ['prefix' => '', 'val' => $p, 'idp' => 'u' . $p['id'], 'required' => true]) ?>
+                  <?= view('_person_fields', ['pp' => !empty($inst['pp']), 'prefix' => '', 'val' => $p, 'idp' => 'u' . $p['id'], 'required' => true]) ?>
                   <div class="actions"><button class="btn small deep">Simpan</button></div>
                 </form>
               </details>
               <details class="edit"><summary>Ganti peserta</summary>
                 <form method="post" action="<?= h(url('/saya/peserta/' . $p['id'] . '/ganti')) ?>"><?= csrf_field() ?>
                   <p class="hint">Isi data orang yang menggantikan <?= h($p['nama']) ?>.</p>
-                  <?= view('_person_fields', ['prefix' => '', 'val' => ['menginap' => $p['menginap']], 'idp' => 'g' . $p['id'], 'required' => true]) ?>
+                  <?= view('_person_fields', ['pp' => !empty($inst['pp']), 'prefix' => '', 'val' => ['menginap' => $p['menginap']], 'idp' => 'g' . $p['id'], 'required' => true]) ?>
                   <div class="actions"><button class="btn small deep">Ganti peserta</button></div>
                 </form>
               </details>
@@ -70,7 +70,7 @@ foreach ($byDate as $list) { foreach ($list as $p) { $names[$p['id']] = $p['nama
       <details class="edit"><summary>+ Tambah peserta <?= h(tgl_pendek($d)) ?></summary>
         <form method="post" action="<?= h(url('/saya/peserta')) ?>"><?= csrf_field() ?>
           <input type="hidden" name="tanggal" value="<?= h($d) ?>">
-          <?= view('_person_fields', ['prefix' => '', 'val' => [], 'idp' => 'n' . $d, 'required' => true, 'malam' => malam_menginap($d)]) ?>
+          <?= view('_person_fields', ['pp' => !empty($inst['pp']), 'prefix' => '', 'val' => [], 'idp' => 'n' . $d, 'required' => true, 'malam' => malam_menginap($d)]) ?>
           <div class="actions"><button class="btn small deep">Tambah peserta</button></div>
         </form>
       </details>

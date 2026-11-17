@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '10';
+const SCHEMA_VERSION = '11';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -130,6 +130,19 @@ function migrate(): void
         ensure_column('undangan', 'provinsi', "VARCHAR(60) NOT NULL DEFAULT ''");
         db()->exec("UPDATE undangan SET provinsi = SUBSTRING_INDEX(kabkota, ', ', -1)");
         db()->exec('ALTER TABLE undangan DROP INDEX nama_kab, DROP COLUMN kabkota, ADD UNIQUE KEY nama_prov (nama, provinsi)');
+    }
+    // v11: instansi Jabodetabek pulang-pergi (tidak menginap). Undangan lama ditebak dari nama & provinsi.
+    if (ensure_column('undangan', 'pp', 'TINYINT(1) NOT NULL DEFAULT 0')) {
+        foreach (rows('SELECT id, nama, provinsi FROM undangan') as $u) {
+            if (tebak_jabodetabek($u['nama'], $u['provinsi'])) {
+                q('UPDATE undangan SET pp = 1 WHERE id = ?', [$u['id']]);
+            }
+        }
+    }
+    if (ensure_column('instansi', 'pp', 'TINYINT(1) NOT NULL DEFAULT 0')) {
+        // Hanya instansi yang belum punya peserta menginap, supaya data yang sudah ada tidak berubah diam-diam.
+        q('UPDATE instansi i JOIN undangan u ON u.instansi_id = i.id SET i.pp = u.pp
+           WHERE NOT EXISTS (SELECT 1 FROM peserta p WHERE p.instansi_id = i.id AND p.menginap = 1)');
     }
     // v6: status "Dibayar sebagian" (pembayaran dicicil).
     db()->exec("ALTER TABLE instansi MODIFY reimburse_status ENUM('draft','diajukan','diverifikasi','sebagian','dibayar') NOT NULL DEFAULT 'draft'");
@@ -489,6 +502,25 @@ function provinsi_dari_kabkota(string $kabkota): string
 {
     $i = strrpos($kabkota, ', ');
     return $i === false ? '' : substr($kabkota, $i + 2);
+}
+
+/** Kab/kota Jabodetabek: peserta pulang-pergi, tidak disediakan hotel. */
+const JABODETABEK = [
+    'Kab. Bogor, Jawa Barat', 'Kota Bogor, Jawa Barat', 'Kota Depok, Jawa Barat', 'Kab. Bekasi, Jawa Barat', 'Kota Bekasi, Jawa Barat',
+    'Kab. Tangerang, Banten', 'Kota Tangerang, Banten', 'Kota Tangerang Selatan, Banten',
+];
+
+function jabodetabek_kabkota(string $kabkota): bool
+{
+    return in_array($kabkota, JABODETABEK, true) || str_ends_with($kabkota, ', DKI Jakarta');
+}
+
+/** Tebakan awal untuk daftar undangan (panitia bisa mengubahnya): dari provinsi + nama instansi. */
+function tebak_jabodetabek(string $nama, string $provinsi): bool
+{
+    return $provinsi === 'DKI Jakarta'
+        || ($provinsi === 'Jawa Barat' && preg_match('/\b(bogor|depok|bekasi)\b/i', $nama))
+        || ($provinsi === 'Banten' && preg_match('/\btangerang\b/i', $nama));
 }
 
 /** Wilayah untuk ditampilkan: kab/kota bila ada (sudah memuat provinsi), selain itu provinsi. */

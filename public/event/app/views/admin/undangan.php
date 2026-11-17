@@ -12,7 +12,7 @@ $pilihTanggal = static function (string $name, string $pilih, string $idp): stri
 };
 ?>
 <h1>Undangan & tanggal</h1>
-<p class="lead">Tetapkan instansi mana ikut tanggal berapa. Di formulir registrasi, instansi cukup memilih nama instansinya, dan tanggalnya muncul otomatis, jadi tidak ada yang salah pilih tanggal.</p>
+<p class="lead">Tetapkan instansi mana ikut tanggal berapa, dan mana yang dari Jabodetabek (pulang-pergi, tanpa pilihan menginap). Di formulir registrasi, instansi cukup memilih nama instansinya, dan tanggalnya muncul otomatis, jadi tidak ada yang salah pilih tanggal.</p>
 <?php if (!$total): ?>
   <p class="note warn">Daftar masih kosong, jadi instansi <b>memilih tanggal sendiri</b> di formulir registrasi. Begitu daftar ini diisi, formulir otomatis berubah menjadi pilihan nama instansi, dan hanya instansi di daftar ini yang bisa registrasi.</p>
 <?php endif; ?>
@@ -39,7 +39,7 @@ $pilihTanggal = static function (string $name, string $pilih, string $idp): stri
   <form class="panel" method="post" action="<?= h(url('/admin/undangan')) ?>" autocomplete="off">
     <?= csrf_field() ?>
     <h2>Tempel banyak dari Excel</h2>
-    <p class="small muted">Satu instansi per baris: <b>Nama instansi</b> lalu <b>Provinsi</b>. Salin dua kolom dari Excel langsung, atau pisahkan dengan titik koma atau koma. Singkatan (Sumut, DIY, NTB) dan nama kota (Medan → Sumatera Utara) dikenali. Baris yang gagal dikembalikan ke kotak ini untuk diperbaiki.</p>
+    <p class="small muted">Satu instansi per baris: <b>Nama instansi</b> lalu <b>Provinsi</b>. Salin dua kolom dari Excel langsung, atau pisahkan dengan titik koma atau koma. Singkatan (Sumut, DIY, NTB) dan nama kota (Medan → Sumatera Utara) dikenali. Baris yang gagal dikembalikan ke kotak ini untuk diperbaiki. Instansi Jabodetabek (DKI Jakarta, atau nama berisi Bogor/Depok/Bekasi/Tangerang) otomatis ditandai pulang-pergi; periksa kolom Menginap.</p>
     <label class="field"><span class="sr-only">Daftar instansi</span>
       <textarea name="banyak" rows="6" required placeholder="BRMP Aceh; Aceh&#10;BRMP Sumatera Utara; Sumatera Utara&#10;Dinas Pertanian Kabupaten Bogor; Jawa Barat"><?= h($sisa['teks'] ?? '') ?></textarea></label>
     <div class="field" style="margin-top:10px"><span>Semua baris ikut tanggal</span><?= $pilihTanggal('tanggal', $tglDefault, 'u2') ?></div>
@@ -56,13 +56,19 @@ $pilihTanggal = static function (string $name, string $pilih, string $idp): stri
     <div class="panel-head"><h2><?= h(tgl($d, true)) ?></h2><span class="small muted"><?= count($list) ?> instansi</span></div>
     <?php if (!$list): ?><p class="muted small" style="margin:0">Belum ada instansi untuk tanggal ini.</p><?php else: ?>
     <div class="table-wrap"><table>
-      <thead><tr><th>Instansi</th><th>Status</th><th>Pindah tanggal</th><th></th></tr></thead>
+      <thead><tr><th>Instansi</th><th>Status</th><th>Menginap</th><th>Pindah tanggal</th><th></th></tr></thead>
       <tbody>
       <?php foreach ($list as $u): ?>
         <tr data-row>
           <td><b><?= h($u['nama']) ?></b><br><span class="small muted"><?= h($u['provinsi']) ?></span></td>
           <td><?php if ($u['instansi_id']): ?><span class="badge dibayar">Sudah registrasi</span><br><a class="small" href="<?= h(url('/admin/instansi/' . $u['instansi_id'])) ?>"><?= h(kode_instansi((int) $u['instansi_id'])) ?>, <?= (int) $u['peserta'] ?> peserta</a>
             <?php else: ?><span class="badge draft">Belum registrasi</span><?php endif; ?></td>
+          <td><form method="post" action="<?= h(url('/admin/undangan/' . $u['id'] . '/pp')) ?>"
+                <?= !$u['pp'] && $u['instansi_id'] ? 'data-confirm="Tandai ' . h($u['nama']) . ' sebagai Jabodetabek? Peserta yang memilih menginap akan dibatalkan menginapnya dan dilepas dari kamar & shuttle."' : '' ?>><?= csrf_field() ?>
+              <input type="hidden" name="pp" value="<?= $u['pp'] ? '0' : '1' ?>">
+              <?php if ($u['pp']): ?><span class="badge diajukan">Pulang-pergi</span><br><button class="linkbtn small">Buka pilihan menginap</button>
+              <?php else: ?><span class="small">Boleh menginap</span><br><button class="linkbtn small">Tandai Jabodetabek</button><?php endif; ?>
+            </form></td>
           <td><form class="inline-form" method="post" action="<?= h(url('/admin/undangan/' . $u['id'])) ?>" autocomplete="off"
                 <?= $u['instansi_id'] ? 'data-confirm="Pindahkan ' . h($u['nama']) . ' beserta pesertanya? Kamar dan shuttle mereka dilepas dan perlu dibagi ulang."' : '' ?>><?= csrf_field() ?>
               <label class="sr-only" for="pt-<?= (int) $u['id'] ?>">Tanggal <?= h($u['nama']) ?></label>

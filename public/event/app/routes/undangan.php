@@ -130,13 +130,15 @@ function admin_undangan_tambah(): void
             continue;
         }
         // Instansi yang sudah registrasi sebelumnya dengan nama & provinsi sama langsung dihubungkan.
-        $inst = row('SELECT i.id FROM instansi i LEFT JOIN undangan u ON u.instansi_id = i.id WHERE u.id IS NULL AND i.nama = ? AND i.provinsi = ?', [$nama, $provResmi]);
+        $inst = row('SELECT i.id, i.pp FROM instansi i LEFT JOIN undangan u ON u.instansi_id = i.id WHERE u.id IS NULL AND i.nama = ? AND i.provinsi = ?', [$nama, $provResmi]);
         if ($inst && ($t = instansi_tanggal((int) $inst['id'])) && $t !== $tanggal) {
             $gagal[] = "$label: sudah registrasi untuk " . tgl($t) . '. Pilih tanggal itu, atau pindahkan setelah masuk daftar.';
             $sisa[] = $asli;
             continue;
         }
-        q('INSERT INTO undangan (nama, provinsi, tanggal, instansi_id) VALUES (?, ?, ?, ?)', [$nama, $provResmi, $tanggal, $inst['id'] ?? null]);
+        // Jabodetabek (pulang-pergi) ditebak dari provinsi + nama; panitia bisa mengubahnya di tabel.
+        $pp = $inst ? (int) $inst['pp'] : (int) tebak_jabodetabek($nama, $provResmi);
+        q('INSERT INTO undangan (nama, provinsi, tanggal, pp, instansi_id) VALUES (?, ?, ?, ?, ?)', [$nama, $provResmi, $tanggal, $pp, $inst['id'] ?? null]);
         $masuk++;
     }
     if ($masuk) {
@@ -201,5 +203,30 @@ function admin_undangan_hapus(string $id): void
     }
     q('DELETE FROM undangan WHERE id = ?', [$u['id']]);
     flash('ok', $u['nama'] . ' dihapus dari daftar undangan.');
+    redirect('/admin/undangan');
+}
+
+/** Tandai / batalkan Jabodetabek (pulang-pergi, tanpa menginap). */
+function admin_undangan_pp(string $id): void
+{
+    require_admin();
+    $u = row('SELECT * FROM undangan WHERE id = ?', [(int) $id]) ?? not_found();
+    $pp = post('pp') === '1' ? 1 : 0;
+    db()->beginTransaction();
+    q('UPDATE undangan SET pp = ? WHERE id = ?', [$pp, $u['id']]);
+    $lepas = 0;
+    if ($u['instansi_id']) {
+        $instId = (int) $u['instansi_id'];
+        q('UPDATE instansi SET pp = ? WHERE id = ?', [$pp, $instId]);
+        if ($pp) {
+            // Peserta yang terlanjur memilih menginap dibatalkan menginapnya; kamar & shuttle dilepas.
+            $lepas = q('UPDATE peserta SET menginap = 0, bagikan_kontak = 0, kamar_id = NULL, shuttle_id = NULL WHERE instansi_id = ? AND menginap = 1', [$instId])->rowCount();
+        }
+        log_riwayat($instId, 'pp', $pp
+            ? 'Panitia menandai instansi Jabodetabek (pulang-pergi, tidak menginap)' . ($lepas ? "; $lepas peserta batal menginap" : '')
+            : 'Panitia membuka pilihan menginap (bukan Jabodetabek)');
+    }
+    db()->commit();
+    flash('ok', $u['nama'] . ($pp ? ' ditandai Jabodetabek: pulang-pergi, tanpa menginap.' : ' bisa memilih menginap.') . ($lepas ? " $lepas peserta batal menginap; kamar & shuttle mereka dilepas." : ''));
     redirect('/admin/undangan');
 }

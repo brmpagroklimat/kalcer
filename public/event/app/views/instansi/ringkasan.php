@@ -10,7 +10,7 @@ $nFoto = count($tahapAda);
 $langkah = [
     ['Registrasi', 'Kode ' . kode_instansi((int) $inst['id']) . ($tanggal ? ', ' . tgl($tanggal, true) : '') . '. Simpan link instansi; bila hilang, panitia bisa mengirim ulang link yang sama.', true, null],
     ['Data peserta', count($peserta) . ' peserta, ' . count($inap) . ' menginap. Bisa diubah/diganti sampai ' . tgl_jam(setting('batas_ganti')) . '.', count($peserta) > 0, '/saya/peserta'],
-    ['Kamar & shuttle', $inap ? "Info kamar: $nKamar dari " . count($inap) . " peserta; shuttle: $nShuttle dari " . count($inap) . ' (diumumkan panitia).' : 'Tidak ada peserta yang menginap.', !$inap || ($nKamar === count($inap) && $nShuttle === count($inap)), $inap ? '#akomodasi' : null],
+    !empty($inst['pp']) ? ['Kamar & shuttle', 'Instansi Jabodetabek: pulang-pergi, tidak disediakan hotel dan shuttle.', true, null] : ['Kamar & shuttle', $inap ? "Info kamar: $nKamar dari " . count($inap) . " peserta; shuttle: $nShuttle dari " . count($inap) . ' (diumumkan panitia).' : 'Tidak ada peserta yang menginap.', !$inap || ($nKamar === count($inap) && $nShuttle === count($inap)), $inap ? '#akomodasi' : null],
     ['Foto kegiatan (Hari H)', "$nFoto dari " . count(TAHAP) . ' tahap terunggah. Foto wajib ber-watermark tanggal, jam, lokasi.', $nFoto === count(TAHAP), '/saya/foto'],
     ['Reimburse', STATUS_REIMBURSE[$st] . ($reimburse['diajukan'] ? ': diajukan ' . rupiah($reimburse['diajukan']) . ', disetujui ' . rupiah($reimburse['disetujui']) . ', dibayar ' . rupiah($reimburse['dibayar']) : ': unggah struk setelah acara') . '.', $st === 'dibayar', '/saya/biaya'],
 ];

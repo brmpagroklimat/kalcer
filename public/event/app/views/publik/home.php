@@ -13,7 +13,7 @@ $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
 <?php if (!$open): ?>
   <div class="panel"><h2>Registrasi ditutup</h2><p>Registrasi tidak dibuka saat ini. Untuk informasi lebih lanjut, <?= hubungi_panitia() ?>.</p></div>
 <?php else: ?>
-<form method="post" action="<?= h(url('/daftar')) ?>" class="panel" id="daftar" novalidate>
+<form method="post" action="<?= h(url('/daftar')) ?>" class="panel" id="daftar" novalidate data-jabodetabek="<?= h(json_encode(JABODETABEK)) ?>">
   <h2>Formulir registrasi</h2>
   <p class="muted small">Batas registrasi: <?= h(tgl_jam(setting('batas_daftar'))) ?>.</p>
   <?php if ($errors): ?>
@@ -31,12 +31,12 @@ $ikut = is_string($old['ikut'] ?? null) ? $old['ikut'] : '';
         <select id="pilih-undangan" name="undangan" required data-undangan autocomplete="off">
           <option value="">Pilih nama instansi…</option>
           <?php foreach ($undangan as $u): ?>
-            <option value="<?= (int) $u['id'] ?>" data-tanggal="<?= h($u['tanggal']) ?>" data-label="<?= h(tgl($u['tanggal'], true)) ?>" data-malam="<?= h(malam_menginap($u['tanggal'])) ?>"
+            <option value="<?= (int) $u['id'] ?>" data-tanggal="<?= h($u['tanggal']) ?>" data-label="<?= h(tgl($u['tanggal'], true)) ?>" data-malam="<?= h(malam_menginap($u['tanggal'])) ?>" data-pp="<?= (int) $u['pp'] ?>"
               <?= $u['instansi_id'] ? 'disabled' : ($pilihU === (string) $u['id'] ? 'selected' : '') ?>><?= h($u['nama']) ?> (<?= h($u['provinsi']) ?>)<?= $u['instansi_id'] ? ', sudah registrasi' : '' ?></option>
           <?php endforeach; ?>
         </select>
         <small class="hint">Instansi Anda tidak ada di daftar, atau tanggalnya tidak sesuai? <?= hubungi_panitia('Halo panitia ' . setting('nama_kegiatan') . ', instansi kami belum ada di daftar registrasi. Nama instansi: ', 'hubungi panitia via WhatsApp') ?>.</small></div>
-      <div class="note jadwal-u full" data-jadwal-u hidden><span class="small muted">Tanggal kegiatan instansi Anda (ditetapkan panitia)</span><b data-jadwal-tgl></b></div>
+      <div class="note jadwal-u full" data-jadwal-u hidden><span class="small muted">Tanggal kegiatan instansi Anda (ditetapkan panitia)</span><b data-jadwal-tgl></b><span class="small" data-pp-info hidden>Instansi Jabodetabek: pulang-pergi, tidak disediakan hotel.</span></div>
       <?php else: ?>
       <label class="field"><span>Nama instansi</span><input type="text" name="nama" value="<?= h($o('nama')) ?>" maxlength="200" required></label>
       <div class="field combo"><label for="kabkota"><span>Kabupaten/kota</span></label>

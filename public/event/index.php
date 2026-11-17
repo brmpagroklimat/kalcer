@@ -101,6 +101,7 @@ $routes = [
     ['POST', '/admin/undangan', 'admin_undangan_tambah'],
     ['POST', '/admin/undangan/(\d+)', 'admin_undangan_ubah'],
     ['POST', '/admin/undangan/(\d+)/hapus', 'admin_undangan_hapus'],
+    ['POST', '/admin/undangan/(\d+)/pp', 'admin_undangan_pp'],
     ['GET', '/admin/instansi', 'admin_instansi_list'],
     ['GET', '/admin/instansi/(\d+)', 'admin_instansi_detail'],
     ['POST', '/admin/instansi/(\d+)/link', 'admin_instansi_link'],

@@ -112,7 +112,7 @@ function inst_tambah_peserta(): void
     if (!in_array($tanggal, event_dates(), true) || ($milik !== null && $tanggal !== $milik)) {
         throw new UserError('Satu instansi hanya ikut satu tanggal' . ($milik ? ' (' . tgl($milik) . ')' : '') . '.');
     }
-    $p = clean_peserta($_POST, 'Peserta baru');
+    $p = clean_peserta($_POST, 'Peserta baru', (bool) $inst['pp']);
     check_kuota((int) $inst['id'], $tanggal, 1);
     q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap, bagikan_kontak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
         $inst['id'], $tanggal, $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'],
@@ -127,7 +127,7 @@ function inst_ubah_peserta(string $id): void
     $inst = require_instansi();
     guard_peserta_edit();
     $old = own_peserta($inst, $id);
-    $p = clean_peserta($_POST, 'Peserta');
+    $p = clean_peserta($_POST, 'Peserta', (bool) $inst['pp']);
     if (mb_strtolower($p['nama']) !== mb_strtolower($old['nama'])) {
         throw new UserError('Untuk mengganti orang, gunakan tombol "Ganti peserta". Ubah data hanya untuk memperbaiki penulisan.');
     }
@@ -154,7 +154,7 @@ function inst_ganti_peserta(string $id): void
     $inst = require_instansi();
     guard_peserta_edit();
     $old = own_peserta($inst, $id);
-    $p = clean_peserta($_POST, 'Peserta pengganti');
+    $p = clean_peserta($_POST, 'Peserta pengganti', (bool) $inst['pp']);
     db()->beginTransaction();
     q('INSERT INTO peserta (instansi_id, tanggal, nama, nip, jabatan, hp, jk, menginap, bagikan_kontak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
         $inst['id'], $old['tanggal'], $p['nama'], $p['nip'] ?: null, $p['jabatan'] ?: null, $p['hp'], $p['jk'], $p['menginap'], $p['bagikan_kontak'],
