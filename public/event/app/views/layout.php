@@ -14,7 +14,7 @@ $adminNav = [
 ];
 $adminAktif = static fn (string $href) => $href === '/admin' ? $curPath === '/admin' : str_starts_with($curPath, $href);
 $flashes = take_flash();
-$v = '27';
+$v = '28';
 ?>
 <!doctype html>
 <html lang="id">

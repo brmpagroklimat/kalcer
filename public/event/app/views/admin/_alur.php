@@ -12,7 +12,6 @@ $fase = [
         'panitia' => [
             ['Isi nama & tanggal kegiatan, batas waktu, 2 kontak WhatsApp, info instansi (hotel, shuttle, dll.), kapasitas kamar', '/admin/pengaturan'],
             ['Isi daftar undangan: nama instansi + provinsi + tanggal (satu per satu atau tempel dari Excel)', '/admin/undangan', 'Daftar kosong → instansi memilih tanggal sendiri'],
-            ['Periksa kolom Menginap: Jabodetabek = pulang-pergi (otomatis ditebak, bisa diubah)', '/admin/undangan'],
             ['Isi link jadwal; unggah materi bila sudah ada', '/admin/konten'],
             ['Bagikan alamat kalcer.agroklimat.id/event ke instansi', null],
         ],
@@ -21,7 +20,7 @@ $fase = [
         'judul' => 'Registrasi',
         'kapan' => 'Sampai batas registrasi',
         'instansi' => [
-            ['Registrasi: pilih nama instansi (tanggal otomatis sesuai undangan), maks. 3 peserta, pilih menginap (selain Jabodetabek)', null, 'Tidak ada di daftar / tanggal tidak sesuai → hubungi panitia'],
+            ['Registrasi: pilih nama instansi (tanggal otomatis sesuai undangan), maks. 3 peserta, pilih menginap', null, 'Tidak ada di daftar / tanggal tidak sesuai → hubungi panitia'],
             ['Simpan link instansi; buka tab Ringkasan untuk langkah berikutnya', null, 'Link hilang → minta panitia via WhatsApp, panitia kirim ulang link yang sama'],
         ],
         'panitia' => [

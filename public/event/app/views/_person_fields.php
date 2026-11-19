@@ -4,9 +4,6 @@ $n = static fn (string $k) => $prefix === '' ? $k : $prefix . '[' . $k . ']';
 $v = static fn (string $k) => (string) ($val[$k] ?? '');
 $inap = $v('menginap');
 if ($inap === '1') { $inap = 'ya'; } elseif ($inap === '0') { $inap = 'tidak'; }
-// Instansi Jabodetabek pulang-pergi: pilihan menginap disembunyikan (JS di formulir registrasi bisa mengubahnya).
-$pp = !empty($pp);
-if ($pp) { $inap = 'tidak'; }
 ?>
 <div class="fields two">
   <label class="field"><span>Nama lengkap (dengan gelar)</span>
@@ -25,14 +22,12 @@ if ($pp) { $inap = 'tidak'; }
       <label class="choice"><input type="radio" name="<?= h($n('jk')) ?>" value="P" <?= $v('jk') === 'P' ? 'checked' : '' ?>><span>Perempuan</span></label>
     </div>
   </div>
-  <div class="field inap-field" <?= $pp ? 'hidden' : '' ?>><span class="field-label" id="<?= h($idp) ?>-inap">Menginap di hotel panitia<?= !empty($malam) ? ' <small>(malam ' . h($malam) . ')</small>' : '' ?></span>
+  <div class="field"><span class="field-label" id="<?= h($idp) ?>-inap">Menginap di hotel panitia<?= !empty($malam) ? ' <small>(malam ' . h($malam) . ')</small>' : '' ?></span>
     <div class="choices" role="radiogroup" aria-labelledby="<?= h($idp) ?>-inap">
       <label class="choice"><input type="radio" name="<?= h($n('menginap')) ?>" value="ya" <?= $inap === 'ya' ? 'checked' : '' ?>><span>Menginap</span></label>
       <label class="choice"><input type="radio" name="<?= h($n('menginap')) ?>" value="tidak" <?= $inap === 'tidak' ? 'checked' : '' ?>><span>Tidak menginap</span></label>
     </div>
   </div>
-  <div class="field pp-note" <?= $pp ? '' : 'hidden' ?>><span class="field-label">Menginap</span>
-    <span class="small muted" style="margin-top:6px">Tidak menginap. Instansi dari Jabodetabek pulang-pergi, jadi tidak disediakan hotel.</span></div>
 </div>
 <label class="check small share-contact" style="margin-top:12px" <?= $inap === 'ya' ? '' : 'hidden' ?>>
   <input type="checkbox" name="<?= h($n('bagikan_kontak')) ?>" value="1" <?= $v('bagikan_kontak') === '1' ? 'checked' : '' ?>>

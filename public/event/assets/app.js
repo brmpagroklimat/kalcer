@@ -55,28 +55,6 @@
     });
   });
 
-  // Instansi Jabodetabek pulang-pergi: sembunyikan pilihan menginap, isi "Tidak menginap".
-  function applyPP(scope, pp) {
-    if (!scope) return;
-    scope.querySelectorAll('.inap-field').forEach(function (f) {
-      var tidak = f.querySelector('input[value=tidak]');
-      if (pp && !f.hidden) { f.querySelectorAll('input').forEach(function (r) { r.checked = r === tidak; }); f.dataset.ppSet = '1'; }
-      if (!pp && f.dataset.ppSet) { tidak.checked = false; delete f.dataset.ppSet; }
-      f.hidden = pp;
-      tidak.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    scope.querySelectorAll('.pp-note').forEach(function (n) { n.hidden = !pp; });
-  }
-  var formJ = document.querySelector('form[data-jabodetabek]');
-  var kabJ = formJ && formJ.querySelector('[data-kabkota]');
-  if (kabJ) {
-    var listJ = JSON.parse(formJ.dataset.jabodetabek);
-    var syncJ = function () { var v = kabJ.value; applyPP(formJ, listJ.indexOf(v) !== -1 || / DKI Jakarta$/.test(v)); };
-    kabJ.addEventListener('change', syncJ);
-    kabJ.addEventListener('input', syncJ);
-    syncJ();
-  }
-
   // Mode undangan: tanggal mengikuti nama instansi yang dipilih (ditetapkan panitia).
   var pilihU = document.querySelector('[data-undangan]');
   if (pilihU) {
@@ -86,9 +64,6 @@
       document.querySelectorAll('.day-block').forEach(function (b) { b.hidden = b.dataset.day !== t; });
       boxU.hidden = !t;
       if (t) boxU.querySelector('[data-jadwal-tgl]').textContent = o.dataset.label;
-      var pp = !!t && o.dataset.pp === '1';
-      boxU.querySelector('[data-pp-info]').hidden = !pp;
-      applyPP(pilihU.form, pp);
     };
     pilihU.addEventListener('change', syncU);
     syncU();
@@ -174,7 +149,7 @@
     var list = document.getElementById(input.getAttribute('aria-controls'));
     var items = [], active = -1;
     function close() { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; input.removeAttribute('aria-activedescendant'); }
-    function choose(v) { input.value = v; close(); input.dataset.touched = '1'; check(input); input.dispatchEvent(new Event('change')); }
+    function choose(v) { input.value = v; close(); input.dataset.touched = '1'; check(input); }
     function render() {
       var q = input.value.trim().toLowerCase();
       if (q.length < 3 || !kabkotaList) { close(); return; }
