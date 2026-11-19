@@ -25,7 +25,7 @@ export const tools: Tool[] = [
     title: 'Prediksi Banjir',
     description: 'Potensi banjir di lahan sawah melalui pendekatan meteorologis, topografi, dan tipe agroekosistem.',
     icon: 'flood',
-    href: null,
+    href: 'https://banjir.agroklimat.id',
   },
   {
     id: 'prediksi-opt',
