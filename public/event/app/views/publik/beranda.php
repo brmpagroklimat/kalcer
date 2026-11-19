@@ -18,28 +18,24 @@ $lokasi = setting('lokasi');
 
 <div class="cards">
   <a class="card" href="<?= h(url('/daftar')) ?>">
-    <span class="shape" aria-hidden="true"><span style="left:0;top:0;width:26px;height:26px;background:var(--coral);border-radius:100% 0 0 0"></span><span style="right:0;bottom:0;width:22px;height:22px;background:var(--sky);border-radius:50%"></span><span style="left:4px;bottom:2px;width:12px;height:12px;background:var(--leaf);border-radius:0 100% 0 100%"></span></span>
+    <span class="card-top"><span class="shape" aria-hidden="true"><span style="left:0;top:0;width:26px;height:26px;background:var(--coral);border-radius:100% 0 0 0"></span><span style="right:0;bottom:0;width:22px;height:22px;background:var(--sky);border-radius:50%"></span><span style="left:4px;bottom:2px;width:12px;height:12px;background:var(--leaf);border-radius:0 100% 0 100%"></span></span><span class="open" aria-hidden="true">Buka<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></span>
     <h2>Registrasi</h2>
     <p><?= $open ? 'Dibuka sampai ' . h(tgl_jam(setting('batas_daftar'))) . '. ' . (mode_undangan() ? 'Pilih nama instansi Anda, tanggal sudah ditetapkan panitia. Maksimal ' : 'Setiap instansi memilih satu tanggal, maksimal ') . (int) setting('kuota_per_instansi') . ' peserta.' : 'Registrasi sudah ditutup.' ?></p>
-    <span class="go"><?= $open ? 'Registrasi' : 'Lihat info' ?></span>
   </a>
   <a class="card" href="<?= h(url('/jadwal')) ?>">
-    <span class="shape" aria-hidden="true"><span style="left:0;top:4px;width:34px;height:34px;background:var(--sun);border-radius:50%"></span><span style="left:0;top:4px;width:17px;height:17px;background:var(--leaf);border-radius:100% 0 0 0"></span><span style="right:0;top:0;width:12px;height:12px;background:var(--sand);border-radius:50%"></span></span>
+    <span class="card-top"><span class="shape" aria-hidden="true"><span style="left:0;top:4px;width:34px;height:34px;background:var(--sun);border-radius:50%"></span><span style="left:0;top:4px;width:17px;height:17px;background:var(--leaf);border-radius:100% 0 0 0"></span><span style="right:0;top:0;width:12px;height:12px;background:var(--sand);border-radius:50%"></span></span><span class="open" aria-hidden="true">Buka<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></span>
     <h2>Jadwal</h2>
     <p><?= $jadwal ? 'Susunan acara ' . h(implode(' dan ', array_map('tgl_pendek', $dates))) . ' sudah tersedia.' : 'Jadwal acara akan diumumkan di sini.' ?></p>
-    <span class="go">Lihat jadwal</span>
   </a>
   <a class="card" href="<?= h(url('/materi')) ?>">
-    <span class="shape" aria-hidden="true"><span style="left:0;bottom:0;width:40px;height:20px;background:var(--deep);border-radius:20px 20px 0 0"></span><span style="left:12px;top:0;width:18px;height:18px;background:var(--coral);border-radius:100% 0 100% 0"></span><span style="right:2px;top:4px;width:9px;height:9px;background:var(--sun);border-radius:50%"></span></span>
+    <span class="card-top"><span class="shape" aria-hidden="true"><span style="left:0;bottom:0;width:40px;height:20px;background:var(--deep);border-radius:20px 20px 0 0"></span><span style="left:12px;top:0;width:18px;height:18px;background:var(--coral);border-radius:100% 0 100% 0"></span><span style="right:2px;top:4px;width:9px;height:9px;background:var(--sun);border-radius:50%"></span></span><span class="open" aria-hidden="true">Buka<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></span>
     <h2>Materi</h2>
     <p><?= $nMateri ? $nMateri . ' file materi kegiatan siap diunduh.' : 'Materi kegiatan akan tersedia di sini.' ?></p>
-    <span class="go">Lihat materi</span>
   </a>
   <a class="card" href="<?= h(url('/galeri')) ?>">
-    <span class="shape" aria-hidden="true"><span style="left:0;top:0;width:24px;height:24px;background:var(--leaf);border-radius:0 50% 50% 50%"></span><span style="right:0;top:6px;width:16px;height:32px;background:var(--sky);border-radius:0 16px 16px 0"></span><span style="left:6px;bottom:0;width:14px;height:14px;background:var(--coral);border-radius:50%"></span></span>
+    <span class="card-top"><span class="shape" aria-hidden="true"><span style="left:0;top:0;width:24px;height:24px;background:var(--leaf);border-radius:0 50% 50% 50%"></span><span style="right:0;top:6px;width:16px;height:32px;background:var(--sky);border-radius:0 16px 16px 0"></span><span style="left:6px;bottom:0;width:14px;height:14px;background:var(--coral);border-radius:50%"></span></span><span class="open" aria-hidden="true">Buka<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></span>
     <h2>Galeri</h2>
     <p><?= $nFoto ? $nFoto . ' foto dokumentasi kegiatan.' : 'Foto dokumentasi akan tersedia setelah kegiatan.' ?></p>
-    <span class="go">Lihat galeri</span>
   </a>
 </div>
 

@@ -230,9 +230,23 @@ details.edit[open] { background: var(--paper); border-radius: 10px; padding: 4px
 .geo span { display: block; }
 @media (max-width: 819px) { .geo { width: 200px; justify-self: start; } }
 .cards { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-bottom: 22px; }
-.card { background: var(--white); padding: 22px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: inherit; }
-a.card:hover { background: #f7fbfc; color: inherit; }
-a.card:hover h2 { color: var(--deep); }
+.card { background: var(--white); padding: 22px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: inherit; position: relative; transition: background-color .2s; }
+/* hover seperti kartu alat di kalcer.agroklimat.id: garis aksen, "Buka" muncul, bentuk ikon bergerak */
+a.card::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--deep); transform: scaleX(0); transform-origin: left; transition: transform .32s cubic-bezier(.2, .8, .2, 1); }
+a.card:hover, a.card:focus-visible { background: #f7fbfc; color: inherit; }
+a.card:hover::after, a.card:focus-visible::after { transform: scaleX(1); }
+a.card:focus-visible { outline-offset: -3px; }
+.card h2 { transition: color .2s; }
+a.card:hover h2, a.card:focus-visible h2 { color: var(--deep); }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.card .open { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--deep); opacity: 0; transform: translate(-6px, 4px); transition: opacity .2s, transform .3s cubic-bezier(.2, .8, .2, 1); }
+a.card:hover .open, a.card:focus-visible .open { opacity: 1; transform: none; }
+.card .shape span { transition: transform .38s cubic-bezier(.34, 1.56, .64, 1); }
+a.card:hover .shape span:nth-child(1), a.card:focus-visible .shape span:nth-child(1) { transform: translate(-2px, -3px) rotate(-8deg); }
+a.card:hover .shape span:nth-child(2), a.card:focus-visible .shape span:nth-child(2) { transform: translate(3px, -4px) scale(1.12); }
+a.card:hover .shape span:nth-child(3), a.card:focus-visible .shape span:nth-child(3) { transform: translateY(-4px) scale(1.18); }
+@media (hover: none) { .card .open { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { a.card::after, .card .open, .card h2, .card .shape span { transition: none; } }
 .card h2 { margin: 0; font-size: 20px; }
 .card p { margin: 0; color: var(--body); font-size: 15px; }
 .card .go { margin-top: auto; font-weight: 700; font-size: 14px; color: var(--deep); }
