@@ -1,5 +1,9 @@
 # KALCER, Klinik Agroklimat Cerdas
 
+> **Halaman depan** kalcer.agroklimat.id sekarang salinan https://agroklimat.id/ (`public/index.html` + `public/assets/`).
+> Perbarui dengan `./scripts/salin-agroklimat.sh` lalu commit & push. Landing Astro lama diarsipkan di
+> `arsip/landing-kalcer-lama/` (tag git `landing-kalcer-lama`).
+
 Landing page statis untuk `https://kalcer.agroklimat.id`. Berisi daftar alat agroklimat; setiap alat membuka aplikasinya di tab baru.
 
 Dibuat dengan [Astro](https://astro.build) (output statis, tanpa server).
