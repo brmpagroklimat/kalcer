@@ -54,8 +54,29 @@ function masukan_form(array $old = [], array $errors = []): void
         'pilih' => $old ? array_values(array_intersect(array_keys(MODUL), (array) ($old['modul'] ?? []))) : modul_dari_query((string) ($_GET['modul'] ?? '')),
         'sumber' => isset(SUMBER[$src]) ? $src : 'langsung',
         'inst' => $inst,
+        'daftarInstansi' => daftar_instansi_masukan(),
         'stamp' => form_stamp(),
     ], ['nav' => 'masukan', 'narrow' => true]);
+}
+
+/** Instansi dari dropdown (harus ada di daftar) atau isian "Lainnya". */
+function instansi_dari_form(): string
+{
+    $pilih = post('instansi_pilih');
+    if ($pilih === '' || $pilih === '__lain') {
+        return post('instansi');
+    }
+    if (!in_array($pilih, array_column(daftar_instansi_masukan(), 'nama'), true)) {
+        throw new UserError('Pilih instansi dari daftar, atau pilih "Lainnya" lalu ketik nama instansi.');
+    }
+    return $pilih;
+}
+
+/** Pilihan instansi di form masukan: daftar undangan + instansi yang sudah registrasi (unik, urut nama). */
+function daftar_instansi_masukan(): array
+{
+    return rows("SELECT nama, MAX(provinsi) provinsi FROM (SELECT nama, provinsi FROM undangan UNION SELECT nama, provinsi FROM instansi) t
+                 WHERE nama <> '' GROUP BY nama ORDER BY nama");
 }
 
 function masukan_kirim(): void
@@ -72,7 +93,7 @@ function masukan_kirim(): void
         $d = [
             'sumber' => isset(SUMBER[post('sumber')]) ? post('sumber') : 'langsung',
             'nama' => mb_substr(post('nama'), 0, 150),
-            'instansi' => $inst ? $inst['nama'] : mb_substr(post('instansi'), 0, 200),
+            'instansi' => $inst ? $inst['nama'] : mb_substr(instansi_dari_form(), 0, 200),
             'peran' => post('peran'),
             'provinsi' => post('provinsi'),
             'umux1' => skala(post('umux1'), 7),

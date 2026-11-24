@@ -87,6 +87,18 @@
     modulCek.forEach(function (c) { c.addEventListener('change', syncModul); });
     syncModul();
   }
+  // Instansi dari dropdown; "Lainnya" memunculkan isian bebas. Provinsi ikut terisi dari pilihan.
+  var instPilih = document.querySelector('[data-instansi-pilih]');
+  if (instPilih) {
+    var instLain = document.querySelector('[data-instansi-lain]');
+    instPilih.addEventListener('change', function () {
+      var o = instPilih.options[instPilih.selectedIndex];
+      instLain.hidden = instPilih.value !== '__lain';
+      if (!instLain.hidden) instLain.focus();
+      var prov = instPilih.form.querySelector('[name=provinsi]');
+      if (o && o.dataset.provinsi && prov) prov.value = o.dataset.provinsi;
+    });
+  }
   var bersedia = document.querySelector('[data-bersedia]');
   if (bersedia) {
     var hpBox = document.querySelector('[data-hp-bersedia]');

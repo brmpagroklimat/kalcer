@@ -1,5 +1,5 @@
 <?php
-/** @var array $old @var array $errors @var array $pilih @var string $sumber @var ?array $inst @var string $stamp */
+/** @var array $old @var array $errors @var array $pilih @var string $sumber @var ?array $inst @var array $daftarInstansi @var string $stamp */
 $o = static fn (string $k) => (string) ($old[$k] ?? '');
 // null = belum pernah diisi (supaya "Tidak dicoba" tidak terpilih otomatis).
 $om = static fn (string $slug, string $k): ?string => isset($old['m'][$slug][$k]) ? (string) $old['m'][$slug][$k] : null;
@@ -42,7 +42,17 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
       <?php if ($inst): ?>
         <div class="field"><span>Instansi</span><p class="terisi"><b><?= h($inst['nama']) ?></b> <span class="kode"><?= h(kode_instansi((int) $inst['id'])) ?></span><br><span class="small muted">Terisi dari link instansi peserta sosialisasi.</span></p></div>
       <?php else: ?>
+        <?php if ($daftarInstansi): $ip = $o('instansi_pilih'); ?>
+        <div><label class="field"><span>Instansi</span>
+          <select id="instansi-pilih" name="instansi_pilih" required autocomplete="off" data-instansi-pilih>
+            <option value="">Pilih instansi…</option>
+            <?php foreach ($daftarInstansi as $di): ?><option value="<?= h($di['nama']) ?>" data-provinsi="<?= h($di['provinsi']) ?>" <?= $ip === $di['nama'] ? 'selected' : '' ?>><?= h($di['nama']) ?></option><?php endforeach; ?>
+            <option value="__lain" <?= $ip === '__lain' ? 'selected' : '' ?>>Lainnya (ketik nama instansi)</option>
+          </select></label>
+          <input type="text" name="instansi" value="<?= h($o('instansi')) ?>" maxlength="200" placeholder="Nama instansi Anda" aria-label="Nama instansi lainnya" data-instansi-lain <?= $ip === '__lain' ? '' : 'hidden' ?> style="margin-top:8px;width:100%"></div>
+        <?php else: ?>
         <label class="field"><span>Instansi</span><input type="text" name="instansi" value="<?= h($o('instansi')) ?>" maxlength="200" required placeholder="mis. BPP Cibinong"></label>
+        <?php endif; ?>
       <?php endif; ?>
       <div class="field full"><span class="field-label" id="lbl-peran">Peran</span>
         <div class="choices" role="radiogroup" aria-labelledby="lbl-peran"><?= $cek(PERAN, 'peran', $o('peran')) ?></div></div>

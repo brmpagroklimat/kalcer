@@ -478,6 +478,7 @@ a.stat { text-decoration: none; color: inherit; } a.stat:hover { border-color: v
 /* form masukan */
 .masukan .panel h3 { font-size: 16px; margin: 20px 0 10px; color: var(--deep); }
 .masukan .field + .field, .masukan .field + h3 { margin-top: 14px; }
+.masukan .fields > .field + .field { margin-top: 0; }
 .skala { display: flex; flex-wrap: wrap; gap: 6px; }
 .skala { gap: 5px; }
 .skala .choice span { min-width: 38px; justify-content: center; padding: 0 6px; }
