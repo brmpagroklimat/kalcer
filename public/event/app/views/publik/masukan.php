@@ -23,8 +23,14 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
     array_keys($list), $list
 ));
 ?>
-<h1>Beri masukan untuk KALCER</h1>
-<p class="lead">Masukan Anda dipakai untuk menyempurnakan isi dan tampilan keenam modul KALCER. Pilih modul yang sudah Anda coba; cukup isi bagian modul itu saja. Sekitar 5 menit.</p>
+<?php $semua = count($pilih) === count(MODUL); $nm = count($pilih); ?>
+<?php if ($semua): ?>
+<h1>Uji coba &amp; masukan KALCER</h1>
+<p class="lead">Coba keenam modul KALCER sesuai tugas praktik, lalu nilai isi dan tampilannya. Semua modul perlu dinilai; bagian yang belum sempat dicoba cukup ditandai <b>Belum bisa menilai</b> atau <b>Tidak dicoba</b>. Sekitar 15 menit.</p>
+<?php else: ?>
+<h1>Beri masukan: <?= h(implode(', ', array_map(static fn ($s) => MODUL[$s]['nama'], $pilih))) ?></h1>
+<p class="lead">Nilai apakah isinya sesuai kondisi lapangan dan tampilannya mudah dipakai. Sekitar 3 menit.</p>
+<?php endif; ?>
 
 <form method="post" action="<?= h(url('/masukan')) ?>" class="masukan" id="form-masukan" novalidate>
   <?php if ($errors): ?>
@@ -63,20 +69,25 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
     </div>
   </section>
 
+  <?php foreach ($pilih as $slug): ?><input type="hidden" name="modul[]" value="<?= h($slug) ?>"><?php endforeach; ?>
+  <?php if ($semua): ?>
   <section class="panel">
-    <h2>2. Modul yang Anda coba</h2>
-    <p class="small muted" style="margin-top:0">Boleh lebih dari satu. Bagian penilaian muncul untuk modul yang dicentang.</p>
+    <h2>2. Coba keenam modul</h2>
+    <p class="small muted" style="margin-top:0">Buka tiap modul di tab baru, kerjakan tugas praktiknya, lalu kembali ke halaman ini untuk menilai.</p>
     <div class="modul-pilih">
-      <?php foreach (MODUL as $slug => $m): ?>
-        <label class="modul-cek"><input type="checkbox" name="modul[]" value="<?= h($slug) ?>" data-modul-toggle="<?= h($slug) ?>" <?= in_array($slug, $pilih, true) ? 'checked' : '' ?>>
-          <span><b><?= h($m['nama']) ?></b><span class="small muted"><?= h($m['isi']) ?></span></span></label>
+      <?php $i = 0; foreach (MODUL as $slug => $m): $i++; ?>
+        <a class="modul-cek" href="<?= h($m['url']) ?>" target="_blank" rel="noopener"><span class="modul-no"><?= $i ?></span>
+          <span><b><?= h($m['nama']) ?> ↗</b><span class="small muted"><?= h($m['tugas']) ?></span></span></a>
       <?php endforeach; ?>
     </div>
   </section>
+  <?php else: ?>
+  <p class="note small">Anda membuka form ini dari modul <?= h(implode(', ', array_map(static fn ($s) => MODUL[$s]['nama'], $pilih))) ?>. Ingin menguji semua modul? <a href="<?= h(url('/masukan?src=langsung')) ?>">Nilai keenam modul KALCER</a>.</p>
+  <?php endif; ?>
 
-  <?php foreach (MODUL as $slug => $m): $p = "m[$slug]"; $id = "m-$slug"; ?>
+  <?php foreach ($pilih as $no => $slug): $m = MODUL[$slug]; $p = "m[$slug]"; $id = "m-$slug"; ?>
   <section class="panel modul-blok" data-modul="<?= h($slug) ?>" id="<?= h($id) ?>">
-    <div class="panel-head"><h2><?= h($m['nama']) ?></h2><a class="small" href="<?= h($m['url']) ?>" target="_blank" rel="noopener">Buka modul<span class="sr-only"> (tab baru)</span> ↗</a></div>
+    <div class="panel-head"><h2><?= $nm > 1 ? '<span class="modul-ke">Modul ' . ($no + 1) . ' dari ' . $nm . '</span>' : '' ?><?= h($m['nama']) ?></h2><a class="small" href="<?= h($m['url']) ?>" target="_blank" rel="noopener">Buka modul<span class="sr-only"> (tab baru)</span> ↗</a></div>
     <p class="note tugas"><span class="small muted">Tugas praktik</span><?= h($m['tugas']) ?></p>
 
     <h3>Isi (substansi)</h3>
@@ -105,7 +116,7 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
   <?php endforeach; ?>
 
   <section class="panel">
-    <h2>3. Kesan keseluruhan</h2>
+    <h2><?= $semua ? '3' : '2' ?>. Kesan keseluruhan</h2>
     <?php foreach (UMUX as $k => $label): ?>
       <div class="field"><span class="field-label" id="lbl-<?= $k ?>"><?= h($label) ?></span>
         <?= $skala($k, 7, $o($k) === '' ? null : $o($k), "lbl-$k", null, ['Sangat tidak setuju', 'Sangat setuju']) ?></div>

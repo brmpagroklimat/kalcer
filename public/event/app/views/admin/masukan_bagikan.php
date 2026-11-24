@@ -9,7 +9,7 @@ $api = event_url_abs('/api/gita-nilai');
 <div class="grid2">
   <section class="panel">
     <h2>1. QR untuk slide terakhir</h2>
-    <p class="small muted" style="margin-top:0">Tampilkan di slide terakhir dan sisihkan <b>10 menit</b> di akhir sesi untuk mengisi. Kalau diminta diisi setelah acara, biasanya jumlah respons anjlok.</p>
+    <p class="small muted" style="margin-top:0">Peserta menguji <b>keenam modul</b> lalu menilai semuanya di satu form. Sisihkan sekitar 5 menit praktik per modul dan <b>15 menit</b> untuk mengisi, di dalam sesi. Kalau diminta diisi setelah acara, biasanya jumlah respons anjlok.</p>
     <div id="qr-masukan" data-qr="<?= h($qrUrl) ?>" aria-label="QR form masukan"></div>
     <div class="linkbox" style="margin-top:12px">
       <label class="sr-only" for="link-qr">Alamat form untuk sesi</label>
@@ -22,7 +22,7 @@ $api = event_url_abs('/api/gita-nilai');
 
   <section class="panel">
     <div class="panel-head"><h2>Tugas praktik per modul</h2><button class="btn secondary small no-print" type="button" onclick="window.print()">Cetak</button></div>
-    <p class="small muted" style="margin-top:0">Beri 1 tugas per modul selama sesi, supaya peserta menilai setelah benar-benar mencoba. Tugas yang sama muncul di form.</p>
+    <p class="small muted" style="margin-top:0">Semua peserta mengerjakan keenam tugas ini, supaya menilai setelah benar-benar mencoba. Tugas yang sama muncul di form.</p>
     <ol class="tugas-list">
       <?php foreach (MODUL as $m): ?><li><b><?= h($m['nama']) ?></b> <span class="small muted">(<?= h(preg_replace('#^https://#', '', $m['url'])) ?>)</span><br><?= h($m['tugas']) ?></li><?php endforeach; ?>
     </ol>
@@ -31,7 +31,7 @@ $api = event_url_abs('/api/gita-nilai');
 
 <section class="panel no-print">
   <h2>2. Tombol "Beri masukan" di setiap modul</h2>
-  <p>Kirim snippet di bawah ke pengelola masing-masing modul. Cukup ditempel sekali sebelum <code>&lt;/body&gt;</code>; tombol melayang muncul di pojok kanan bawah dan membuka form dengan modul sudah terpilih.</p>
+  <p>Kirim snippet di bawah ke pengelola masing-masing modul. Cukup ditempel sekali sebelum <code>&lt;/body&gt;</code>; tombol melayang muncul di pojok kanan bawah dan membuka form khusus modul itu (pengguna umum cukup menilai modul yang dipakainya).</p>
   <ul class="small muted">
     <li>Bila menutupi tombol peta atau kotak chat, tambahkan <code>data-posisi="kiri"</code> atau naikkan dengan <code>data-bawah="90"</code> (piksel dari bawah).</li>
     <li>Tombol tidak memengaruhi tampilan modul (terisolasi), tanpa pustaka tambahan, dan bisa disembunyikan pengguna dengan tombol ×.</li>

@@ -13,7 +13,7 @@ $langkah = [
     ['Kamar & shuttle', $inap ? "Info kamar: $nKamar dari " . count($inap) . " peserta; shuttle: $nShuttle dari " . count($inap) . ' (diumumkan panitia).' : 'Tidak ada peserta yang menginap.', !$inap || ($nKamar === count($inap) && $nShuttle === count($inap)), $inap ? '#akomodasi' : null],
     ['Foto kegiatan (Hari H)', "$nFoto dari " . count(TAHAP) . ' tahap terunggah. Foto wajib ber-watermark tanggal, jam, lokasi.', $nFoto === count(TAHAP), '/saya/foto'],
     ['Masukan untuk KALCER (Hari H)', ($nMasukan = (int) row('SELECT COUNT(*) n FROM masukan WHERE event_instansi_id = ?', [$inst['id']])['n'])
-        ? "$nMasukan masukan terkirim. Terima kasih!" : 'Nilai modul KALCER yang dicoba saat sesi (QR di layar, sekitar 5 menit).', $nMasukan > 0, '/masukan?src=sesi'],
+        ? "$nMasukan masukan terkirim. Terima kasih!" : 'Coba dan nilai keenam modul KALCER saat sesi (QR di layar, sekitar 15 menit).', $nMasukan > 0, '/masukan?src=sesi'],
     ['Reimburse', STATUS_REIMBURSE[$st] . ($reimburse['diajukan'] ? ': diajukan ' . rupiah($reimburse['diajukan']) . ', disetujui ' . rupiah($reimburse['disetujui']) . ', dibayar ' . rupiah($reimburse['dibayar']) : ': unggah struk setelah acara') . '.', $st === 'dibayar', '/saya/biaya'],
 ];
 $sekarang = null;

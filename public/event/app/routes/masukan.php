@@ -44,6 +44,16 @@ function skala(string $v, int $max): ?int
     return ctype_digit($v) && (int) $v >= 1 && (int) $v <= $max ? (int) $v : null;
 }
 
+/**
+ * Modul yang wajib dinilai. Sesi sosialisasi & akses langsung: keenam modul.
+ * Dari tombol di satu modul (?src=tombol&modul=x): cukup modul itu.
+ */
+function modul_lingkup(string $sumber, array $diminta): array
+{
+    $diminta = array_values(array_intersect(array_keys(MODUL), $diminta));
+    return $sumber === 'tombol' && $diminta ? $diminta : array_keys(MODUL);
+}
+
 function masukan_form(array $old = [], array $errors = []): void
 {
     $inst = current_instansi();
@@ -51,7 +61,7 @@ function masukan_form(array $old = [], array $errors = []): void
     render('publik/masukan', 'Beri masukan', [
         'old' => $old,
         'errors' => $errors,
-        'pilih' => $old ? array_values(array_intersect(array_keys(MODUL), (array) ($old['modul'] ?? []))) : modul_dari_query((string) ($_GET['modul'] ?? '')),
+        'pilih' => modul_lingkup($src, $old ? (array) ($old['modul'] ?? []) : modul_dari_query((string) ($_GET['modul'] ?? ''))),
         'sumber' => isset(SUMBER[$src]) ? $src : 'langsung',
         'inst' => $inst,
         'daftarInstansi' => daftar_instansi_masukan(),
@@ -118,10 +128,7 @@ function masukan_kirim(): void
                 throw new UserError('Isi No. HP/WA (angka saja, 10–15 digit) agar tim bisa menghubungi Anda, atau hapus centang "Bersedia dihubungi".');
             }
         }
-        $pilih = array_values(array_intersect(array_keys(MODUL), (array) ($_POST['modul'] ?? [])));
-        if (!$pilih) {
-            throw new UserError('Pilih minimal satu modul yang Anda coba.');
-        }
+        $pilih = modul_lingkup($d['sumber'], (array) ($_POST['modul'] ?? []));
         $nilai = [];
         foreach ($pilih as $slug) {
             $m = (array) ($_POST['m'][$slug] ?? []);
