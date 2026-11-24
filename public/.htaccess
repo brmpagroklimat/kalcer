@@ -3,6 +3,9 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# Alamat pendek form masukan (untuk QR & tombol): /masukan -> /event/masukan (query ikut)
+RewriteRule ^masukan/?$ /event/masukan [R=302,L,QSA]
+
 ErrorDocument 404 /404.html
 Options -Indexes
 

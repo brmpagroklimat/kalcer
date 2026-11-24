@@ -202,3 +202,55 @@ CREATE TABLE IF NOT EXISTS kendaraan (
   publik TINYINT(1) NOT NULL DEFAULT 0,
   KEY tgl (tanggal)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Masukan (feedback) pengguna untuk 6 modul KALCER. Satu respons bisa menilai beberapa modul.
+CREATE TABLE IF NOT EXISTS masukan (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  sumber VARCHAR(10) NOT NULL DEFAULT 'langsung',
+  nama VARCHAR(150) NULL,
+  instansi VARCHAR(200) NOT NULL,
+  peran VARCHAR(30) NOT NULL,
+  provinsi VARCHAR(60) NOT NULL,
+  event_instansi_id INT UNSIGNED NULL,
+  umux1 TINYINT NULL,
+  umux2 TINYINT NULL,
+  pakai_lagi VARCHAR(10) NULL,
+  saran TEXT NULL,
+  bersedia_dihubungi TINYINT(1) NOT NULL DEFAULT 0,
+  hp VARCHAR(30) NULL,
+  ip_hash CHAR(64) NOT NULL,
+  KEY created (created_at),
+  KEY ip_at (ip_hash, created_at),
+  CONSTRAINT fk_masukan_inst FOREIGN KEY (event_instansi_id) REFERENCES instansi(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS masukan_modul (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  masukan_id INT UNSIGNED NOT NULL,
+  modul VARCHAR(20) NOT NULL,
+  sesuai VARCHAR(12) NULL,
+  diterapkan TINYINT NULL,
+  data_kurang TEXT NULL,
+  ui_menu TINYINT NULL,
+  ui_peta TINYINT NULL,
+  ui_cepat TINYINT NULL,
+  ui_hp TINYINT NULL,
+  bingung TEXT NULL,
+  gita_salah TEXT NULL,
+  KEY modul (modul),
+  CONSTRAINT fk_mm_masukan FOREIGN KEY (masukan_id) REFERENCES masukan(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Penilaian 👍/👎 per jawaban dari Tanya GITA (dikirim oleh situs GITA lewat API).
+CREATE TABLE IF NOT EXISTS gita_nilai (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  pertanyaan TEXT NOT NULL,
+  jawaban MEDIUMTEXT NULL,
+  nilai TINYINT NOT NULL,
+  catatan TEXT NULL,
+  ip_hash CHAR(64) NOT NULL,
+  KEY created (created_at),
+  KEY ip_at (ip_hash, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

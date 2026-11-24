@@ -10,11 +10,20 @@ $adminNav = [
     'Instansi' => ['/admin/undangan' => 'Undangan & tanggal', '/admin/instansi' => 'Daftar instansi', '/admin/rekap' => 'Rekap'],
     'Akomodasi' => ['/admin/kamar' => 'Kamar', '/admin/shuttle' => 'Shuttle'],
     'Situs' => ['/admin/konten' => 'Jadwal & konten', '/' => 'Lihat situs publik'],
+    'Masukan' => ['/admin/masukan' => 'Rekap masukan', '/admin/masukan/bagikan' => 'QR & tombol modul'],
     '/admin/pengaturan' => 'Pengaturan',
 ];
-$adminAktif = static fn (string $href) => $href === '/admin' ? $curPath === '/admin' : str_starts_with($curPath, $href);
+$adminAktif = static fn (string $href) => $href === '/admin' ? $curPath === '/admin' : ($curPath === $href || str_starts_with($curPath, $href . '/'));
+// Dalam satu grup, tandai hanya menu yang paling spesifik (mis. /admin/masukan/bagikan, bukan juga /admin/masukan).
+$adminPaling = static function (array $items) use ($adminAktif): ?string {
+    $cocok = array_filter(array_keys($items), static fn ($hr) => $hr !== '/' && $adminAktif($hr));
+    usort($cocok, static fn ($a, $b) => strlen($b) - strlen($a));
+    return $cocok[0] ?? null;
+};
+// Halaman polos (mis. form masukan publik): tanpa menu event.
+$bare = !empty($bare);
 $flashes = take_flash();
-$v = '29';
+$v = '31';
 ?>
 <!doctype html>
 <html lang="id">
@@ -30,19 +39,21 @@ $v = '29';
 <body>
 <header class="top">
   <div class="wrap top-inner">
-    <a class="brand" href="<?= h(url(!empty($admin) ? '/admin' : '/')) ?>">
+    <a class="brand" href="<?= $bare ? '/' : h(url(!empty($admin) ? '/admin' : '/')) ?>">
       <img src="/logo-kalcer.png" alt="KALCER" width="170" height="32">
-      <span class="brand-sub">Event</span>
+      <span class="brand-sub"><?= $bare ? 'Masukan' : 'Event' ?></span>
     </a>
-    <?php if (!empty($admin)): ?>
+    <?php if ($bare): ?>
+      <nav class="topnav" aria-label="Menu"><a href="/">Semua modul KALCER</a></nav>
+    <?php elseif (!empty($admin)): ?>
       <nav class="topnav" aria-label="Menu panitia">
         <?php foreach ($adminNav as $key => $item): ?>
-          <?php if (is_array($item)): $on = (bool) array_filter(array_keys($item), static fn ($hr) => $hr !== '/' && $adminAktif($hr)); ?>
+          <?php if (is_array($item)): $aktif = $adminPaling($item); $on = $aktif !== null; ?>
             <div class="navgroup<?= $on ? ' on' : '' ?>">
               <button type="button" class="navbtn" aria-expanded="false"><?= h($key) ?><span class="caret" aria-hidden="true"></span></button>
               <div class="navmenu">
                 <?php foreach ($item as $href => $label): ?>
-                  <a href="<?= h(url($href)) ?>" <?= $href !== '/' && $adminAktif($href) ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>
+                  <a href="<?= h(url($href)) ?>" <?= $href === $aktif ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>
                 <?php endforeach; ?>
               </div>
             </div>

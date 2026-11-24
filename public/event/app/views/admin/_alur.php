@@ -14,6 +14,7 @@ $fase = [
             ['Isi daftar undangan: nama instansi + provinsi + tanggal (satu per satu atau tempel dari Excel)', '/admin/undangan', 'Daftar kosong → instansi memilih tanggal sendiri'],
             ['Isi link jadwal; unggah materi bila sudah ada', '/admin/konten'],
             ['Bagikan alamat kalcer.agroklimat.id/event ke instansi', null],
+            ['Kirim snippet tombol "Beri masukan" ke pengelola 6 modul (dan contoh 👍/👎 ke tim GITA)', '/admin/masukan/bagikan', 'Masukan pengguna umum terus masuk setelah acara'],
         ],
     ],
     [
@@ -54,10 +55,13 @@ $fase = [
         'instansi' => [
             ['Naik shuttle sesuai jadwal (yang menginap)', null],
             ['Unggah foto ber-watermark (tanggal, jam, lokasi) untuk 5 tahap: berangkat → tiba kembali', null],
+            ['Coba modul sesuai tugas praktik, lalu isi form masukan (QR di layar)', null],
         ],
         'panitia' => [
             ['Cek penumpang naik sesuai manifest shuttle', '/admin/shuttle'],
             ['Pantau foto per tahap; ingatkan instansi yang belum lengkap via WhatsApp', '/admin/rekap/foto'],
+            ['Bagikan tugas praktik per modul; tampilkan QR masukan di slide terakhir, sisihkan 10 menit', '/admin/masukan/bagikan'],
+            ['Pantau masukan yang masuk', '/admin/masukan'],
             ['Unggah dokumentasi ke galeri', '/admin/konten'],
         ],
     ],
@@ -80,6 +84,7 @@ $fase = [
         'instansi' => [],
         'panitia' => [
             ['Unduh rekap CSV: peserta, menginap, reimburse', '/admin/rekap'],
+            ['Unduh rekap masukan (CSV); teruskan ke pengelola modul', '/admin/masukan'],
             ['Unduh ZIP foto & struk per instansi untuk laporan', '/admin/instansi'],
             ['Unggah materi & galeri akhir', '/admin/konten'],
         ],

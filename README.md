@@ -64,3 +64,18 @@ Setup lokal memakai `setup_key` `dev-setup-key` (lihat `dev/event/event-config.p
 ### Alur kerja panitia (dashboard)
 
 Diagram alur di bagian bawah Dashboard panitia berasal dari `public/event/app/views/admin/_alur.php`. **Perbarui daftar `$fase` di file itu setiap kali proses bisnis berubah** (fitur baru, langkah baru, atau urutan berubah).
+
+## Masukan pengguna (feedback 6 modul)
+
+- Form publik: `kalcer.agroklimat.id/masukan` (dialihkan ke `/event/masukan`). Parameter `?modul=banjir,opt` mencentang modul, `?src=sesi|tombol` mencatat asal respons.
+- Panitia: menu **Masukan → Rekap masukan** (statistik per modul, jawaban teks, CSV) dan **QR & tombol modul** (QR untuk slide, tugas praktik, snippet).
+- Daftar modul, tugas praktik, dan pertanyaan substansi ada di const `MODUL` (`public/event/app/bootstrap.php`).
+- Tombol melayang untuk tiap modul (dipasang pengelola modul sebelum `</body>`):
+
+  ```html
+  <script src="https://kalcer.agroklimat.id/event/assets/masukan.js" data-modul="banjir" defer></script>
+  ```
+
+  Opsi: `data-posisi="kiri"`, `data-bawah="90"`. Contoh: `/event/assets/masukan-contoh.html`.
+- 👍/👎 per jawaban Tanya GITA: situs GITA mengirim `POST /event/api/gita-nilai` dengan JSON
+  `{"pertanyaan": "...", "jawaban": "...", "nilai": 1 | -1, "catatan": "..."}`. Hanya diterima dari origin `https://gita.agroklimat.id`.

@@ -55,6 +55,44 @@
     });
   });
 
+  // QR (halaman QR & tombol modul): dibuat di browser, bisa diunduh sebagai PNG untuk slide.
+  var qrBox = document.querySelector('[data-qr]');
+  if (qrBox && window.qrcode) {
+    var qr = window.qrcode(0, 'M');
+    qr.addData(qrBox.dataset.qr);
+    qr.make();
+    var n = qr.getModuleCount(), cell = 12, pad = 4 * cell, size = n * cell + pad * 2;
+    var cv = document.createElement('canvas');
+    cv.width = cv.height = size;
+    var cx = cv.getContext('2d');
+    cx.fillStyle = '#fff'; cx.fillRect(0, 0, size, size);
+    cx.fillStyle = '#1f2d33';
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (qr.isDark(r, c)) cx.fillRect(pad + c * cell, pad + r * cell, cell, cell);
+    cv.setAttribute('role', 'img');
+    cv.setAttribute('aria-label', 'QR menuju ' + qrBox.dataset.qr);
+    qrBox.appendChild(cv);
+    var unduh = document.querySelector('[data-qr-unduh]');
+    if (unduh) unduh.href = cv.toDataURL('image/png');
+  }
+
+  // Form masukan: tampilkan bagian penilaian hanya untuk modul yang dicentang.
+  var modulCek = document.querySelectorAll('[data-modul-toggle]');
+  if (modulCek.length) {
+    var syncModul = function () {
+      modulCek.forEach(function (c) {
+        var blok = document.querySelector('.modul-blok[data-modul="' + c.value + '"]');
+        if (blok) blok.hidden = !c.checked;
+      });
+    };
+    modulCek.forEach(function (c) { c.addEventListener('change', syncModul); });
+    syncModul();
+  }
+  var bersedia = document.querySelector('[data-bersedia]');
+  if (bersedia) {
+    var hpBox = document.querySelector('[data-hp-bersedia]');
+    bersedia.addEventListener('change', function () { hpBox.hidden = !bersedia.checked; if (bersedia.checked) hpBox.querySelector('input').focus(); });
+  }
+
   // Mode undangan: tanggal mengikuti nama instansi yang dipilih (ditetapkan panitia).
   var pilihU = document.querySelector('[data-undangan]');
   if (pilihU) {

@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 mb_internal_encoding('UTF-8');
 
 const APP_DIR = __DIR__;
-const SCHEMA_VERSION = '12';
+const SCHEMA_VERSION = '13';
 
 // Tahap foto evidence, urut sesuai perjalanan.
 const TAHAP = [
@@ -496,6 +496,38 @@ function provinsi_dari_kabkota(string $kabkota): string
     $i = strrpos($kabkota, ', ');
     return $i === false ? '' : substr($kabkota, $i + 2);
 }
+
+/**
+ * Enam modul KALCER yang dinilai lewat form masukan. Urutan = urutan tampil.
+ * substansi: pertanyaan khas modul (jawaban Sesuai / Sebagian / Tidak sesuai / Belum bisa menilai).
+ * peta: true bila modul berbasis peta (butir "kejelasan peta & legenda" relevan).
+ */
+const MODUL = [
+    'air' => ['nama' => 'Neraca Air & Irigasi', 'url' => 'https://air.agroklimat.id',
+        'isi' => 'Kalkulator kebutuhan air spesifik lokasi dan kebutuhan irigasi.',
+        'tugas' => 'Hitung kebutuhan air dan kebutuhan irigasi untuk satu lahan yang Anda kenal.',
+        'substansi' => 'Apakah hasil kebutuhan air dan irigasi masuk akal untuk lahan tersebut?', 'peta' => false],
+    'banjir' => ['nama' => 'Peta Kerawanan Banjir Sawah', 'url' => 'https://banjir.agroklimat.id',
+        'isi' => 'WebGIS kerawanan banjir lahan sawah sampai tingkat desa, 38 provinsi.',
+        'tugas' => 'Cek kelas kerawanan banjir desa Anda.',
+        'substansi' => 'Apakah kelas kerawanan banjir desa Anda sesuai kejadian banjir yang pernah terjadi?', 'peta' => true],
+    'kekeringan' => ['nama' => 'Peringatan Dini Kekeringan', 'url' => 'https://kekeringan.agroklimat.id',
+        'isi' => 'Peta peringatan dini kekeringan lahan baku sawah.',
+        'tugas' => 'Cek status kekeringan lahan sawah di kabupaten Anda.',
+        'substansi' => 'Apakah status kekeringan di wilayah Anda sesuai kondisi lapangan?', 'peta' => true],
+    'opt' => ['nama' => 'Sistem Cerdas OPT', 'url' => 'https://opt.agroklimat.id',
+        'isi' => 'Prakiraan risiko 4 OPT padi (H, H+1, H+2) per desa.',
+        'tugas' => 'Cek prakiraan risiko OPT padi di desa Anda untuk hari ini dan dua hari ke depan.',
+        'substansi' => 'Apakah prakiraan risiko OPT di desa Anda sesuai pengamatan?', 'peta' => true],
+    'pemupukan' => ['nama' => 'Pemupukan Presisi', 'url' => 'https://pemupukan.agroklimat.id',
+        'isi' => 'Mode Sederhana, Analisis Pro, dan WebGIS Status Hara.',
+        'tugas' => 'Hitung dosis pupuk untuk 1 ha padi di lokasi Anda.',
+        'substansi' => 'Apakah dosis rekomendasi sesuai praktik atau hasil uji tanah di lokasi Anda?', 'peta' => true],
+    'gita' => ['nama' => 'Tanya GITA', 'url' => 'https://gita.agroklimat.id',
+        'isi' => 'Chatbot yang menjawab dari dokumen resmi BRMP Agroklimat dan Hidrologi Pertanian.',
+        'tugas' => 'Ajukan satu pertanyaan yang jawabannya Anda ketahui pasti, lalu nilai jawaban GITA.',
+        'substansi' => 'Apakah jawaban GITA benar dan sesuai pengetahuan Anda?', 'peta' => false],
+];
 
 /** Wilayah untuk ditampilkan: kab/kota bila ada (sudah memuat provinsi), selain itu provinsi. */
 function wilayah(array $inst): string

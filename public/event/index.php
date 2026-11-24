@@ -14,6 +14,7 @@ require __DIR__ . '/app/routes/rekap.php';
 require __DIR__ . '/app/routes/kamar.php';
 require __DIR__ . '/app/routes/shuttle.php';
 require __DIR__ . '/app/routes/undangan.php';
+require __DIR__ . '/app/routes/masukan.php';
 
 config();
 
@@ -38,7 +39,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url((string) $_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
 $path = '/' . trim((string) preg_replace('#^/event#', '', $path), '/');
 
-if ($method === 'POST') {
+// API (JSON, lintas situs) punya pemeriksaan sendiri: tanpa CSRF formulir.
+if ($method === 'POST' && !str_starts_with($path, '/api/')) {
     // Upload yang melebihi post_max_size datang dengan $_POST kosong.
     if (empty($_POST) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
         http_response_code(413);
@@ -70,6 +72,11 @@ $routes = [
     ['GET', '/media/m/(\d+)', 'media_materi'],
     ['GET', '/media/jadwal', 'media_jadwal'],
     ['GET', '/media/g/(\d+)(/thumb)?', 'media_galeri'],
+    ['GET', '/masukan', 'masukan_form'],
+    ['POST', '/masukan', 'masukan_kirim'],
+    ['GET', '/masukan/terima-kasih', 'masukan_terima'],
+    ['POST', '/api/gita-nilai', 'api_gita_nilai'],
+    ['OPTIONS', '/api/gita-nilai', 'api_gita_nilai'],
     ['GET', '/terdaftar', 'publik_terdaftar'],
     ['GET', '/i/([A-Za-z0-9_-]{6,})', 'publik_masuk_token'],
     ['POST', '/keluar', 'publik_keluar'],
@@ -97,6 +104,11 @@ $routes = [
     ['POST', '/admin/login', 'admin_login'],
     ['POST', '/admin/keluar', 'admin_keluar'],
     ['GET', '/admin', 'admin_dashboard'],
+    ['GET', '/admin/masukan', 'admin_masukan'],
+    ['GET', '/admin/masukan/bagikan', 'admin_masukan_bagikan'],
+    ['GET', '/admin/masukan\.csv', 'admin_masukan_csv'],
+    ['POST', '/admin/masukan/(\d+)/hapus', 'admin_masukan_hapus'],
+    ['POST', '/admin/gita-nilai/(\d+)/hapus', 'admin_gita_hapus'],
     ['GET', '/admin/undangan', 'admin_undangan'],
     ['POST', '/admin/undangan', 'admin_undangan_tambah'],
     ['POST', '/admin/undangan/(\d+)', 'admin_undangan_ubah'],
