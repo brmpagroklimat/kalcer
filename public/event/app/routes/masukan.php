@@ -22,10 +22,10 @@ function event_url_abs(string $path = ''): string
     return $base . $path;
 }
 
-/** Alamat pendek form masukan di root situs: kalcer.agroklimat.id/masukan (dialihkan ke /event/masukan). */
+/** Alamat form masukan di situs event: kalcer.agroklimat.id/event/masukan (untuk QR). */
 function masukan_url_pendek(string $query = ''): string
 {
-    return preg_replace('#/event$#', '', event_url_abs()) . '/masukan' . ($query !== '' ? '?' . $query : '');
+    return event_url_abs('/masukan') . ($query !== '' ? '?' . $query : '');
 }
 
 function ip_hash(): string
@@ -55,7 +55,7 @@ function masukan_form(array $old = [], array $errors = []): void
         'sumber' => isset(SUMBER[$src]) ? $src : 'langsung',
         'inst' => $inst,
         'stamp' => form_stamp(),
-    ], ['bare' => true, 'narrow' => true]);
+    ], ['nav' => 'masukan', 'narrow' => true]);
 }
 
 function masukan_kirim(): void
@@ -160,7 +160,7 @@ function masukan_terima(): void
     if (!$ok) {
         redirect('/masukan');
     }
-    render('publik/masukan_terima', 'Terima kasih', ['ok' => $ok], ['bare' => true, 'narrow' => true]);
+    render('publik/masukan_terima', 'Terima kasih', ['ok' => $ok], ['nav' => 'masukan', 'narrow' => true]);
 }
 
 // ---------- panitia ----------

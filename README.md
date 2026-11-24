@@ -67,7 +67,7 @@ Diagram alur di bagian bawah Dashboard panitia berasal dari `public/event/app/vi
 
 ## Masukan pengguna (feedback 6 modul)
 
-- Form publik: `kalcer.agroklimat.id/masukan` (dialihkan ke `/event/masukan`). Parameter `?modul=banjir,opt` mencentang modul, `?src=sesi|tombol` mencatat asal respons.
+- Form publik: `kalcer.agroklimat.id/event/masukan` (menu Masukan di situs event). Parameter `?modul=banjir,opt` mencentang modul, `?src=sesi|tombol` mencatat asal respons.
 - Panitia: menu **Masukan → Rekap masukan** (statistik per modul, jawaban teks, CSV) dan **QR & tombol modul** (QR untuk slide, tugas praktik, snippet).
 - Daftar modul, tugas praktik, dan pertanyaan substansi ada di const `MODUL` (`public/event/app/bootstrap.php`).
 - Tombol melayang untuk tiap modul (dipasang pengelola modul sebelum `</body>`):

@@ -20,10 +20,9 @@ $adminPaling = static function (array $items) use ($adminAktif): ?string {
     usort($cocok, static fn ($a, $b) => strlen($b) - strlen($a));
     return $cocok[0] ?? null;
 };
-// Halaman polos (mis. form masukan publik): tanpa menu event.
-$bare = !empty($bare);
+
 $flashes = take_flash();
-$v = '31';
+$v = '32';
 ?>
 <!doctype html>
 <html lang="id">
@@ -39,13 +38,11 @@ $v = '31';
 <body>
 <header class="top">
   <div class="wrap top-inner">
-    <a class="brand" href="<?= $bare ? '/' : h(url(!empty($admin) ? '/admin' : '/')) ?>">
+    <a class="brand" href="<?= h(url(!empty($admin) ? '/admin' : '/')) ?>">
       <img src="/logo-kalcer.png" alt="KALCER" width="170" height="32">
-      <span class="brand-sub"><?= $bare ? 'Masukan' : 'Event' ?></span>
+      <span class="brand-sub">Event</span>
     </a>
-    <?php if ($bare): ?>
-      <nav class="topnav" aria-label="Menu"><a href="/">Semua modul KALCER</a></nav>
-    <?php elseif (!empty($admin)): ?>
+    <?php if (!empty($admin)): ?>
       <nav class="topnav" aria-label="Menu panitia">
         <?php foreach ($adminNav as $key => $item): ?>
           <?php if (is_array($item)): $aktif = $adminPaling($item); $on = $aktif !== null; ?>
@@ -63,7 +60,7 @@ $v = '31';
         <?php endforeach; ?>
         <form method="post" action="<?= h(url('/admin/keluar')) ?>"><?= csrf_field() ?><button class="linkbtn">Keluar</button></form>
       </nav>
-    <?php else: $navItems = ['beranda' => ['/', 'Beranda'], 'daftar' => ['/daftar', 'Registrasi'], 'jadwal' => ['/jadwal', 'Jadwal'], 'materi' => ['/materi', 'Materi'], 'galeri' => ['/galeri', 'Galeri']]; ?>
+    <?php else: $navItems = ['beranda' => ['/', 'Beranda'], 'daftar' => ['/daftar', 'Registrasi'], 'jadwal' => ['/jadwal', 'Jadwal'], 'materi' => ['/materi', 'Materi'], 'galeri' => ['/galeri', 'Galeri'], 'masukan' => ['/masukan', 'Masukan']]; ?>
       <nav class="topnav" aria-label="Menu utama">
         <?php foreach ($navItems as $key => [$href, $label]): ?>
           <a href="<?= h(url($href)) ?>" <?= ($nav ?? '') === $key ? 'aria-current="page"' : '' ?>><?= h($label) ?></a>
