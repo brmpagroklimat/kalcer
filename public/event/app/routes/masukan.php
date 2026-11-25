@@ -7,7 +7,7 @@ const SUMBER = ['sesi' => 'Sesi sosialisasi', 'tombol' => 'Tombol di modul', 'la
 const SESUAI = ['sesuai' => 'Sesuai', 'sebagian' => 'Sebagian', 'tidak' => 'Tidak sesuai', 'belum' => 'Belum bisa menilai'];
 const PAKAI_LAGI = ['ya' => 'Ya', 'mungkin' => 'Mungkin', 'tidak' => 'Tidak'];
 /** Butir interface (skala 1–5, boleh "tidak dicoba"). */
-const UI_BUTIR = ['ui_menu' => 'Kemudahan menemukan menu', 'ui_peta' => 'Kejelasan peta & legenda', 'ui_cepat' => 'Kecepatan memuat', 'ui_hp' => 'Tampilan di HP'];
+const UI_BUTIR = ['ui_menu' => 'Kemudahan menemukan menu', 'ui_peta' => 'Kejelasan peta & legenda', 'ui_cepat' => 'Kecepatan memuat', 'ui_hp' => 'Tampilan mudah dibaca (huruf, warna, tata letak)'];
 /** Butir UMUX-Lite (skala 1–7, setuju). */
 const UMUX = ['umux1' => 'KALCER memenuhi kebutuhan saya.', 'umux2' => 'KALCER mudah digunakan.'];
 

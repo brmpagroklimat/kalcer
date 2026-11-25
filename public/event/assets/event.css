@@ -483,6 +483,9 @@ a.stat { text-decoration: none; color: inherit; } a.stat:hover { border-color: v
 .skala { gap: 5px; }
 .skala .choice span { min-width: 38px; justify-content: center; padding: 0 6px; }
 .skala .choice.na span { color: var(--muted); }
+.skala .choice.na input:checked + span { color: var(--white); }
+.wajib { color: var(--err-ink); font-weight: 700; }
+.masukan h3 + .small { margin-top: -4px; }
 .skala-ujung { display: flex; justify-content: space-between; max-width: 380px; margin-top: 4px; }
 .modul-pilih { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .modul-cek { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--white); cursor: pointer; }

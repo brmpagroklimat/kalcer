@@ -360,9 +360,6 @@
         else if (v !== null) el.value = v;
         el.dispatchEvent(new Event('change', { bubbles: true }));
       });
-      wf.querySelectorAll('details.catatan').forEach(function (det) {
-        if (Array.prototype.some.call(det.querySelectorAll('textarea'), function (t) { return t.value.trim(); })) det.open = true;
-      });
       return Math.min(+d.__langkah || 0, steps.length - 1);
     };
 

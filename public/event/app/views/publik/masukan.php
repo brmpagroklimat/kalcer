@@ -84,9 +84,10 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
       <a class="btn secondary small" href="<?= h($m['url']) ?>" target="_blank" rel="noopener">Buka <?= h($m['nama']) ?><span class="sr-only"> (tab baru)</span> ↗</a></div>
 
     <h3>Isi (substansi)</h3>
-    <div class="field"><span class="field-label" id="<?= $id ?>-sesuai"><?= h($m['substansi']) ?></span>
+    <p class="small muted">Pertanyaan bertanda <span class="wajib">*</span> wajib dijawab.</p>
+    <div class="field"><span class="field-label" id="<?= $id ?>-sesuai"><?= h($m['substansi']) ?> <span class="wajib" aria-hidden="true">*</span></span>
       <div class="choices" role="radiogroup" aria-labelledby="<?= $id ?>-sesuai"><?= $cek(SESUAI, $p . '[sesuai]', (string) $om($slug, 'sesuai')) ?></div></div>
-    <div class="field"><span class="field-label" id="<?= $id ?>-terap"><?= $slug === 'gita' ? 'Apakah jawabannya bisa langsung dipakai?' : 'Apakah hasil atau rekomendasinya bisa diterapkan di lapangan?' ?> <small>(1 = tidak bisa, 5 = sangat bisa)</small></span>
+    <div class="field"><span class="field-label" id="<?= $id ?>-terap"><?= $slug === 'gita' ? 'Menurut Bapak/Ibu, apakah jawabannya bisa langsung dipakai?' : 'Menurut Bapak/Ibu, apakah hasil atau rekomendasinya bisa diterapkan di lapangan?' ?> <small>(1 = tidak bisa, 5 = sangat bisa)</small></span>
       <?= $skala($p . '[diterapkan]', 5, $om($slug, 'diterapkan'), "$id-terap") ?></div>
     <?php if ($slug === 'gita'): ?>
       <label class="field"><span>Contoh pertanyaan yang jawabannya salah atau kurang, dan apa yang benar <small>(opsional, sangat membantu)</small></span>
@@ -94,20 +95,18 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
     <?php endif; ?>
 
     <h3>Tampilan (interface)</h3>
-    <p class="small muted" style="margin-top:0">1 = sangat sulit/buruk, 5 = sangat mudah/baik. Pilih "Tidak dicoba" bila tidak relevan.</p>
+    <p class="note small" style="margin-top:0"><b>Nilai minimal satu butir di bawah ini</b> <span class="wajib" aria-hidden="true">*</span> dengan angka 1–5 (1 = sangat sulit/buruk, 5 = sangat mudah/baik). Butir yang tidak Anda coba cukup pilih "Tidak dicoba".</p>
     <?php foreach (UI_BUTIR as $k => $label):
       if ($k === 'ui_peta' && !$m['peta']) { continue; }
       $lbl = $k === 'ui_peta' ? $label : ($k === 'ui_menu' && $slug === 'gita' ? 'Kemudahan bertanya & membaca jawaban' : $label); ?>
       <div class="field ui-butir"><span class="field-label" id="<?= $id . '-' . $k ?>"><?= h($lbl) ?></span>
         <?= $skala($p . "[$k]", 5, $om($slug, $k), "$id-$k", 'Tidak dicoba') ?></div>
     <?php endforeach; ?>
-    <details class="catatan"<?= ($om($slug, 'data_kurang') ?? '') !== '' || ($om($slug, 'bingung') ?? '') !== '' ? ' open' : '' ?>>
-      <summary>Ada catatan? <span class="muted">(opsional)</span></summary>
-      <label class="field"><span><?= $slug === 'gita' ? 'Topik atau dokumen apa yang belum dijangkau GITA?' : 'Data atau parameter apa yang masih kurang?' ?> <small>(opsional)</small></span>
+    <h3>Catatan <small class="muted" style="font-weight:400">(opsional)</small></h3>
+    <label class="field"><span><?= $slug === 'gita' ? 'Topik atau dokumen apa yang belum dijangkau GITA?' : 'Data atau parameter apa yang masih kurang?' ?></span>
       <textarea name="<?= h($p) ?>[data_kurang]" rows="2" maxlength="3000"><?= h((string) $om($slug, 'data_kurang')) ?></textarea></label>
-      <label class="field"><span>Bagian mana yang membingungkan? <small>(opsional)</small></span>
+    <label class="field"><span>Bagian mana yang membingungkan?</span>
       <textarea name="<?= h($p) ?>[bingung]" rows="2" maxlength="3000"><?= h((string) $om($slug, 'bingung')) ?></textarea></label>
-    </details>
   </section>
   <?php endforeach; ?>
 
