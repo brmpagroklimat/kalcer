@@ -409,7 +409,9 @@
       steps.forEach(function (st, j) { st.hidden = !satuHalaman && j !== i; });
       head.querySelector('[data-l-no]').textContent = satuHalaman ? 'Semua pertanyaan' : 'Langkah ' + (i + 1) + ' dari ' + steps.length;
       head.querySelector('[data-l-judul]').textContent = satuHalaman ? '' : '· ' + steps[i].dataset.judul;
-      head.querySelector('[data-l-mode]').textContent = satuHalaman ? 'Tampilkan per langkah' : 'Tampilkan semua';
+      var modeBtn = head.querySelector('[data-l-mode]');
+      modeBtn.innerHTML = satuHalaman ? '<span class="emo" aria-hidden="true">👣</span> Per langkah' : '<span class="emo" aria-hidden="true">👀</span> Lihat semua';
+      modeBtn.title = satuHalaman ? 'Kembali ke satu modul per halaman' : 'Tampilkan semua pertanyaan dalam satu halaman';
       Array.prototype.forEach.call(bar.children, function (seg, j) { seg.className = satuHalaman ? 'done' : (j < i ? 'done' : (j === i ? 'now' : '')); });
       wf.querySelectorAll('.langkah-nav').forEach(function (n) { n.hidden = satuHalaman && n !== aksi; });
       kembaliAkhir.hidden = satuHalaman;

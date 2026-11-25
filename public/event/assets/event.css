@@ -536,7 +536,14 @@ a.modul-cek:hover { border-color: var(--deep); background: #f2f8fa; }
 .langkah-nav .btn[data-lanjut], .langkah-nav .btn[type=submit] { margin-left: auto; }
 .langkah-err { color: var(--err-ink); background: var(--err-bg); border-radius: 8px; padding: 10px 12px; margin: 16px 0 0; font-size: 14px; }
 .perlu-isi { outline: 2px solid #e3b3a7; outline-offset: 6px; border-radius: 8px; }
-.langkah-mode { font-size: 13px; background: none; border: 0; padding: 0; color: var(--deep); text-decoration: underline; cursor: pointer; }
+.langkah-mode { flex: none; display: inline-flex; align-items: center; gap: 5px; font: inherit; font-size: 13px; font-weight: 700; color: var(--deep); background: var(--white); border: 1.5px solid var(--deep); border-radius: 999px; padding: 4px 12px 4px 8px; cursor: pointer; box-shadow: 0 2px 0 var(--deep); transition: transform .15s, box-shadow .15s, background .15s; }
+.langkah-mode:hover { background: #fff6dc; transform: translateY(-1px); box-shadow: 0 3px 0 var(--deep); }
+.langkah-mode:active { transform: translateY(2px); box-shadow: 0 0 0 var(--deep); }
+.langkah-mode .emo { display: inline-block; font-size: 15px; line-height: 1; }
+.langkah-mode:hover .emo { animation: emo-goyang .5s ease-in-out; }
+@keyframes emo-goyang { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-14deg) scale(1.15); } 75% { transform: rotate(12deg) scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .langkah-mode:hover .emo { animation: none; } }
+.langkah-info { align-items: center; }
 .modul-urut { margin: 0; padding-left: 20px; display: grid; gap: 2px; font-size: 14px; }
 .tugas p { margin: 2px 0 10px; }
 .tugas .btn { align-self: flex-start; }
