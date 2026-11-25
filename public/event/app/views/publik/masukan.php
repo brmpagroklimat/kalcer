@@ -26,7 +26,7 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
 <?php $semua = count($pilih) === count(MODUL); $nm = count($pilih); ?>
 <?php if ($semua): ?>
 <h1>Uji coba &amp; masukan KALCER</h1>
-<p class="lead">Coba keenam modul KALCER sesuai tugas praktik, lalu nilai isi dan tampilannya. Semua modul perlu dinilai; bagian yang belum sempat dicoba cukup ditandai <b>Belum bisa menilai</b> atau <b>Tidak dicoba</b>. Sekitar 15 menit.</p>
+<p class="lead">Mohon coba keenam modul KALCER dengan memasukkan wilayah Anda sendiri, lalu nilai isi dan tampilannya. Semua modul perlu dinilai; bagian yang belum sempat dicoba cukup ditandai <b>Belum bisa menilai</b> atau <b>Tidak dicoba</b>. Sekitar 15 menit.</p>
 <?php else: ?>
 <h1>Beri masukan: <?= h(implode(', ', array_map(static fn ($s) => MODUL[$s]['nama'], $pilih))) ?></h1>
 <p class="lead">Nilai apakah isinya sesuai kondisi lapangan dan tampilannya mudah dipakai. Sekitar 3 menit.</p>
@@ -73,7 +73,7 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
   <?php if ($semua): ?>
   <section class="panel">
     <h2>2. Coba keenam modul</h2>
-    <p class="small muted" style="margin-top:0">Buka tiap modul di tab baru, kerjakan tugas praktiknya, lalu kembali ke halaman ini untuk menilai.</p>
+    <p class="small muted" style="margin-top:0">Buka tiap modul di tab baru dan ikuti langkah singkat di bawah namanya, lalu kembali ke halaman ini untuk menilai.</p>
     <div class="modul-pilih">
       <?php $i = 0; foreach (MODUL as $slug => $m): $i++; ?>
         <a class="modul-cek" href="<?= h($m['url']) ?>" target="_blank" rel="noopener"><span class="modul-no"><?= $i ?></span>
@@ -88,7 +88,7 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
   <?php foreach ($pilih as $no => $slug): $m = MODUL[$slug]; $p = "m[$slug]"; $id = "m-$slug"; ?>
   <section class="panel modul-blok" data-modul="<?= h($slug) ?>" id="<?= h($id) ?>">
     <div class="panel-head"><h2><?= $nm > 1 ? '<span class="modul-ke">Modul ' . ($no + 1) . ' dari ' . $nm . '</span>' : '' ?><?= h($m['nama']) ?></h2><a class="small" href="<?= h($m['url']) ?>" target="_blank" rel="noopener">Buka modul<span class="sr-only"> (tab baru)</span> ↗</a></div>
-    <p class="note tugas"><span class="small muted">Tugas praktik</span><?= h($m['tugas']) ?></p>
+    <p class="note tugas"><span class="small muted">Sebelum menjawab</span><?= h($m['tugas']) ?> Setelah itu, mohon jawab pertanyaan di bawah ini.</p>
 
     <h3>Isi (substansi)</h3>
     <div class="field"><span class="field-label" id="<?= $id ?>-sesuai"><?= h($m['substansi']) ?></span>

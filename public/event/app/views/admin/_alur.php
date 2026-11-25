@@ -56,7 +56,7 @@ $fase = [
         'instansi' => [
             ['Naik shuttle sesuai jadwal (yang menginap)', null],
             ['Unggah foto ber-watermark (tanggal, jam, lokasi) untuk 5 tahap: berangkat → tiba kembali', null],
-            ['Coba keenam modul sesuai tugas praktik, lalu nilai semuanya di form masukan (QR di layar)', null],
+            ['Coba keenam modul dengan wilayah sendiri, lalu nilai semuanya di form masukan (QR di layar)', null],
         ],
         'panitia' => [
             ['Cek penumpang naik sesuai manifest shuttle', '/admin/shuttle'],
