@@ -512,3 +512,23 @@ a.modul-cek { text-decoration: none; color: inherit; }
 a.modul-cek:hover { border-color: var(--deep); background: #f2f8fa; }
 .modul-no { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--deep); color: #fff; font-weight: 700; font-size: 13px; display: grid; place-items: center; }
 .modul-ke { display: block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+
+/* Form masukan per langkah */
+.langkah-head { position: sticky; top: 0; z-index: 5; background: var(--paper); padding: 10px 0 12px; margin-bottom: 6px; }
+.langkah-info { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; }
+.langkah-info b { color: var(--deep); }
+.langkah-bar { display: flex; gap: 4px; margin-top: 8px; }
+.langkah-bar i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); transition: background .2s; }
+.langkah-bar i.done { background: var(--leaf); }
+.langkah-bar i.now { background: var(--deep); }
+.langkah-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.langkah-nav .btn[data-lanjut], .langkah-nav .btn[type=submit] { margin-left: auto; }
+.langkah-err { color: var(--err-ink); background: var(--err-bg); border-radius: 8px; padding: 10px 12px; margin: 16px 0 0; font-size: 14px; }
+.perlu-isi { outline: 2px solid #e3b3a7; outline-offset: 6px; border-radius: 8px; }
+.langkah-mode { font-size: 13px; background: none; border: 0; padding: 0; color: var(--deep); text-decoration: underline; cursor: pointer; }
+.modul-urut { margin: 0; padding-left: 20px; display: grid; gap: 2px; font-size: 14px; }
+.tugas p { margin: 2px 0 10px; }
+.tugas .btn { align-self: flex-start; }
+details.catatan { margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 12px; }
+details.catatan summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--deep); }
+details.catatan[open] summary { margin-bottom: 8px; }

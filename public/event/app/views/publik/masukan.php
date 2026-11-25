@@ -26,13 +26,13 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
 <?php $semua = count($pilih) === count(MODUL); $nm = count($pilih); ?>
 <?php if ($semua): ?>
 <h1>Uji coba &amp; masukan KALCER</h1>
-<p class="lead">Mohon coba keenam modul KALCER dengan memasukkan wilayah Anda sendiri, lalu nilai isi dan tampilannya. Semua modul perlu dinilai; bagian yang belum sempat dicoba cukup ditandai <b>Belum bisa menilai</b> atau <b>Tidak dicoba</b>. Sekitar 15 menit.</p>
+<p class="lead">Mohon coba keenam modul KALCER dengan memasukkan wilayah Anda sendiri, lalu nilai isi dan tampilannya. Satu modul satu halaman, sekitar 2 menit per modul. Bagian yang belum sempat dicoba cukup ditandai <b>Belum bisa menilai</b> atau <b>Tidak dicoba</b>.</p>
 <?php else: ?>
 <h1>Beri masukan: <?= h(implode(', ', array_map(static fn ($s) => MODUL[$s]['nama'], $pilih))) ?></h1>
-<p class="lead">Nilai apakah isinya sesuai kondisi lapangan dan tampilannya mudah dipakai. Sekitar 3 menit.</p>
+<p class="lead">Nilai apakah isinya sesuai kondisi lapangan dan tampilannya mudah dipakai. Sekitar 2 menit.</p>
 <?php endif; ?>
 
-<form method="post" action="<?= h(url('/masukan')) ?>" class="masukan" id="form-masukan" novalidate>
+<form method="post" action="<?= h(url('/masukan')) ?>" class="masukan" id="form-masukan" novalidate data-langkah-form>
   <?php if ($errors): ?>
     <div class="errors" role="alert" tabindex="-1" id="form-errors"><ul><?php foreach ($errors as $e): ?><li><?= h($e) ?></li><?php endforeach; ?></ul></div>
   <?php endif; ?>
@@ -41,8 +41,8 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
   <input type="hidden" name="sumber" value="<?= h($sumber) ?>">
   <label class="hp-field" aria-hidden="true">Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
 
-  <section class="panel">
-    <h2>1. Tentang Anda</h2>
+  <section class="panel" data-langkah data-judul="Tentang Anda">
+    <h2>Tentang Anda</h2>
     <div class="fields two">
       <label class="field"><span>Nama <small>(opsional)</small></span><input type="text" name="nama" value="<?= h($o('nama')) ?>" maxlength="150" autocomplete="name"></label>
       <?php if ($inst): ?>
@@ -67,36 +67,27 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
         <?php $pv0 = $o('provinsi') ?: (string) ($inst['provinsi'] ?? ''); foreach (provinsi_list() as $pv): ?><option <?= $pv === $pv0 ? 'selected' : '' ?>><?= h($pv) ?></option><?php endforeach; ?>
       </select></label>
     </div>
+    <?php if ($semua): ?>
+      <p class="small muted" style="margin:18px 0 8px">Setelah ini, Anda menilai satu modul per halaman:</p>
+      <ol class="modul-urut"><?php foreach (MODUL as $m): ?><li><?= h($m['nama']) ?></li><?php endforeach; ?></ol>
+    <?php else: ?>
+      <p class="note small" style="margin-top:16px">Anda membuka form ini dari modul <?= h(implode(', ', array_map(static fn ($s) => MODUL[$s]['nama'], $pilih))) ?>. Ingin menguji semua modul? <a href="<?= h(url('/masukan?src=langsung')) ?>">Nilai keenam modul KALCER</a>.</p>
+    <?php endif; ?>
   </section>
 
   <?php foreach ($pilih as $slug): ?><input type="hidden" name="modul[]" value="<?= h($slug) ?>"><?php endforeach; ?>
-  <?php if ($semua): ?>
-  <section class="panel">
-    <h2>2. Coba keenam modul</h2>
-    <p class="small muted" style="margin-top:0">Buka tiap modul di tab baru dan ikuti langkah singkat di bawah namanya, lalu kembali ke halaman ini untuk menilai.</p>
-    <div class="modul-pilih">
-      <?php $i = 0; foreach (MODUL as $slug => $m): $i++; ?>
-        <a class="modul-cek" href="<?= h($m['url']) ?>" target="_blank" rel="noopener"><span class="modul-no"><?= $i ?></span>
-          <span><b><?= h($m['nama']) ?> ↗</b><span class="small muted"><?= h($m['tugas']) ?></span></span></a>
-      <?php endforeach; ?>
-    </div>
-  </section>
-  <?php else: ?>
-  <p class="note small">Anda membuka form ini dari modul <?= h(implode(', ', array_map(static fn ($s) => MODUL[$s]['nama'], $pilih))) ?>. Ingin menguji semua modul? <a href="<?= h(url('/masukan?src=langsung')) ?>">Nilai keenam modul KALCER</a>.</p>
-  <?php endif; ?>
 
   <?php foreach ($pilih as $no => $slug): $m = MODUL[$slug]; $p = "m[$slug]"; $id = "m-$slug"; ?>
-  <section class="panel modul-blok" data-modul="<?= h($slug) ?>" id="<?= h($id) ?>">
-    <div class="panel-head"><h2><?= $nm > 1 ? '<span class="modul-ke">Modul ' . ($no + 1) . ' dari ' . $nm . '</span>' : '' ?><?= h($m['nama']) ?></h2><a class="small" href="<?= h($m['url']) ?>" target="_blank" rel="noopener">Buka modul<span class="sr-only"> (tab baru)</span> ↗</a></div>
-    <p class="note tugas"><span class="small muted">Sebelum menjawab</span><?= h($m['tugas']) ?> Setelah itu, mohon jawab pertanyaan di bawah ini.</p>
+  <section class="panel modul-blok" data-modul="<?= h($slug) ?>" id="<?= h($id) ?>" data-langkah data-judul="<?= h($m['nama']) ?>">
+    <h2><?= $nm > 1 ? '<span class="modul-ke">Modul ' . ($no + 1) . ' dari ' . $nm . '</span>' : '' ?><?= h($m['nama']) ?></h2>
+    <div class="note tugas"><span class="small muted">Sebelum menjawab</span><p><?= h($m['tugas']) ?> Setelah itu, mohon jawab pertanyaan di bawah ini.</p>
+      <a class="btn secondary small" href="<?= h($m['url']) ?>" target="_blank" rel="noopener">Buka <?= h($m['nama']) ?><span class="sr-only"> (tab baru)</span> ↗</a></div>
 
     <h3>Isi (substansi)</h3>
     <div class="field"><span class="field-label" id="<?= $id ?>-sesuai"><?= h($m['substansi']) ?></span>
       <div class="choices" role="radiogroup" aria-labelledby="<?= $id ?>-sesuai"><?= $cek(SESUAI, $p . '[sesuai]', (string) $om($slug, 'sesuai')) ?></div></div>
     <div class="field"><span class="field-label" id="<?= $id ?>-terap"><?= $slug === 'gita' ? 'Apakah jawabannya bisa langsung dipakai?' : 'Apakah hasil atau rekomendasinya bisa diterapkan di lapangan?' ?> <small>(1 = tidak bisa, 5 = sangat bisa)</small></span>
       <?= $skala($p . '[diterapkan]', 5, $om($slug, 'diterapkan'), "$id-terap") ?></div>
-    <label class="field"><span><?= $slug === 'gita' ? 'Topik atau dokumen apa yang belum dijangkau GITA?' : 'Data atau parameter apa yang masih kurang?' ?> <small>(opsional)</small></span>
-      <textarea name="<?= h($p) ?>[data_kurang]" rows="2" maxlength="3000"><?= h((string) $om($slug, 'data_kurang')) ?></textarea></label>
     <?php if ($slug === 'gita'): ?>
       <label class="field"><span>Contoh pertanyaan yang jawabannya salah atau kurang, dan apa yang benar <small>(opsional, sangat membantu)</small></span>
         <textarea name="<?= h($p) ?>[gita_salah]" rows="3" maxlength="3000" placeholder="Pertanyaan: … / Jawaban GITA: … / Yang benar: …"><?= h((string) $om($slug, 'gita_salah')) ?></textarea></label>
@@ -110,13 +101,18 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
       <div class="field ui-butir"><span class="field-label" id="<?= $id . '-' . $k ?>"><?= h($lbl) ?></span>
         <?= $skala($p . "[$k]", 5, $om($slug, $k), "$id-$k", 'Tidak dicoba') ?></div>
     <?php endforeach; ?>
-    <label class="field"><span>Bagian mana yang membingungkan? <small>(opsional)</small></span>
+    <details class="catatan"<?= ($om($slug, 'data_kurang') ?? '') !== '' || ($om($slug, 'bingung') ?? '') !== '' ? ' open' : '' ?>>
+      <summary>Ada catatan? <span class="muted">(opsional)</span></summary>
+      <label class="field"><span><?= $slug === 'gita' ? 'Topik atau dokumen apa yang belum dijangkau GITA?' : 'Data atau parameter apa yang masih kurang?' ?> <small>(opsional)</small></span>
+      <textarea name="<?= h($p) ?>[data_kurang]" rows="2" maxlength="3000"><?= h((string) $om($slug, 'data_kurang')) ?></textarea></label>
+      <label class="field"><span>Bagian mana yang membingungkan? <small>(opsional)</small></span>
       <textarea name="<?= h($p) ?>[bingung]" rows="2" maxlength="3000"><?= h((string) $om($slug, 'bingung')) ?></textarea></label>
+    </details>
   </section>
   <?php endforeach; ?>
 
-  <section class="panel">
-    <h2><?= $semua ? '3' : '2' ?>. Kesan keseluruhan</h2>
+  <section class="panel" data-langkah data-judul="Kesan keseluruhan">
+    <h2>Kesan keseluruhan</h2>
     <?php foreach (UMUX as $k => $label): ?>
       <div class="field"><span class="field-label" id="lbl-<?= $k ?>"><?= h($label) ?></span>
         <?= $skala($k, 7, $o($k) === '' ? null : $o($k), "lbl-$k", null, ['Sangat tidak setuju', 'Sangat setuju']) ?></div>

@@ -328,6 +328,147 @@
     hitung();
   });
 
+  // Form masukan per langkah: satu bagian per halaman, progres, simpan draf di perangkat.
+  var wf = document.querySelector('[data-langkah-form]');
+  if (wf) {
+    var steps = Array.prototype.slice.call(wf.querySelectorAll('[data-langkah]'));
+    var kunci = 'kalcer-masukan:' + location.pathname + location.search;
+    var store = function (fn) { try { return fn(window.localStorage); } catch (e) { return null; } };
+    var errBox = document.getElementById('form-errors');
+    var skip = { _csrf: 1, _stamp: 1, sumber: 1, website: 1, 'modul[]': 1 };
+
+    // Draf: simpan isian supaya aman saat berpindah tab membuka modul (HP kadang memuat ulang halaman).
+    var simpan = function () {
+      var d = {};
+      Array.prototype.forEach.call(wf.elements, function (el) {
+        if (!el.name || skip[el.name] || el.type === 'hidden' || el.type === 'submit' || el.type === 'button') return;
+        if ((el.type === 'radio' || el.type === 'checkbox')) { if (el.checked) d[el.name] = el.value; else if (el.type === 'checkbox' && !(el.name in d)) d[el.name] = null; return; }
+        d[el.name] = el.value;
+      });
+      d.__langkah = cur;
+      store(function (ls) { ls.setItem(kunci, JSON.stringify(d)); });
+    };
+    var pulih = function () {
+      var raw = store(function (ls) { return ls.getItem(kunci); });
+      if (!raw) return 0;
+      var d; try { d = JSON.parse(raw); } catch (e) { return 0; }
+      Array.prototype.forEach.call(wf.elements, function (el) {
+        if (!el.name || !(el.name in d) || skip[el.name] || el.type === 'hidden') return;
+        var v = d[el.name];
+        if (el.type === 'radio') el.checked = v !== null && el.value === v;
+        else if (el.type === 'checkbox') el.checked = v !== null && el.value === v;
+        else if (v !== null) el.value = v;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      wf.querySelectorAll('details.catatan').forEach(function (det) {
+        if (Array.prototype.some.call(det.querySelectorAll('textarea'), function (t) { return t.value.trim(); })) det.open = true;
+      });
+      return Math.min(+d.__langkah || 0, steps.length - 1);
+    };
+
+    // Kepala: "Langkah n dari N" + bar bersegmen.
+    var head = document.createElement('div');
+    head.className = 'langkah-head';
+    head.innerHTML = '<div class="langkah-info"><span><b data-l-no></b> <span data-l-judul></span></span>' +
+      '<button type="button" class="langkah-mode" data-l-mode></button></div><div class="langkah-bar" aria-hidden="true"></div>';
+    wf.insertBefore(head, steps[0]);
+    var bar = head.querySelector('.langkah-bar');
+    steps.forEach(function () { bar.appendChild(document.createElement('i')); });
+
+    var aksi = wf.querySelector('.actions');
+    var kembaliAkhir = document.createElement('button');
+    kembaliAkhir.type = 'button'; kembaliAkhir.className = 'btn secondary'; kembaliAkhir.textContent = '← Kembali';
+    aksi.classList.add('langkah-nav');
+    aksi.insertBefore(kembaliAkhir, aksi.firstChild);
+    var hint = aksi.querySelector('.hint');
+    if (hint) aksi.parentNode.insertBefore(hint, aksi.nextSibling);
+
+    steps.forEach(function (st, i) {
+      if (i === steps.length - 1) { st.appendChild(aksi); return; }
+      var nav = document.createElement('div');
+      nav.className = 'langkah-nav';
+      nav.innerHTML = (i ? '<button type="button" class="btn secondary" data-kembali>← Kembali</button>' : '') +
+        '<button type="button" class="btn" data-lanjut>' + (i ? 'Lanjut →' : 'Mulai menilai →') + '</button>';
+      st.appendChild(nav);
+    });
+
+    var cur = 0;
+    var satuHalaman = store(function (ls) { return ls.getItem('kalcer-masukan-satu-halaman'); }) === '1';
+    var tampil = function (i, gulir) {
+      cur = i;
+      steps.forEach(function (st, j) { st.hidden = !satuHalaman && j !== i; });
+      head.querySelector('[data-l-no]').textContent = satuHalaman ? 'Semua pertanyaan' : 'Langkah ' + (i + 1) + ' dari ' + steps.length;
+      head.querySelector('[data-l-judul]').textContent = satuHalaman ? '' : '· ' + steps[i].dataset.judul;
+      head.querySelector('[data-l-mode]').textContent = satuHalaman ? 'Tampilkan per langkah' : 'Tampilkan semua';
+      Array.prototype.forEach.call(bar.children, function (seg, j) { seg.className = satuHalaman ? 'done' : (j < i ? 'done' : (j === i ? 'now' : '')); });
+      wf.querySelectorAll('.langkah-nav').forEach(function (n) { n.hidden = satuHalaman && n !== aksi; });
+      kembaliAkhir.hidden = satuHalaman;
+      if (gulir) window.scrollTo({ top: steps[i].getBoundingClientRect().top + window.scrollY - head.offsetHeight - 8, behavior: 'smooth' });
+      simpan();
+    };
+
+    var cekLangkah = function (st) {
+      var kurang = [];
+      var radioKosong = function (name) { return !st.querySelector('[name="' + name + '"]:checked'); };
+      st.querySelectorAll('.perlu-isi').forEach(function (e) { e.classList.remove('perlu-isi'); });
+      var tandai = function (el, pesan) { if (el) el.classList.add('perlu-isi'); kurang.push(pesan); };
+      if (!st.classList.contains('modul-blok') && st.querySelector('[name=provinsi]')) {
+        var sel = st.querySelector('[name=instansi_pilih]'), teks = st.querySelector('[name=instansi]');
+        if (sel ? (!sel.value || (sel.value === '__lain' && !teks.value.trim())) : (teks && !teks.value.trim())) tandai((sel || teks).closest('.field') || sel || teks, 'pilih atau isi instansi');
+        if (radioKosong('peran')) tandai(st.querySelector('[name=peran]').closest('.field'), 'pilih peran');
+        if (!st.querySelector('[name=provinsi]').value) tandai(st.querySelector('[name=provinsi]').closest('.field'), 'pilih provinsi');
+      } else if (st.classList.contains('modul-blok')) {
+        var slug = st.dataset.modul;
+        if (radioKosong('m[' + slug + '][sesuai]')) tandai(st.querySelector('[name="m[' + slug + '][sesuai]"]').closest('.field'), 'jawab apakah isinya sesuai kondisi lapangan');
+        var ui = Array.prototype.some.call(st.querySelectorAll('.ui-butir input:checked'), function (r) { return r.value !== ''; });
+        if (!ui) tandai(st.querySelector('.ui-butir'), 'beri nilai minimal satu butir tampilan (pilih angka 1–5)');
+      }
+      var lama = st.querySelector('.langkah-err');
+      if (lama) lama.remove();
+      if (kurang.length) {
+        var p = document.createElement('p');
+        p.className = 'langkah-err'; p.setAttribute('role', 'alert');
+        p.textContent = 'Sebelum lanjut, mohon ' + kurang.join(', ') + '.';
+        st.querySelector('.langkah-nav').before(p);
+        var first = st.querySelector('.perlu-isi');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      return true;
+    };
+
+    wf.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-lanjut], [data-kembali]');
+      if (t) {
+        if (t.hasAttribute('data-lanjut')) { if (cekLangkah(steps[cur])) tampil(cur + 1, true); }
+        else tampil(cur - 1, true);
+      }
+      if (e.target === kembaliAkhir) tampil(cur - 1, true);
+      if (e.target.closest('[data-l-mode]')) {
+        satuHalaman = !satuHalaman;
+        store(function (ls) { ls.setItem('kalcer-masukan-satu-halaman', satuHalaman ? '1' : '0'); });
+        tampil(cur, false);
+      }
+    });
+    wf.addEventListener('change', simpan);
+    wf.addEventListener('input', simpan);
+    wf.addEventListener('submit', function () { store(function (ls) { ls.removeItem(kunci); }); });
+
+    var mulai = 0;
+    if (errBox) {
+      // Kesalahan dari server: buka langkah yang bermasalah dan pindahkan pesannya ke sana.
+      var pesan = errBox.textContent;
+      mulai = 0;
+      steps.forEach(function (st, i) { if (st.dataset.modul && pesan.indexOf(st.dataset.judul + ':') !== -1) mulai = i; });
+      if (/HP\/WA/.test(pesan)) mulai = steps.length - 1;
+      var h2 = steps[mulai].querySelector('h2');
+      h2.parentNode.insertBefore(errBox, h2.nextSibling);
+    } else {
+      mulai = pulih();
+    }
+    tampil(mulai, false);
+  }
+
   var errs = document.getElementById('form-errors');
   if (errs) errs.focus();
 })();
