@@ -1,0 +1,27 @@
+# KALCER Event: semua request (kecuali aset statis) diarahkan ke index.php
+Options -Indexes
+DirectoryIndex index.php
+
+RewriteEngine On
+RewriteBase /event/
+
+# Paksa HTTPS (aturan di .htaccess root tidak diwarisi karena folder ini punya RewriteEngine sendiri).
+# Localhost dikecualikan untuk pengembangan lokal.
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:\d+)?$
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# folder app/ tidak boleh diakses langsung
+RewriteRule ^app(/|$) - [F,L]
+
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^assets/ - [L]
+
+RewriteRule ^ index.php [L,QSA]
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "same-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
