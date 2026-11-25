@@ -360,22 +360,65 @@ function admin_biaya(string $id): void
     redirect('/admin/instansi/' . $b['instansi_id'] . '#reimburse');
 }
 
+/** Hapus satu instansi beserta peserta, foto, dan bukti biaya (file ikut dihapus). */
+function hapus_instansi(array $inst): void
+{
+    $files = array_merge(
+        array_column(rows('SELECT file FROM evidence WHERE instansi_id = ?', [$inst['id']]), 'file'),
+        array_column(rows('SELECT file FROM biaya WHERE instansi_id = ?', [$inst['id']]), 'file'),
+        array_column(rows('SELECT file FROM pembayaran WHERE instansi_id = ? AND file IS NOT NULL', [$inst['id']]), 'file')
+    );
+    q('DELETE FROM instansi WHERE id = ?', [$inst['id']]);
+    foreach ($files as $f) {
+        delete_upload($f);
+    }
+}
+
 function admin_instansi_hapus(string $id): void
 {
     $inst = admin_find_instansi($id);
     if (strtoupper(post('konfirmasi')) !== kode_instansi((int) $inst['id'])) {
         throw new UserError('Ketik kode instansi ' . kode_instansi((int) $inst['id']) . ' untuk konfirmasi.');
     }
-    $files = array_merge(
-        array_column(rows('SELECT file FROM evidence WHERE instansi_id = ?', [$inst['id']]), 'file'),
-        array_column(rows('SELECT file FROM biaya WHERE instansi_id = ?', [$inst['id']]), 'file')
-    );
-    q('DELETE FROM instansi WHERE id = ?', [$inst['id']]);
-    foreach ($files as $f) {
-        delete_upload($f);
-    }
+    hapus_instansi($inst);
     flash('ok', $inst['nama'] . ' dihapus beserta seluruh data dan filenya.');
     redirect('/admin/instansi');
+}
+
+/** Hapus banyak instansi sekaligus dari daftar (mis. data uji coba). */
+function admin_instansi_hapus_banyak(): void
+{
+    require_admin();
+    $ids = array_values(array_unique(array_map('intval', (array) ($_POST['ids'] ?? []))));
+    if (!$ids) {
+        throw new UserError('Centang dulu instansi yang akan dihapus.');
+    }
+    if (strtoupper(post('konfirmasi')) !== 'HAPUS') {
+        throw new UserError('Ketik HAPUS untuk konfirmasi.');
+    }
+    $nama = [];
+    foreach ($ids as $id) {
+        if ($inst = row('SELECT * FROM instansi WHERE id = ?', [$id])) {
+            hapus_instansi($inst);
+            $nama[] = $inst['nama'];
+        }
+    }
+    flash('ok', count($nama) . ' instansi dihapus beserta seluruh data dan filenya: ' . implode(', ', $nama) . '.');
+    redirect('/admin/instansi');
+}
+
+/** Hapus permanen satu peserta (mis. data dummy). Untuk peserta yang batal, instansi cukup memakai "Batal ikut". */
+function admin_peserta_hapus(string $id): void
+{
+    require_admin();
+    $p = row('SELECT * FROM peserta WHERE id = ?', [(int) $id]) ?? not_found();
+    db()->beginTransaction();
+    q('UPDATE peserta SET diganti_oleh = NULL WHERE diganti_oleh = ?', [$p['id']]);
+    q('DELETE FROM peserta WHERE id = ?', [$p['id']]);
+    log_riwayat((int) $p['instansi_id'], 'hapus_peserta', 'Panitia menghapus peserta ' . $p['nama'] . ' (' . tgl($p['tanggal']) . ')');
+    db()->commit();
+    flash('ok', $p['nama'] . ' dihapus.');
+    redirect('/admin/instansi/' . $p['instansi_id']);
 }
 
 function admin_evidence_zip(string $id): void

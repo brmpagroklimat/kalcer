@@ -22,7 +22,7 @@ $adminPaling = static function (array $items) use ($adminAktif): ?string {
 };
 
 $flashes = take_flash();
-$v = '34';
+$v = '35';
 ?>
 <!doctype html>
 <html lang="id">

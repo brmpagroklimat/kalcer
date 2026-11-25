@@ -75,6 +75,17 @@
     if (unduh) unduh.href = cv.toDataURL('image/png');
   }
 
+  // Centang semua + hitung jumlah tercentang (hapus banyak instansi).
+  var cekSemua = document.querySelector('[data-cek-semua]');
+  if (cekSemua) {
+    var boxes = document.querySelectorAll('input[type=checkbox][name="' + cekSemua.dataset.cekSemua + '"]');
+    var jml = document.querySelector('[data-jml-cek]');
+    var hitung = function () { if (jml) jml.textContent = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).length; };
+    cekSemua.addEventListener('change', function () { boxes.forEach(function (b) { b.checked = cekSemua.checked; }); hitung(); });
+    boxes.forEach(function (b) { b.addEventListener('change', hitung); });
+    hitung();
+  }
+
   // Form masukan: tampilkan bagian penilaian hanya untuk modul yang dicentang.
   var modulCek = document.querySelectorAll('[data-modul-toggle]');
   if (modulCek.length) {

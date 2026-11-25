@@ -13,6 +13,7 @@ $fase = [
             ['Isi nama & tanggal kegiatan, batas waktu, 2 kontak WhatsApp, info instansi (hotel, shuttle, dll.), kapasitas kamar', '/admin/pengaturan'],
             ['Isi daftar undangan: nama instansi + provinsi + tanggal (satu per satu atau tempel dari Excel)', '/admin/undangan', 'Daftar kosong → instansi memilih tanggal sendiri'],
             ['Isi link jadwal; unggah materi bila sudah ada', '/admin/konten'],
+            ['Hapus data uji coba: Instansi → centang → Hapus yang dicentang (undangan uji di Undangan & tanggal)', '/admin/instansi'],
             ['Bagikan alamat kalcer.agroklimat.id/event ke instansi', null],
             ['Kirim snippet tombol "Beri masukan" ke pengelola 6 modul (dan contoh 👍/👎 ke tim GITA)', '/admin/masukan/bagikan', 'Masukan pengguna umum terus masuk setelah acara'],
         ],

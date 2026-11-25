@@ -119,6 +119,8 @@ $routes = [
     ['POST', '/admin/instansi/(\d+)/buka', 'admin_instansi_buka'],
     ['POST', '/admin/instansi/(\d+)/reimburse', 'admin_instansi_reimburse'],
     ['POST', '/admin/instansi/(\d+)/hapus', 'admin_instansi_hapus'],
+    ['POST', '/admin/instansi/hapus-banyak', 'admin_instansi_hapus_banyak'],
+    ['POST', '/admin/peserta/(\d+)/hapus', 'admin_peserta_hapus'],
     ['GET', '/admin/instansi/(\d+)/evidence\.zip', 'admin_evidence_zip'],
     ['POST', '/admin/biaya/(\d+)', 'admin_biaya'],
     ['POST', '/admin/instansi/(\d+)/bayar', 'admin_bayar'],

@@ -38,6 +38,7 @@ $waHp = preg_replace('/^0/', '62', ltrim($inst['hp'], '+'));
               <?php else: ?><span class="badge muted"><?= $p['diganti_oleh'] ? 'Diganti oleh ' . h($names[$p['diganti_oleh']] ?? '-') : 'Batal ikut' ?></span><?php endif; ?>
             </div>
             <div class="meta"><?= h(implode(' · ', array_filter([$p['jabatan'], $p['nip'] ? 'NIP ' . $p['nip'] : null, $p['jk'] === 'L' ? 'Laki-laki' : 'Perempuan', $p['hp']]))) ?></div>
+            <form method="post" action="<?= h(url('/admin/peserta/' . $p['id'] . '/hapus')) ?>" data-confirm="Hapus permanen <?= h($p['nama']) ?>? Kamar & shuttle-nya ikut dilepas. (Bila orangnya hanya batal ikut, minta instansi memakai Batal ikut.)"><?= csrf_field() ?><button class="linkbtn danger-link small">Hapus peserta</button></form>
           </li>
         <?php endforeach; ?>
       </ul>
