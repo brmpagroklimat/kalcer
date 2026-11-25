@@ -367,7 +367,8 @@
     var head = document.createElement('div');
     head.className = 'langkah-head';
     head.innerHTML = '<div class="langkah-info"><span><b data-l-no></b> <span data-l-judul></span></span>' +
-      '<button type="button" class="langkah-mode" data-l-mode></button></div><div class="langkah-bar" aria-hidden="true"></div>';
+      '<button type="button" class="langkah-mode" data-l-mode></button></div><div class="langkah-bar" aria-hidden="true"></div>' +
+      '<p class="langkah-semangat" data-l-semangat aria-live="polite" hidden></p>';
     wf.insertBefore(head, steps[0]);
     var bar = head.querySelector('.langkah-bar');
     steps.forEach(function () { bar.appendChild(document.createElement('i')); });
@@ -391,8 +392,20 @@
 
     var cur = 0;
     var satuHalaman = store(function (ls) { return ls.getItem('kalcer-masukan-satu-halaman'); }) === '1';
+    var semangat = function (i, n) {
+      if (n < 4) return i === n - 1 && n > 1 ? 'Langkah terakhir. Terima kasih!' : '';
+      if (i === n - 1) return 'Langkah terakhir. Terima kasih sudah sejauh ini!';
+      if (i === n - 2) return 'Hampir selesai, tinggal sedikit lagi.';
+      if (i === Math.floor((n - 1) / 2)) return 'Sudah setengah jalan. Semangat!';
+      return '';
+    };
     var tampil = function (i, gulir) {
+      var arah = !gulir ? '' : (i > cur ? 'anim-maju' : (i < cur ? 'anim-mundur' : ''));
       cur = i;
+      steps.forEach(function (st) { st.classList.remove('anim-maju', 'anim-mundur'); });
+      if (arah && !satuHalaman) { void steps[i].offsetWidth; steps[i].classList.add(arah); }
+      var sm = head.querySelector('[data-l-semangat]'), teksSm = satuHalaman ? '' : semangat(i, steps.length);
+      if (sm.textContent !== teksSm) { sm.hidden = !teksSm; sm.textContent = teksSm; sm.style.animation = 'none'; void sm.offsetWidth; sm.style.animation = ''; }
       steps.forEach(function (st, j) { st.hidden = !satuHalaman && j !== i; });
       head.querySelector('[data-l-no]').textContent = satuHalaman ? 'Semua pertanyaan' : 'Langkah ' + (i + 1) + ' dari ' + steps.length;
       head.querySelector('[data-l-judul]').textContent = satuHalaman ? '' : '· ' + steps[i].dataset.judul;

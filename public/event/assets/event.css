@@ -486,7 +486,11 @@ a.stat { text-decoration: none; color: inherit; } a.stat:hover { border-color: v
 .skala .choice.na input:checked + span { color: var(--white); }
 .wajib { color: var(--err-ink); font-weight: 700; }
 .masukan h3 + .small { margin-top: -4px; }
-.skala-ujung { display: flex; justify-content: space-between; max-width: 380px; margin-top: 4px; }
+.skala { align-items: flex-start; }
+.skala-angka { display: inline-flex; flex-direction: column; }
+.skala-row { display: flex; gap: 5px; }
+.skala-garis { height: 4px; border-radius: 2px; margin: 8px 4px 0; background: linear-gradient(90deg, var(--coral), var(--sun), var(--leaf)); }
+.skala-ujung { display: flex; justify-content: space-between; gap: 12px; margin-top: 3px; font-size: 12px; line-height: 1.3; }
 .modul-pilih { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .modul-cek { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--white); cursor: pointer; }
 .modul-cek:has(input:checked) { border-color: var(--deep); background: #f2f8fa; }
@@ -514,7 +518,11 @@ a.stat { text-decoration: none; color: inherit; } a.stat:hover { border-color: v
 a.modul-cek { text-decoration: none; color: inherit; }
 a.modul-cek:hover { border-color: var(--deep); background: #f2f8fa; }
 .modul-no { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--deep); color: #fff; font-weight: 700; font-size: 13px; display: grid; place-items: center; }
-.modul-ke { display: block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.modul-ke { display: flex; width: fit-content; align-items: center; gap: 4px; font-size: 13px; font-weight: 400; color: var(--white); background: var(--deep); border-radius: 999px; padding: 4px 12px 4px 12px; margin-bottom: 10px; }
+.modul-ke b { font-weight: 700; }
+.modul-titik { display: inline-flex; gap: 4px; margin-left: 8px; }
+.modul-titik i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.3); }
+.modul-titik i.isi { background: var(--sun); }
 
 /* Form masukan per langkah */
 .langkah-head { position: sticky; top: 0; z-index: 5; background: var(--paper); padding: 10px 0 12px; margin-bottom: 6px; }
@@ -535,3 +543,18 @@ a.modul-cek:hover { border-color: var(--deep); background: #f2f8fa; }
 details.catatan { margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 12px; }
 details.catatan summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--deep); }
 details.catatan[open] summary { margin-bottom: 8px; }
+
+/* Animasi pergantian langkah */
+@keyframes langkah-masuk { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes langkah-mundur { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes chip-pop { 0% { opacity: 0; transform: scale(.6); } 70% { transform: scale(1.08); } 100% { opacity: 1; transform: none; } }
+@keyframes titik-nyala { 0% { transform: scale(0); } 70% { transform: scale(1.5); } 100% { transform: none; } }
+@keyframes semangat-muncul { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.anim-maju { animation: langkah-masuk .35s ease-out; }
+.anim-mundur { animation: langkah-mundur .35s ease-out; }
+.anim-maju .modul-ke, .anim-mundur .modul-ke { animation: chip-pop .45s .1s ease-out both; }
+.anim-maju .modul-titik i.isi:last-of-type { animation: titik-nyala .5s .4s ease-out both; }
+.langkah-bar i { transition: background .4s; }
+.langkah-semangat { margin: 6px 0 0; font-size: 13px; color: var(--leaf); font-weight: 700; animation: semangat-muncul .4s ease-out; }
+@media (prefers-reduced-motion: reduce) { .anim-maju, .anim-mundur, .anim-maju .modul-ke, .anim-mundur .modul-ke, .anim-maju .modul-titik i, .langkah-semangat { animation: none; } }
+form.masukan { overflow-x: clip; }

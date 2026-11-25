@@ -5,18 +5,19 @@ $o = static fn (string $k) => (string) ($old[$k] ?? '');
 $om = static fn (string $slug, string $k): ?string => isset($old['m'][$slug][$k]) ? (string) $old['m'][$slug][$k] : null;
 /** Skala radio (pill) 1..$max; $na = label pilihan "tidak dicoba" (nilai kosong). */
 $skala = static function (string $name, int $max, ?string $val, string $idp, ?string $na = null, array $ujung = []): string {
-    $out = '<div class="skala" role="radiogroup" aria-labelledby="' . h($idp) . '">';
+    $out = '<div class="skala" role="radiogroup" aria-labelledby="' . h($idp) . '"><div class="skala-angka"><div class="skala-row">';
     for ($i = 1; $i <= $max; $i++) {
         $out .= '<label class="choice"><input type="radio" name="' . h($name) . '" value="' . $i . '"' . ($val === (string) $i ? ' checked' : '') . '><span>' . $i . '</span></label>';
     }
+    $out .= '</div>';
+    if ($ujung) {
+        $out .= '<div class="skala-garis" aria-hidden="true"></div><div class="skala-ujung small muted"><span>' . h($ujung[0]) . '</span><span>' . h($ujung[1]) . '</span></div>';
+    }
+    $out .= '</div>';
     if ($na !== null) {
         $out .= '<label class="choice na"><input type="radio" name="' . h($name) . '" value=""' . ($val === '' ? ' checked' : '') . '><span>' . h($na) . '</span></label>';
     }
-    $out .= '</div>';
-    if ($ujung) {
-        $out .= '<div class="skala-ujung small muted"><span>' . h($ujung[0]) . '</span><span>' . h($ujung[1]) . '</span></div>';
-    }
-    return $out;
+    return $out . '</div>';
 };
 $cek = static fn (array $list, string $name, string $val) => implode('', array_map(
     static fn ($k, $l) => '<label class="choice"><input type="radio" name="' . h($name) . '" value="' . h($k) . '"' . ($val === $k ? ' checked' : '') . '><span>' . h($l) . '</span></label>',
@@ -79,7 +80,7 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
 
   <?php foreach ($pilih as $no => $slug): $m = MODUL[$slug]; $p = "m[$slug]"; $id = "m-$slug"; ?>
   <section class="panel modul-blok" data-modul="<?= h($slug) ?>" id="<?= h($id) ?>" data-langkah data-judul="<?= h($m['nama']) ?>">
-    <h2><?= $nm > 1 ? '<span class="modul-ke">Modul ' . ($no + 1) . ' dari ' . $nm . '</span>' : '' ?><?= h($m['nama']) ?></h2>
+    <h2><?= $nm > 1 ? '<span class="modul-ke"><b>Modul ' . ($no + 1) . '</b> dari ' . $nm . '<span class="modul-titik" aria-hidden="true">' . str_repeat('<i class="isi"></i>', $no + 1) . str_repeat('<i></i>', $nm - $no - 1) . '</span></span>' : '' ?><?= h($m['nama']) ?></h2>
     <div class="note tugas"><span class="small muted">Sebelum menjawab</span><p><?= h($m['tugas']) ?> Setelah itu, mohon jawab pertanyaan di bawah ini.</p>
       <a class="btn secondary small" href="<?= h($m['url']) ?>" target="_blank" rel="noopener">Buka <?= h($m['nama']) ?><span class="sr-only"> (tab baru)</span> ↗</a></div>
 
@@ -87,20 +88,15 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
     <p class="small muted">Pertanyaan bertanda <span class="wajib">*</span> wajib dijawab.</p>
     <div class="field"><span class="field-label" id="<?= $id ?>-sesuai"><?= h($m['substansi']) ?> <span class="wajib" aria-hidden="true">*</span></span>
       <div class="choices" role="radiogroup" aria-labelledby="<?= $id ?>-sesuai"><?= $cek(SESUAI, $p . '[sesuai]', (string) $om($slug, 'sesuai')) ?></div></div>
-    <div class="field"><span class="field-label" id="<?= $id ?>-terap"><?= $slug === 'gita' ? 'Menurut Bapak/Ibu, apakah jawabannya bisa langsung dipakai?' : 'Menurut Bapak/Ibu, apakah hasil atau rekomendasinya bisa diterapkan di lapangan?' ?> <small>(1 = tidak bisa, 5 = sangat bisa)</small></span>
-      <?= $skala($p . '[diterapkan]', 5, $om($slug, 'diterapkan'), "$id-terap") ?></div>
-    <?php if ($slug === 'gita'): ?>
-      <label class="field"><span>Contoh pertanyaan yang jawabannya salah atau kurang, dan apa yang benar <small>(opsional, sangat membantu)</small></span>
-        <textarea name="<?= h($p) ?>[gita_salah]" rows="3" maxlength="3000" placeholder="Pertanyaan: … / Jawaban GITA: … / Yang benar: …"><?= h((string) $om($slug, 'gita_salah')) ?></textarea></label>
-    <?php endif; ?>
+    <div class="field"><span class="field-label" id="<?= $id ?>-terap"><?= $slug === 'gita' ? 'Menurut Bapak/Ibu, apakah jawabannya bisa langsung dipakai?' : 'Menurut Bapak/Ibu, apakah hasil atau rekomendasinya bisa diterapkan di lapangan?' ?></span>
+      <?= $skala($p . '[diterapkan]', 5, $om($slug, 'diterapkan'), "$id-terap", null, ['Tidak bisa', 'Sangat bisa']) ?></div>
 
     <h3>Tampilan (interface)</h3>
-    <p class="note small" style="margin-top:0"><b>Nilai minimal satu butir di bawah ini</b> <span class="wajib" aria-hidden="true">*</span> dengan angka 1–5 (1 = sangat sulit/buruk, 5 = sangat mudah/baik). Butir yang tidak Anda coba cukup pilih "Tidak dicoba".</p>
     <?php foreach (UI_BUTIR as $k => $label):
       if ($k === 'ui_peta' && !$m['peta']) { continue; }
       $lbl = $k === 'ui_peta' ? $label : ($k === 'ui_menu' && $slug === 'gita' ? 'Kemudahan bertanya & membaca jawaban' : $label); ?>
       <div class="field ui-butir"><span class="field-label" id="<?= $id . '-' . $k ?>"><?= h($lbl) ?></span>
-        <?= $skala($p . "[$k]", 5, $om($slug, $k), "$id-$k", 'Tidak dicoba') ?></div>
+        <?= $skala($p . "[$k]", 5, $om($slug, $k), "$id-$k", 'Tidak dicoba', ['Sangat sulit', 'Sangat mudah']) ?></div>
     <?php endforeach; ?>
     <h3>Catatan <small class="muted" style="font-weight:400">(opsional)</small></h3>
     <label class="field"><span><?= $slug === 'gita' ? 'Topik atau dokumen apa yang belum dijangkau GITA?' : 'Data atau parameter apa yang masih kurang?' ?></span>
