@@ -27,7 +27,11 @@ $cek = static fn (array $list, string $name, string $val) => implode('', array_m
 <?php $semua = count($pilih) === count(MODUL); $nm = count($pilih); ?>
 <?php if ($semua): ?>
 <h1>Uji coba &amp; masukan KALCER</h1>
-<p class="lead">Mohon coba keenam modul KALCER dengan memasukkan wilayah Anda sendiri, lalu nilai isi dan tampilannya. Satu modul satu halaman, sekitar 2 menit per modul. Bagian yang belum sempat dicoba cukup ditandai <b>Belum bisa menilai</b> atau <b>Tidak dicoba</b>.</p>
+<p class="lead">Silakan jelajahi keenam modul KALCER menggunakan lokasi wilayah Anda, lalu berikan penilaian pada isi dan tampilannya.</p>
+<ul class="lead-list">
+  <li>Alur pengisian: 1 halaman untuk 1 modul.</li>
+  <li>Ada bagian yang belum bisa dicoba? Tidak masalah 🙂 cukup pilih <b>Belum bisa menilai</b> atau <b>Tidak dicoba</b>.</li>
+</ul>
 <?php else: ?>
 <h1>Beri masukan: <?= h(implode(', ', array_map(static fn ($s) => MODUL[$s]['nama'], $pilih))) ?></h1>
 <p class="lead">Nilai apakah isinya sesuai kondisi lapangan dan tampilannya mudah dipakai. Sekitar 2 menit.</p>

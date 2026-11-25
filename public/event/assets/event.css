@@ -558,3 +558,8 @@ details.catatan[open] summary { margin-bottom: 8px; }
 .langkah-semangat { margin: 6px 0 0; font-size: 13px; color: var(--leaf); font-weight: 700; animation: semangat-muncul .4s ease-out; }
 @media (prefers-reduced-motion: reduce) { .anim-maju, .anim-mundur, .anim-maju .modul-ke, .anim-mundur .modul-ke, .anim-maju .modul-titik i, .langkah-semangat { animation: none; } }
 form.masukan { overflow-x: clip; }
+@media (min-width: 900px) { .cards.cards-5 { grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 520px) and (max-width: 899px) { .cards.cards-5 { grid-template-columns: repeat(2, 1fr); } .cards.cards-5 > :last-child:nth-child(odd) { grid-column: 1 / -1; } }
+@media (max-width: 519px) { .cards.cards-5 { grid-template-columns: 1fr; } }
+.lead-list { margin: -6px 0 22px; padding-left: 20px; color: var(--muted); }
+.lead-list li + li { margin-top: 4px; }

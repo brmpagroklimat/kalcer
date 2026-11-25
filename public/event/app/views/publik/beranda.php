@@ -16,7 +16,7 @@ $lokasi = setting('lokasi');
   <?= view('_geo') ?>
 </section>
 
-<div class="cards">
+<div class="cards cards-5">
   <a class="card" href="<?= h(url('/daftar')) ?>">
     <span class="card-top"><span class="shape" aria-hidden="true"><span style="left:0;top:0;width:26px;height:26px;background:var(--coral);border-radius:100% 0 0 0"></span><span style="right:0;bottom:0;width:22px;height:22px;background:var(--sky);border-radius:50%"></span><span style="left:4px;bottom:2px;width:12px;height:12px;background:var(--leaf);border-radius:0 100% 0 100%"></span></span><span class="open" aria-hidden="true">Buka<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></span>
     <h2>Registrasi</h2>
@@ -36,6 +36,11 @@ $lokasi = setting('lokasi');
     <span class="card-top"><span class="shape" aria-hidden="true"><span style="left:0;top:0;width:24px;height:24px;background:var(--leaf);border-radius:0 50% 50% 50%"></span><span style="right:0;top:6px;width:16px;height:32px;background:var(--sky);border-radius:0 16px 16px 0"></span><span style="left:6px;bottom:0;width:14px;height:14px;background:var(--coral);border-radius:50%"></span></span><span class="open" aria-hidden="true">Buka<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></span>
     <h2>Galeri</h2>
     <p><?= $nFoto ? $nFoto . ' foto dokumentasi kegiatan.' : 'Foto dokumentasi akan tersedia setelah kegiatan.' ?></p>
+  </a>
+  <a class="card" href="<?= h(url('/masukan')) ?>">
+    <span class="card-top"><span class="shape" aria-hidden="true"><span style="left:0;top:2px;width:30px;height:24px;background:var(--sun);border-radius:12px 12px 12px 0"></span><span style="right:0;bottom:0;width:22px;height:22px;background:var(--deep);border-radius:50%"></span><span style="left:4px;bottom:2px;width:10px;height:10px;background:var(--coral);border-radius:50%"></span></span><span class="open" aria-hidden="true">Buka<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></span>
+    <h2>Masukan</h2>
+    <p>Coba keenam modul KALCER, lalu beri penilaian. Satu halaman per modul.</p>
   </a>
 </div>
 
